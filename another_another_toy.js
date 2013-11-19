@@ -733,8 +733,9 @@ var toy_eval = function(exp, env)
             }
             else if (tag === "macroexpand-1")
             {
-                return macro_expand(toy_eval(car(cadr(exp)), env),
-                                    cdr(cadr(exp)),
+                var v = toy_eval(cadr(exp), env);
+                return macro_expand(toy_eval(car(v), env),
+                                    cdr(v),
                                     env);
             }
             else if (tag === "defmacro")

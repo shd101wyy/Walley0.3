@@ -188,6 +188,10 @@ eg:
 	(while (< x 100) (display x) (set! x (+ x 1)) )  
 	;; will print x from 0 to 99  
 ```
+<strong>Begin</strong>  
+```  
+(begin stm0 stm1 stm2 ...)   eval series of statements   
+```  
 <strong>Let</strong>
 ```
 (let [var0 val0 var1 val1 ...] body) : create local variables  
