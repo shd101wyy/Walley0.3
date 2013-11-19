@@ -162,6 +162,24 @@
 			(>=-iter (cdr args) (car args)))
 		))
 
+;; now 'and' and 'or' functions can accept more than two parameters
+(def (and . args)
+	(def (and-iter args)
+		(if (null? args)
+			true
+			(if (car args)
+				(and-iter (cdr args))
+				false)
+			))
+	(and-iter args))
+(def (or . args)
+	(def (or-iter args)
+		(if (null? args)
+			false
+			(if (car args)
+				true
+				(or-iter (cdr args)))))
+	(or-iter args))
 
 
 ;; def not

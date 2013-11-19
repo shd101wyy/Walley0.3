@@ -165,6 +165,13 @@ eg:
 	(while (< x 100) (display x) (set! x (+ x 1)) )  
 	;; will print x from 0 to 99  
 ```
+<strong>Let</strong>
+```
+(let [var0 val0 var1 val1 ...] body) : create local variables  
+eg:  
+	(let [a 0 b 1] (+ a b)) => 1  
+	(let [a 2 b (+ a 1)] (+ a b)) => 5    in this case b will use the value of a to calculate (+ a 1), so it's (+ 2 3) => 5
+```
 <h2>Arithematics:  </h2>  
 <storng>+ - * / </storng>  
 ```
@@ -186,6 +193,8 @@ eg:
      (and 3 4)   => true  
   	 (<= 3 4 5 6) => true  
   	 (>= 3 4 5 6) => false ()  
+  	 (and 1 2 3 4 5 false) => false  
+  	 (or false false false 1) => true  
 ```
 <h2>Type Check</h2>  
 <strong>ratio? integer? float? vector? dictionary? pair?(list?) null? atom?</strong>  
