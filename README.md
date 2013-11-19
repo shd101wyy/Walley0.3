@@ -51,6 +51,7 @@ It is easy to use.
 
 <h2> Builtin Procedures and Macros </h2>  
 <code>
+```
 Define Number :  
 	1/2       
 	3   
@@ -84,6 +85,7 @@ Define Macro:
 	(defmacro macro_name [params] body)
 	eg:
 		(defmacro square [x] `(* ~x ~x))  
+```
 </code>
 ===================      
 <h2>Basic Use</h2>    
