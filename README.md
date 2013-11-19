@@ -1,4 +1,4 @@
-
+```
 
             ____     ______     _____     /-----------\             
              \\ \    ||    \    ||  |    /-------------\            
@@ -11,8 +11,8 @@
            __________________________________________________||         
            ---------------------------------------------------|        	
 			<h1>	VERSION 0.3.01  FOR FUTURE AR,VR,AI  </h1>
-			(display "Hello World")
-
+			(display "Hello World ;)")
+```
 Toy Language is a simple script language written in JavaScript.  
 Influenced by Walley 0.1, Walley 0.2, Scheme, JavaScript, Clojure...
 It is a lisp dialect with an extremely simple and not efficient interpreter.  
@@ -26,9 +26,12 @@ A Language For FUN ;)
 		toy [file_name]						# Run file [file_name]   
 		toy compress [file_name]			# Compress file [file_name] to make it smaller    
 											# will remove \n and extra spaces.  
+===============
+<h2>html terminal emulator</h2>
+		./toy_terminal_emulator/index.html  # try toy language easily
 ===============   
 <h2>Primitive Data Types: </h2>  
-  	```lisp
+	```
 	Ratio:    1 2 3 4/5 5/6   ...      
 	Float:    1.2,  3.4,  5.6 ...  
 	List :    '(1 2)  '(hello World)  
@@ -41,7 +44,7 @@ A Language For FUN ;)
 	``` 
 ================   
 
-<h2>Removed character:</h2>  
+<h2>Removed characters:</h2>  
 	, \t \a \n space where be removed when parsing  
 	comment: ; use ;
 <h2>Abbreviation:</h2>

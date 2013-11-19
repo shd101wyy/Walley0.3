@@ -1,0 +1,70 @@
+<html>
+	<head>
+		<meta charset='uff8'>
+		<script src="./jquery.js"></script>
+		<script src="./jquery_terminal.js"></script>
+		<link rel="stylesheet" type="text/css" href="./jquery_terminal.css">
+		<script src="../another_another_toy.js"></script>
+		<style type="text/css">
+			#term_demo{
+			}
+		</style>
+	</head>
+	<body>
+		<script type="text/javascript">
+		var virtual_file_system = {
+			'a':'a file',
+			'b':'b file'
+
+		}
+		var current_location = []
+
+		jQuery(function($, undefined) {
+		    $('body').terminal(function(command, term) {
+		    		console.log = term.echo
+		    		// ls
+		    		if (command === 'ls'){
+		    			try{
+			    			var fs = virtual_file_system
+			    			for(var i = 0; i < current_location; i++ ){
+			    				fs = fs[current_location[i]]
+			    			}
+			    			for(var i in fs){
+			    				console.log(i)
+			    			}
+			    		}
+			    		catch(e){
+			    			term.error(new String(e))
+			    		}
+		    		}
+			        else if (command !== '') {
+			            try {
+			            	var l = lexer(command);
+			            	var p = parser(l);
+			            	var result = eval_begin(p,ENVIRONMENT);
+			            	// var result = window.eval(o); 
+
+			            	// var result = TOY_Eval(command, ENV_LIST, "")
+			            	if (result !== undefined) {
+			            		primitive_builtin_functions["display"]([result])
+			                    // term.echo(new String(result));
+			                }
+			          
+			            } catch(e) {
+			                term.error(new String(e));
+			            }
+			        }
+			        else {
+			           term.echo('');
+			        }
+			    },
+			     {
+			        greetings: 'Toy Language',
+			        name: 'toy',
+			        height: 200,
+			        prompt: 'toy> '});
+		});
+
+		</script>
+	</body>
+</html>
