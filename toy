@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var fs=require("fs")
 // var toy=require("./toy.js")
-var toy = require("./another_another_compiler.js")
+var toy = require("./another_another_toy.js")
 var vm=require("vm")
 var util=require("util")
 var readline = require('readline')
