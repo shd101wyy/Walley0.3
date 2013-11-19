@@ -20,14 +20,14 @@ It is easy to use.
   
  ===============  
 <h2>commands: </h2>
-		toy    								# Run toy repl        
-		toy [file_name]						# Run file [file_name]     
+		toy    								# Run toy repl      
+		toy [file_name]						# Run file [file_name]   
 		toy compress [file_name]			# Compress file [file_name] to make it smaller    
 											# will remove \n and extra spaces.  
 ===============   
-<h2>Primitive Data Types: </h2>    
-  '''lisp
-	Ratio:    1 2 3 4/5 5/6   ...         
+<h2>Primitive Data Types: </h2>  
+  
+	Ratio:    1 2 3 4/5 5/6   ...      
 	Float:    1.2,  3.4,  5.6 ...  
 	List :    '(1 2)  '(hello World)  
 	Vector:   [1 2],   [3 4 5]  
@@ -36,7 +36,6 @@ It is easy to use.
 	Lambda:     (lambda [params] body)
 	Macro:      (defmacro macro_name [params] body)
 	-- Null(nil):   ()  
-  '''
 ================   
 
 <h2>Removed character:</h2>  
