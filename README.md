@@ -13,22 +13,39 @@
 			<h1>	VERSION 0.3.01  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
+```
+(Toy Language  (Walley-Language 0.3) by (shd101wyy))
+ ===============
 Toy Language is a simple script language written in JavaScript.  
 Influenced by Walley 0.1, Walley 0.2, Scheme, JavaScript, Clojure...
-It is a lisp dialect with an extremely simple and not efficient interpreter.  
+It is a lisp dialect with an extremely simple and easy interpreter.  
 It is easy to use.  
 
-A Language For FUN ;)
-  
+It's a Language For FUN ;)
+```
+ ===============
+<h2>Try Toy Language Online </h2>
+```
+	Toy Language is available online from 
+	----
+	http://planetwalley.com/walley/
+	----
+	I am a lazy guy so the code on this website may not be newest.
+	I will try to make it up to date ;)
+```
  ===============  
 <h2>Commands: </h2>
+```
 		toy    								# Run toy repl      
 		toy [file_name]						# Run file [file_name]   
 		toy compress [file_name]			# Compress file [file_name] to make it smaller    
 											# will remove \n and extra spaces.  
+```
 ===============
 <h2>html terminal emulator</h2>
+```
 		./toy_terminal_emulator/index.html  # try toy language easily
+```
 ===============   
 <h2>Primitive Data Types: </h2>  
 	```
@@ -45,15 +62,18 @@ A Language For FUN ;)
 ================   
 
 <h2>Removed characters:</h2>  
+```
 	, \t \a \n space where be removed when parsing  
 	comment: ; use ;
+```
 <h2>Abbreviation:</h2>
+```
 	' => quote          eg: 'Hello => (quote Hello)  
 	"" => string        eg:  "Hello World"  
 	: => keyword        eg:  :a => (keyword a)  
 	~ => unquote        eq:  ~x => (unquote x)  
 	` => quasiquote     eq:  `(~x x) => (quasiquote ((unquote x) x))  
-
+```
 <h2> Builtin Procedures and Macros </h2>  
 ```
 Define Number :  
@@ -374,7 +394,7 @@ display:   display data types
 
 
 Hope I could transfer to CS successfully ;)
-
+Enjoy!
 
 
 

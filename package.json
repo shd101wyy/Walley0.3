@@ -1,0 +1,31 @@
+{
+  "name": "walley-language",
+  "version": "0.3.03",
+  "description": "walley language (toy) is a simple script language ;)",
+  "main": "another_another_toy.js",
+  "scripts": {
+    "test": "toy"
+  },
+  "bin":{
+    "toy":"./toy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shd101wyy/Walley0.3.git"
+  },
+  "keywords": [
+    "walley",
+    "lisp",
+    "javascript",
+    "interpreter",
+    "macro",
+    "eval",
+    "fun"
+  ],
+  "author": "shd101wyy",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/shd101wyy/Walley0.3/issues"
+  }
+}
