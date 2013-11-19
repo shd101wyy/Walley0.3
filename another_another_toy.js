@@ -197,20 +197,24 @@ var parser = function(l)
         {
             rest = cdr(l);
             return build_nil();
-        }
+        }/*
         else if (car(l) === ".") // pair. done
         {
             var v = cadr(l);
-            var rest_ = cddr(l);
-            if(car(rest_)!==")") /* this place is hard to deal with... */
+            if(v == "(")
             {
-                console.log("ERROR: invalid list. more than one value after .");
-                rest = cdr(rest_);
-                return build_nil();
+                return parse_list(cddr(l));
             }
-            rest = cdr(rest_);
-            return v;
-        }
+            else if (v === "'" || v ==="~" || v === "`")
+            {
+                return parse_special(l);
+            }
+            else
+            {   '( 3 . 4 )'
+                rest = cdddr(l);
+                return v;
+            }
+        }*/
         else if (car(l) === "(") // list
         {
             return cons(parse_list(cdr(l)), parse_list(rest));
