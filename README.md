@@ -87,8 +87,8 @@ Define Macro:
 ```
 ===================      
 <h2>Basic Use</h2>    
-```
 <strong> Define Variable </strong>  
+```
 (def var_name var_value)  
 (def (function_name params) body)  
 eg:  
@@ -98,20 +98,24 @@ eg:
   
 	;; define lambda  
 	(def (add a b) (+ a b))    
-
+```
 <strong> Change Variable Value </strong>  
+```
 (set! var_name var_value)   ;; destructive ;;  
 eg:  
 	(set! x 12)  
 	(set! x {:a 12})  
-
+```
 <strong> If </strong>  
+```
 (if test consequent alternative)  
 eg:
 	(if true 1 2)  => 1  
 	(if false 1 2) => 2  
 Everything is TRUE except NULL()
+```
 <strong> Cond </strong>
+```
 (cond (predicate1 body1)  
 	  (predicate2 body2)  
 	  ...  
@@ -122,16 +126,19 @@ eg:
 		  (2 3))  
     (cond (false 2)  
     	  (else 3)) => 3  
-
+```
 <strong>
 	Lambda  
 </strong>
+```
 (lambda [params] body)  
 eg:  
 	(lambda [a b] (+ a b))  
+```
 <strong>
 	about variadic parameters  
 </strong>
+```
 	(lambda [param1, param2 . rest] body)  
 	eg:  
 		(def (test . b) b)  
@@ -139,14 +146,17 @@ eg:
 		(test)         => null ()  
 		(test 2 3)     => list (2 3)  
  ==  
+ ```
 <strong>Macro</strong>  
+```
 (defmacro macro_name [params] body)
 eg:
 	(defmacro unless [test a0 a1] `(if ~test ~a1 ~a0))  
 ;; The Macro is still under development...  
 ;; I am still studying macro now ;)  
-
+```
 <strong>While</strong>  
+```
 (while (test) body)  ;;return "undefined"  
 eg:  
 	(def x 0)  
