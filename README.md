@@ -19,7 +19,7 @@ It is a lisp dialect with an extremely simple and not efficient interpreter.
 It is easy to use.  
   
  ===============  
-<h2>commands: </h2>
+<h2>Commands: </h2>
 		toy    								# Run toy repl      
 		toy [file_name]						# Run file [file_name]   
 		toy compress [file_name]			# Compress file [file_name] to make it smaller    
@@ -50,7 +50,7 @@ It is easy to use.
 	` => quasiquote     eq:  `(~x x) => (quasiquote ((unquote x) x))  
 
 <h2> Builtin Procedures and Macros </h2>  
-
+<code>
 Define Number :  
 	1/2       
 	3   
@@ -84,7 +84,7 @@ Define Macro:
 	(defmacro macro_name [params] body)
 	eg:
 		(defmacro square [x] `(* ~x ~x))  
-  
+</code>
 ===================      
 <h2>Basic Use</h2>    
 <strong> Define Variable </strong>  
