@@ -12,7 +12,7 @@
 	(def (+_iter result args)
 		(cond ((null? args) result)
 			  (else
-			  	(+_iter (o_+ (car args) result)
+			  	(+_iter (o_+ result (car args))
 			  			(cdr args)) 
 			  	)))
 	(cond ((null? args) 
