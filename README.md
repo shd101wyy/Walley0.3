@@ -360,7 +360,7 @@ len:             return the length of vector
 MISC  
 </h2>  
 <strong>  
-	quote, quasiquote, list, random, keyword, display, eval, apply  
+	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1
 </strong>  
 ```
 quote: return value without calculation  
@@ -397,6 +397,9 @@ eval:      eval expression.
 	(eval '(def x 12)) => will run (def x 12)  
 apply:     apply procedure  
 	(apply + '(1 2 3 4)) => (+ 1 2 3 4) => 10  
+macroexpand-1:       expand macro:  
+	(defmacro square [x] `(* ~x ~x))  
+	(macroexpand-1 '(square 12)) => (* 12 12)  
 ```
 <h2>Math</h2>
 <strong>

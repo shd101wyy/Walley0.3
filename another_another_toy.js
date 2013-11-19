@@ -198,6 +198,19 @@ var parser = function(l)
             rest = cdr(l);
             return build_nil();
         }
+        else if (car(l) === ".") // pair. done
+        {
+            var v = cadr(l);
+            var rest_ = cddr(l);
+            if(car(rest_)!==")") /* this place is hard to deal with... */
+            {
+                console.log("ERROR: invalid list. more than one value after .");
+                rest = cdr(rest_);
+                return build_nil();
+            }
+            rest = cdr(rest_);
+            return v;
+        }
         else if (car(l) === "(") // list
         {
             return cons(parse_list(cdr(l)), parse_list(rest));
