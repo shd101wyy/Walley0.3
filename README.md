@@ -173,6 +173,8 @@ eg:
 <h2>Type Check</h2>  
 <strong>ratio? integer? float? vector? dictionary? pair?(list?) null? atom?</strong>  
 eg:  
+	(typeof 12)          => "number"     ;; typeof function will return string
+	(typeof '(1 2 3))    => "list"
 	(ratio? 3/4)         => true  
 	(integer? 3)         => true  
 	(float? 3.0)         => true  
@@ -207,7 +209,7 @@ denominator:
 
 <h2>List Operation</h2>
 <strong>
-	car, cdr, cons  set-car! set-cdr! conj ref len pop
+	car, cdr, cons  set-car! set-cdr! conj ref len pop slice ->str
 </strong>
 car:                             get first element  
 	(car '(1 2 3))   => 1  
@@ -228,32 +230,110 @@ ref:              ref element at specific index
 	(def x '(1 2 3)) => x now is (1 2 3)  
 	(ref x 0)        => find the element at index 0, so will return 1  
 len:              return the length of list  
-	(def x '(1 2 3))
-	(len x)          => 3
-	
+	(def x '(1 2 3))  
+	(len x)          => 3  
+pop:              return cdr of element  
+	(pop '(1 2 3))   => (2 3)  
+slice:            slice the list  
+	(def x '(1 2 3 4))  
+	(slice x 2 4)  => list (3 4)  
+->str:            convert list to string  
+	(->str '(1 2 3))  => "(1 2 3)"  
 
-<h2> Dictionary </h2>
-<strong>
-	dictionary-keys,  
-</strong>
+<h2> Dictionary </h2>  
+<strong>  
+	dictionary-keys,  assoc, assoc!, conj, conj!, ref, ->str, [quick-access]  
+</strong>  
+dictionary-keys:           return keys as array   
+	(dictionary-keys {:a 12 :b 14})            => ['a, 'b]  
+assoc          :           return a new dictionary  but change key-value  
+	(def x {:a 12 :b 14})  
+	(assoc x :a 15)       => return {:a 15 :b 14}, but x will not change  
+assoc!         :           destructive assoc  
+	(def x {:a 12 :b 14})  
+	(assoc! x :a 15)      => x will change to {:a 15 :b 14}  
+conj           :            combine two dictionaries and return a new dictioanry  
+	(conj {:a 12} {:b 15}) => {:a 12 :b 15}  
+conj!          :            destructive conj  
+	(def x {:a 12 :c 1})  
+	(conj! x {:a 14 :b 15}) => {:a 14 :b 15 :c 1}  
+ref            :            return value according to key  
+	(def x {:a 12 :c 1})            
+	(ref x :a)              => 12  
+->str:        convert dictionary to string   
+[quick-access]:  
+	(dictionary :key)  
+	eg: ({:a 12 :b 14} :a)  => will return 12 by key :a from that dictionary  
+  
+<h2> Vector </h2>         
+<strong>  
+	assoc, assoc!, conj, conj!, pop, pop!, ref, ->str, slice, len, [quick-access]  
+</strong>  
+assoc:           return a new array, but change index-value  
+	(def x [1 2 3])  
+	(assoc x 0 12)  => return [12 2 3], keep x unchanged  
+assoc!:          destructive assoc  
+	(def x [1 2 3])  
+	(assoc! x 0 12)  => will change x to [12 2 3]  
+conj:           append element, like push. nondestructive, this function will return new vector  
+	(def x [1 2 3])  
+	(conj x 4) => return new vector [1 2 3 4]  
+conj!:           destructive conj  
+	(def x [1 2 3])  
+	(conj x 4) => x now is [1 2 3 4]  
+pop:             remove last element, return a new vector  
+	(def x [1 2 3])  
+	(pop x)        => [1 2]  
 
+pop!:            destructive pop  
+	(def x [1 2 3])  
+	(pop! x)       => change x to [1 2]  
+ref:             access element according to index  
+	(ref [1 2 3] 0)  => return value at index 0, which is 1  
+->str:           convert vector to string  
+slice:           slice vector  
+	(slice [1 2 3 4] 2 3)  => [3]   slice from 2 to 3  
+len:             return the length of vector  
+	(len [1]) => 1  
+[quick-access]:  
+	([1,2,3] 0)   => return the element at index 0  
+<h2>  
+MISC  
+</h2>  
+<strong>  
+	quote, quasiquote, list, random, keyword, display  
+</strong>  
+quote: return value without calculation  
+	(quote (1 2 3 4)) => (1 2 3 4) without calculation  
+	(quote (+ 3 4))   => (+ 3 4)   
+	(quote [1 2 3])   => (vector 1 2 3)  
+	quote could be written as '  
+	'(1 2 3 4)  <===> (quote (1 2 3 4))  
+quasiquote: calculate list cell if it has unquote ahead   
+	suppose now we defined:  
+		(def x 12)  
+		(quasiquote (x x))  => will return list (x x)  
+		(quasiquote ((unquote x) x)) will return (12 x) because car has unquote ahead, which means it needs to be calculated  
+	quasiquote could be written as `  
+	unquote could be written as ~  
+	`(* ~x ~x) <===> (quasiquote (* (unquote x) (unquote x)))  
+  
+list: return list  
+	(def x 12)  
+	(list x 'x 3 4) => list (12 x 3 4)  
+	(list (list x 'x) x) => ((12 x) 12)  
 
+random: return float number between 0 and 1  
+	(random) => 0.5136234054807574  
+	(random) => 0.19529289728961885  
 
+keyword: return itself  
+	:a => (keyword a) => return string a  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+display:   display data types  
+	(display "Hello World")  
+	(display (/ 3 4))  
+ 
 
 
 

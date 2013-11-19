@@ -1073,7 +1073,7 @@ var primitive_builtin_functions =
                 console.log("ERROR...Function pop wrong type parameters");  
         }       
     },
-    "random":function(stack_param){    return new Toy_Number(Math.rand(), 1, FLOAT);},
+    "random":function(stack_param){    return new Toy_Number(Math.random(), 1, FLOAT);},
     "->ratio":function(stack_param)
     {
         var arg = stack_param[0];
@@ -1171,6 +1171,7 @@ var primitive_builtin_functions =
         var v = stack_param[0]
         if (v === null) return "null"
         else if(typeof(v)==="string") return "atom"
+        else if (v instanceof Toy_Number) return "number"
         else if (v instanceof Cons) return "list"
         else if (v instanceof Array) return "vector"
         else if (v.TYPE === PROCEDURE || v.TYPE === BUILTIN_PRIMITIVE_PROCEDURE) return "procedure"
