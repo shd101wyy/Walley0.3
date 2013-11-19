@@ -50,7 +50,6 @@ It is easy to use.
 	` => quasiquote     eq:  `(~x x) => (quasiquote ((unquote x) x))  
 
 <h2> Builtin Procedures and Macros </h2>  
-<code>
 ```
 Define Number :  
 	1/2       
@@ -86,9 +85,9 @@ Define Macro:
 	eg:
 		(defmacro square [x] `(* ~x ~x))  
 ```
-</code>
 ===================      
 <h2>Basic Use</h2>    
+```
 <strong> Define Variable </strong>  
 (def var_name var_value)  
 (def (function_name params) body)  
@@ -153,9 +152,10 @@ eg:
 	(def x 0)  
 	(while (< x 100) (display x) (set! x (+ x 1)) )  
 	;; will print x from 0 to 99  
-
+```
 <h2>Arithematics:  </h2>  
 <storng>+ - * / </storng>  
+```
 :Parameters     arg0, arg1, ... 
 :eg  (+ 3 4)      => 7  
 	 (* 4 5 6 7)  => 840  
@@ -164,17 +164,20 @@ eg:
 	 (- 3)        => -3  
 	 (+ "Hello " "World") => "Hello World"  
 	 (+ "Hi " 3.1425926)  => "Hi 3.1415926"  
-
+```
 <h2>Comparison</h2>  
 <strong>eq? < > <= >= and or not</strong>  
+```
 :Parameters     arg0, arg1, ...  
 :eg  (< 3 4)     => true  
      (< 3 4 5)   => true  
      (and 3 4)   => true  
   	 (<= 3 4 5 6) => true  
   	 (>= 3 4 5 6) => false ()  
+```
 <h2>Type Check</h2>  
 <strong>ratio? integer? float? vector? dictionary? pair?(list?) null? atom?</strong>  
+```
 eg:  
 	(typeof 12)          => "number"     ;; typeof function will return string
 	(typeof '(1 2 3))    => "list"
@@ -191,13 +194,14 @@ eg:
 	(null? ())           => true  
 	(atom? "Hi")         => true  
 	(string? "Hi")       => true  
-  
+```
 <h2>Number Operation</h2>      
 <strong>  
 	numerator,  
 	denominator,  
 	->ratio  
 </strong>  
+```
 numerator:  
 	eg (numerator 3/4) => 3; get numerator of number  
 	   (numerator 5)   => 5;  
@@ -209,11 +213,12 @@ denominator:
 ->ratio:  
 	eg (->ratio 1.5)     => 3/2 convert number to rational number  
 
-
+```
 <h2>List Operation</h2>
 <strong>
 	car, cdr, cons  set-car! set-cdr! conj ref len pop slice ->str
 </strong>
+```
 car:                             get first element  
 	(car '(1 2 3))   => 1  
 	(car '((2 3) 4)) => (2 3)  
@@ -242,11 +247,12 @@ slice:            slice the list
 	(slice x 2 4)  => list (3 4)  
 ->str:            convert list to string  
 	(->str '(1 2 3))  => "(1 2 3)"  
-
+```
 <h2> Dictionary </h2>  
 <strong>  
 	dictionary-keys,  assoc, assoc!, conj, conj!, ref, ->str, [quick-access]  
 </strong>  
+```
 dictionary-keys:           return keys as array   
 	(dictionary-keys {:a 12 :b 14})            => ['a, 'b]  
 assoc          :           return a new dictionary  but change key-value  
@@ -267,11 +273,12 @@ ref            :            return value according to key
 [quick-access]:  
 	(dictionary :key)  
 	eg: ({:a 12 :b 14} :a)  => will return 12 by key :a from that dictionary  
-  
+```
 <h2> Vector </h2>         
 <strong>  
 	assoc, assoc!, conj, conj!, pop, pop!, ref, ->str, slice, len, [quick-access]  
 </strong>  
+```
 assoc:           return a new array, but change index-value  
 	(def x [1 2 3])  
 	(assoc x 0 12)  => return [12 2 3], keep x unchanged  
@@ -300,12 +307,14 @@ len:             return the length of vector
 	(len [1]) => 1  
 [quick-access]:  
 	([1,2,3] 0)   => return the element at index 0  
+```
 <h2>  
 MISC  
 </h2>  
 <strong>  
 	quote, quasiquote, list, random, keyword, display  
 </strong>  
+```
 quote: return value without calculation  
 	(quote (1 2 3 4)) => (1 2 3 4) without calculation  
 	(quote (+ 3 4))   => (+ 3 4)   
@@ -337,7 +346,7 @@ display:   display data types
 	(display "Hello World")  
 	(display (/ 3 4))  
  
-
+```
 
 
 
