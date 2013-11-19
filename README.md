@@ -356,7 +356,7 @@ len:             return the length of vector
 MISC  
 </h2>  
 <strong>  
-	quote, quasiquote, list, random, keyword, display  
+	quote, quasiquote, list, random, keyword, display, eval, apply  
 </strong>  
 ```
 quote: return value without calculation  
@@ -389,9 +389,23 @@ keyword: return itself
 display:   display data types  
 	(display "Hello World")  
 	(display (/ 3 4))  
- 
+eval:      eval expression.  
+	(eval '(def x 12)) => will run (def x 12)  
+apply:     apply procedure  
+	(apply + '(1 2 3 4)) => (+ 1 2 3 4) => 10  
 ```
-
+<h2>Math</h2>
+<strong>
+	acos, acosh, asin, asinh, atan, atanh, ceil, cos, cosh, exp,
+	floor, loge, pow (**, ^), log, sin, sinh, tan, tanh
+</strong>
+```
+very simple math functions
+(loge 12) => return value with e as base
+(log 2 8) => 3
+pow == ** == ^
+(^ 3/4 2) => 9/16
+```
 
 Hope I could transfer to CS successfully ;)
 Enjoy!

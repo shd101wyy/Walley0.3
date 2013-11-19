@@ -327,7 +327,7 @@ var div_rat = function (x,y){
 */
 var formatNumber = function(num)
 {
-    if(num.TYPE === FLOAT) return ""+num.numer;
+    if(num.TYPE === FLOAT) return ""+num.numer.toFixed(5);
     else if (num.denom === 1) return "" + num.numer;
     return num.numer+"/"+num.denom;
 }
@@ -641,6 +641,11 @@ var toy_eval = function(exp, env)
                 }
                 else
                 {
+                    if(typeof(var_name)!=="string")
+                    {
+                        console.log("ERROR: Invalid variable name : " + primitive_builtin_functions["->str"]([var_name]))
+                        return "undefined"
+                    }
                     var_value = toy_eval(var_value, env);
                     env[env.length - 1][var_name] = var_value;
                     return var_value;
@@ -735,7 +740,7 @@ var toy_eval = function(exp, env)
             else if (tag === "defmacro")
             {
                 var macro = eval_macro(caddr(exp), cdddr(exp), env);
-                env[0][cadr(exp)] = macro;
+                env[1][cadr(exp)] = macro;
                 return macro
             }
             else if (tag === "while")
@@ -801,7 +806,13 @@ var toy_eval = function(exp, env)
             }
             else
             {
-                var application =   cons(toy_eval(car(exp), env), cdr(exp))
+                var proc = toy_eval(car(exp), env);
+                var application =   cons(proc, cdr(exp));
+                if(proc === "undefined")
+                {
+                    console.log("ERROR:Invalid Function");
+                    return "undefined"
+                }
                 return toy_eval(
                                    application
                                     , env
@@ -1288,13 +1299,40 @@ var primitive_builtin_functions =
             return ('undefined')
         }
     },
+    "acos":function(stack_param){return new Toy_Number(Math.acos(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "acosh":function(stack_param){return new Toy_Number(Math.acosh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "asin":function(stack_param){return new Toy_Number(Math.asin(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "asinh":function(stack_param){return new Toy_Number(Math.asinh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "atan":function(stack_param){return new Toy_Number(Math.atan(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "atanh":function(stack_param){return new Toy_Number(Math.atanh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "ceil":function(stack_param){return new Toy_Number(Math.ceil(stack_param[0].numer/stack_param[0].denom), 1, RATIO)},
+    "cos":function(stack_param){return new Toy_Number(Math.cos(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "cosh":function(stack_param){return new Toy_Number(Math.cosh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "exp":function(stack_param){return new Toy_Number(Math.exp(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "floor":function(stack_param){return new Toy_Number(Math.floor(stack_param[0].numer/stack_param[0].denom), 1, RATIO)},
+    "loge":function(stack_param){return new Toy_Number(Math.log(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "pow":function(stack_param){
+        if(stack_param[0].TYPE === RATIO && stack_param[1].TYPE === RATIO && stack_param[1].denom === 1)
+        {
+            return new Toy_Number( Math.pow(stack_param[0].numer, stack_param[1].numer), Math.pow(stack_param[0].denom, stack_param[1].numer), RATIO);
+        }
+        return new Toy_Number(Math.pow(stack_param[0].numer/stack_param[0].denom, stack_param[1].numer/stack_param[1].denom), 1, FLOAT)
+    },
+    "sin":function(stack_param){return new Toy_Number(Math.sin(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "sinh":function(stack_param){return new Toy_Number(Math.sinh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "tan":function(stack_param){return new Toy_Number(Math.tan(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    "tanh":function(stack_param){return new Toy_Number(Math.tanh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
     "true":"true", "false":null,
     "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", "while":"while"
 }
-var ENVIRONMENT = [
-    primitive_builtin_functions, 
-    {}
-]
+/*
+    create a new environment
+*/  
+var create_new_environment = function()
+{
+    return [primitive_builtin_functions, {}];
+}
+var ENVIRONMENT = create_new_environment();
 /*
 var x = "(def x 12) (def y `(~x x))";
 var l = lexer(x);
@@ -1316,8 +1354,7 @@ if (typeof(module)!="undefined"){
 /*
     content from toy.toy
 */
-var RUN_FIRST = '(def (list . args) args) (def o_+ +) (def (+ . args) (def (+_iter result args) (cond ((null? args) result) (else (+_iter (o_+ result (car args)) (cdr args))))) (cond ((null? args) (display "ERROR: Function + invalid parameters. Please provide parameters")) (else (+_iter (car args) (cdr args))))) (def o_- -) (def (- . args) (def (-_iter result args) (cond ((null? args) result) (else (-_iter (o_- result (car args)) (cdr args))))) (cond ((null? args) (display "ERROR: Function - invalid parameters. Please provide parameters")) ((null? (cdr args)) (o_- 0 (car args))) (else (-_iter (car args) (cdr args))))) (def o_* *) (def (* . args) (def (*_iter result args) (cond ((null? args) result) (else (*_iter (o_* (car args) result) (cdr args))))) (cond ((null? args) (display "ERROR: Function * invalid parameters. Please provide parameters")) (else (*_iter (car args) (cdr args))))) (def o_/ /) (def (/ . args) (def length (len args)) (def (/_iter result args) (cond ((null? args) result) (else (/_iter (o_/ result (car args)) (cdr args))))) (cond ((null? args) (display "ERROR: Function / invalid parameters. Please provide parameters")) ((null? (cdr args)) (o_/ 1 (car args))) (else (/_iter (car args) (cdr args))))) (def #t "true") (def #f ()) (def nil ()) (def (factorial n) (if (eq? n 0) 1 (* n (factorial (- n 1))))) (def (factorial n) (def (factorial-acc n acc) (if (eq? n 0) acc (factorial-acc (- n 1) (* acc n)))) (factorial-acc n 1)) (defmacro and (vector arg0 arg1) (quasiquote (if (unquote arg0) (if (unquote arg1) true false) false))) (defmacro or (vector arg0 arg1) (quasiquote (if (unquote arg0) true (if (unquote arg1) true false)))) (def (> arg0 arg1) (< arg1 arg0)) (def (<= arg0 arg1) (or (< arg0 arg1) (eq? arg0 arg1))) (def (>= arg0 arg1) (or (> arg0 arg1) (eq? arg0 arg1))) (def old-< <) (def (< . args) (let (vector <-iter (lambda (vector args cur) (if (null? args) true (if (old-< cur (car args)) (<-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for <") (<-iter (cdr args) (car args))))) (def old-> >) (def (> . args) (let (vector >-iter (lambda (vector args cur) (if (null? args) true (if (old-> cur (car args)) (>-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for >") (>-iter (cdr args) (car args))))) (def old-eq? eq?) (def (eq? . args) (let (vector eq?-iter (lambda (vector args cur) (if (null? args) true (if (old-eq? cur (car args)) (eq?-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for eq?") (eq?-iter (cdr args) (car args))))) (def old-<= <=) (def (<= . args) (let (vector <=-iter (lambda (vector args cur) (if (null? args) true (if (old-<= cur (car args)) (<=-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for <=") (<=-iter (cdr args) (car args))))) (def old->= >=) (def (>= . args) (let (vector >=-iter (lambda (vector args cur) (if (null? args) true (if (old->= cur (car args)) (>=-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for >=") (>=-iter (cdr args) (car args))))) (def (and . args) (def (and-iter args) (if (null? args) true (if (car args) (and-iter (cdr args)) false))) (and-iter args)) (def (or . args) (def (or-iter args) (if (null? args) false (if (car args) true (or-iter (cdr args))))) (or-iter args)) (def (not arg0) (if arg0 false true)) (def (pair? arg) (eq? (typeof arg) (quote list))) (def (list? arg) pair?) (def (integer? arg) (and (ratio? arg) (eq? (denominator arg) 1))) (def (atom? arg) (eq? (typeof arg) (quote atom))) (def (string? arg) atom?) (def (vector? arg) (eq? (typeof arg) (quote vector))) (def (dictionary? arg) (eq? (typeof arg) (quote dictionary)))'
-
+var RUN_FIRST = '(def (list . args) args) (def o_+ +) (def (+ . args) (def (+_iter result args) (cond ((null? args) result) (else (+_iter (o_+ result (car args)) (cdr args))))) (cond ((null? args) (display "ERROR: Function + invalid parameters. Please provide parameters")) (else (+_iter (car args) (cdr args))))) (def o_- -) (def (- . args) (def (-_iter result args) (cond ((null? args) result) (else (-_iter (o_- result (car args)) (cdr args))))) (cond ((null? args) (display "ERROR: Function - invalid parameters. Please provide parameters")) ((null? (cdr args)) (o_- 0 (car args))) (else (-_iter (car args) (cdr args))))) (def o_* *) (def (* . args) (def (*_iter result args) (cond ((null? args) result) (else (*_iter (o_* (car args) result) (cdr args))))) (cond ((null? args) (display "ERROR: Function * invalid parameters. Please provide parameters")) (else (*_iter (car args) (cdr args))))) (def o_/ /) (def (/ . args) (def length (len args)) (def (/_iter result args) (cond ((null? args) result) (else (/_iter (o_/ result (car args)) (cdr args))))) (cond ((null? args) (display "ERROR: Function / invalid parameters. Please provide parameters")) ((null? (cdr args)) (o_/ 1 (car args))) (else (/_iter (car args) (cdr args))))) (def #t "true") (def #f ()) (def nil ()) (def (factorial n) (if (eq? n 0) 1 (* n (factorial (- n 1))))) (def (factorial n) (def (factorial-acc n acc) (if (eq? n 0) acc (factorial-acc (- n 1) (* acc n)))) (factorial-acc n 1)) (defmacro and (vector arg0 arg1) (quasiquote (if (unquote arg0) (if (unquote arg1) true false) false))) (defmacro or (vector arg0 arg1) (quasiquote (if (unquote arg0) true (if (unquote arg1) true false)))) (def (> arg0 arg1) (< arg1 arg0)) (def (<= arg0 arg1) (or (< arg0 arg1) (eq? arg0 arg1))) (def (>= arg0 arg1) (or (> arg0 arg1) (eq? arg0 arg1))) (def old-< <) (def (< . args) (let (vector <-iter (lambda (vector args cur) (if (null? args) true (if (old-< cur (car args)) (<-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for <") (<-iter (cdr args) (car args))))) (def old-> >) (def (> . args) (let (vector >-iter (lambda (vector args cur) (if (null? args) true (if (old-> cur (car args)) (>-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for >") (>-iter (cdr args) (car args))))) (def old-eq? eq?) (def (eq? . args) (let (vector eq?-iter (lambda (vector args cur) (if (null? args) true (if (old-eq? cur (car args)) (eq?-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for eq?") (eq?-iter (cdr args) (car args))))) (def old-<= <=) (def (<= . args) (let (vector <=-iter (lambda (vector args cur) (if (null? args) true (if (old-<= cur (car args)) (<=-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for <=") (<=-iter (cdr args) (car args))))) (def old->= >=) (def (>= . args) (let (vector >=-iter (lambda (vector args cur) (if (null? args) true (if (old->= cur (car args)) (>=-iter (cdr args) (car args)) false)))) (if (null? args) (display "Please provide arguments for >=") (>=-iter (cdr args) (car args))))) (def (and . args) (def (and-iter args) (if (null? args) true (if (car args) (and-iter (cdr args)) false))) (and-iter args)) (def (or . args) (def (or-iter args) (if (null? args) false (if (car args) true (or-iter (cdr args))))) (or-iter args)) (def (not arg0) (if arg0 false true)) (def (pair? arg) (eq? (typeof arg) (quote list))) (def (list? arg) pair?) (def (integer? arg) (and (ratio? arg) (eq? (denominator arg) 1))) (def (atom? arg) (eq? (typeof arg) (quote atom))) (def (string? arg) atom?) (def (vector? arg) (eq? (typeof arg) (quote vector))) (def (dictionary? arg) (eq? (typeof arg) (quote dictionary))) (def ** pow) (def ^ pow) (def (log x y) (/ (loge y) (loge x))) (def (sec x) (/ 1 (cos x))) (def (csc x) (/ 1 (sin x))) (def (cot x) (/ 1 (tan x)))'
 eval_begin(parser(lexer(RUN_FIRST)), ENVIRONMENT);
 
 

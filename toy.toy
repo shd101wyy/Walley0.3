@@ -195,7 +195,14 @@
 (def (dictionary? arg) (eq? (typeof arg) 'dictionary))
 
 
-
+;; Math
+(def ** pow)
+(def ^ pow)
+(def (log x y)
+	(/ (loge y) (loge x)))
+(def (sec x) (/ 1 (cos x)))
+(def (csc x) (/ 1 (sin x)))
+(def (cot x) (/ 1 (tan x)))
 
 
 
