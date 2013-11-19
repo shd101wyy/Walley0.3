@@ -17,6 +17,8 @@ Toy Language is a simple script language written in JavaScript.
 Influenced by Walley 0.1, Walley 0.2, Scheme, JavaScript, Clojure...
 It is a lisp dialect with an extremely simple and not efficient interpreter.  
 It is easy to use.  
+
+A Language For FUN ;)
   
  ===============  
 <h2>Commands: </h2>
@@ -359,6 +361,7 @@ display:   display data types
 ```
 
 
+Hope I could transfer to CS successfully ;)
 
 
 
