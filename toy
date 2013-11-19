@@ -1,0 +1,79 @@
+#!/usr/bin/env node
+var fs=require("fs")
+// var toy=require("./toy.js")
+var toy = require("./another_another_compiler.js")
+var vm=require("vm")
+var util=require("util")
+var readline = require('readline')
+var argv = process.argv
+console.log(argv)
+
+// REPL
+if (argv.length==2){
+	
+	console.log("Interactive mode");
+	console.log("Press Ctrl + C to quit\n");
+
+	var input_str=""
+
+	var rl = readline.createInterface({
+	  input: process.stdin,
+	  output: process.stdout
+	})
+
+	rl.setPrompt('toy> ')
+	rl.prompt()
+	rl.on('line', function(line) {
+		var l = toy.lexer(line);
+		var p = toy.parser(l);
+		var o =  toy.eval_begin(p, toy.env);
+		// console.log("compile to ==> "+o);
+		toy.display(o);
+		// toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )
+		rl.setPrompt('toy> ')
+		rl.prompt()
+	})
+
+	rl.on('close', function() {
+	  console.log('Quit walley')
+	  process.exit(0)
+	});
+	
+}
+// run file
+else if (argv.length==3){
+	var file_name = argv[2]
+	if (typeof(file_name)=="undefined"){
+		console.log("No input file..")
+		process.exit(0)
+	}
+	// get content of file
+	var content_in_file=fs.readFileSync(file_name,"utf8")
+
+	var l = toy.lexer(content_in_file);
+	var p = toy.parser(l);
+	var o =  toy.eval_begin(p, toy.env);
+}
+
+
+// COMPRESS
+else if (argv.length == 4 && argv[2] == "compress"){
+	var file_name = argv[3]
+	var content_in_file = fs.readFileSync(file_name,"utf8")
+	console.log(content_in_file)
+	console.log("\n\n\n\n            ========\n\n\n\n")
+	// var l = toy.lexer("(def #t ())");
+	var l = toy.lexer(content_in_file);
+	var p = toy.parser(l);
+	// console.log(p)
+	toy.display(p);
+	console.log("\n\n Done...")
+}
+
+
+
+
+
+
+
+
