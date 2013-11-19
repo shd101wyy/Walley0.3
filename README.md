@@ -26,7 +26,7 @@ It is easy to use.
 											# will remove \n and extra spaces.  
 ===============   
 <h2>Primitive Data Types: </h2>  
-  
+  	```lisp
 	Ratio:    1 2 3 4/5 5/6   ...      
 	Float:    1.2,  3.4,  5.6 ...  
 	List :    '(1 2)  '(hello World)  
@@ -35,7 +35,8 @@ It is easy to use.
 	Atom(String): "Hello World" 'Hello-world  
 	Lambda:     (lambda [params] body)
 	Macro:      (defmacro macro_name [params] body)
-	-- Null(nil):   ()  
+	-- Null(nil):   () 
+	``` 
 ================   
 
 <h2>Removed character:</h2>  
