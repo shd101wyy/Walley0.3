@@ -619,6 +619,16 @@ var toy_eval = function(exp, env)
             var tag = car(exp);
             if(tag === "quote")
             {
+                var quote_list = function(l)
+                {
+                    if(l == null) return null;
+                    var v = car(l);
+                    if(v instanceof Cons) return cons(quote_list(v), quote_list(cdr(l)));
+                    else if (v === ".") return cadr(l);
+                    return cons(v, quote_list(cdr(l)));
+                }
+                if(cadr(exp) instanceof Cons)
+                    return quote_list(cadr(exp));
                 return cadr(exp);
             }
             else if (tag === "quasiquote")
