@@ -224,11 +224,11 @@ eg:
   	 (or false false false 1) => true  
 ```
 <h2>Type Check</h2>  
-<strong>ratio? integer? float? vector? dictionary? pair?(list?) null? atom?</strong>  
+<strong>ratio? integer? float? vector? dictionary? pair?(list?) null? atom? procedure?(function?) macro?</strong>  
 ```
 eg:  
-	(typeof 12)          => "number"     ;; typeof function will return string
-	(typeof '(1 2 3))    => "list"
+	(typeof 12)          => "number"     ;; typeof function will return string  
+	(typeof '(1 2 3))    => "list"  
 	(ratio? 3/4)         => true  
 	(integer? 3)         => true  
 	(float? 3.0)         => true  

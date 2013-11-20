@@ -193,8 +193,10 @@
 (def (string? arg) atom?)
 (def (vector? arg) (eq? (typeof arg) 'vector))
 (def (dictionary? arg) (eq? (typeof arg) 'dictionary))
-
-
+(def (undefined? arg) (eq? arg 'undefined))
+(def (procedure? arg) (eq? (typeof arg) 'procedure))
+(def (function? arg) procedure?)
+(def (macro? arg) (eq? (typeof arg) 'macro))
 ;; Math
 (def ** pow)
 (def ^ pow)
