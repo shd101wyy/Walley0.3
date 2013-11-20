@@ -535,7 +535,37 @@ var eval_lambda = function(lambda_args, lambda_body, env)
 {
     if(lambda_args.car!=="vector"){console.log("ERROR: when defining lambda, please use (lambda [args] body) format");return "undefined"}
     lambda_args = cdr(lambda_args);
-    return new Procedure(lambda_args, lambda_body, env.slice(0));   
+    /* clean args */
+    var arg = {}
+    arg.arg_name_list = [];
+    arg.arg_val_list  = [];
+    while(lambda_args!=null)
+    {
+        var v = car(lambda_args);
+        if(typeof(v) === 'string') /* (lambda (a) a) a is string */
+        {
+            arg.arg_name_list.push(v); // add arg name
+            arg.arg_val_list.push("undefined"); // add default arg value
+        }
+        else
+        {
+            if(car(v) === "keyword") /* (lambda (:a 12) a) */
+            {
+                var var_name = cadr(v); var_name =var_name.slice(1, var_name.length - 1)            
+                lambda_args = cdr(lambda_args);
+                var var_val = toy_eval(car(lambda_args), env);
+                arg.arg_name_list.push(var_name);  // add arg name
+                arg.arg_val_list.push(var_val);   // add default arg value
+            }
+            else
+            {
+                console.log("ERROR: Function definition error.")
+                return "undefined";
+            }
+        }
+        lambda_args = cdr(lambda_args);
+    }
+    return new Procedure(arg, lambda_body, env.slice(0));   
 }
 var eval_macro = function(macro_args, macro_body, env)
 {
@@ -574,7 +604,49 @@ var eval_procedure = function(proc, params, env)
     var closure_env = proc.closure_env.slice(0);
     var args = proc.args;
     var body = proc.body;
-    var new_frame = {};
+    var new_frame = {}
+    var args_val_list  = args.arg_val_list;  // arg default value list
+    var args_name_list = args.arg_name_list; // arg name list
+   
+    for(var i = 0; i < args_name_list.length; i++)
+    {
+        if(args_name_list[i] === ".") /* rest */
+        {
+            if(params == null)
+            {
+                var arg_name = args_name_list[i+1];
+                new_frame[arg_name] = args_val_list[i+1];
+            }
+            else
+            {
+                var arg_name = args_name_list[i+1];
+                var param_value = eval_list(params, env);
+                new_frame[arg_name] = param_value;
+            }
+            break;
+        }
+        if(params == null) 
+        {
+            new_frame[args_name_list[i]] = args_val_list[i];
+            continue;
+        }
+        var param = car(params);
+        if(param instanceof Cons && car(param) === "keyword") /* (keyword "a") => param name a */
+        {
+            var param_name = cadr(param); param_name = param_name.slice(1, param_name.length - 1);
+            params = cdr(params);
+            var param_value = toy_eval(car(params), env);
+            new_frame[param_name] = param_value;
+        }
+        else
+        {
+            var arg_name = args_name_list[i]; // default name
+            var param_val = toy_eval(car(params), env); // calculate given param
+            new_frame[arg_name] = param_val;
+        }
+        params = cdr(params);
+    }
+    /*
     while(args!==null)
     {   var var_name = car(args);
         if(var_name === ".")
@@ -585,7 +657,7 @@ var eval_procedure = function(proc, params, env)
         var var_value = toy_eval(car(params), env);
         new_frame[var_name] = var_value;
         args = cdr(args); params = cdr(params);
-    }
+    }*/
     closure_env.push(new_frame);
     return eval_begin(body, closure_env);
 }
