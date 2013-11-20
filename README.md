@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.06  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.07  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -70,7 +70,7 @@ It's a Language For FUN ;)
 ```
 	' => quote          eg: 'Hello => (quote Hello)  
 	"" => string        eg:  "Hello World"  
-	: => keyword        eg:  :a => (keyword a)  
+	: => keyword        eg:  :a => "a" or 'a . so :a === 'a    
 	~ => unquote        eq:  ~x => (unquote x)  
 	` => quasiquote     eq:  `(~x x) => (quasiquote ((unquote x) x))  
 ```
