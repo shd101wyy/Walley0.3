@@ -111,7 +111,7 @@ Define Macro:
 		(defmacro square [x] `(* ~x ~x))  
 ```
 ===================      
-<h2>Basic Use</h2>    
+<h2>Basic Usage</h2>    
 <strong> Define Variable </strong>  
 ```
 (def var_name var_value)  
@@ -387,7 +387,7 @@ random: return float number between 0 and 1
 	(random) => 0.5136234054807574  
 	(random) => 0.19529289728961885  
 
-keyword: return itself  
+keyword: return itself     // this function is now deprecated
 	:a => (keyword a) => return string a  
 
 display:   display data types  

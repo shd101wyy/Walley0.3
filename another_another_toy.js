@@ -236,9 +236,11 @@ var parser = function(l)
     }
     var parse_symbol_or_number = function(l)
     {
+        /* keyword
         if(l[0]==":")
             return cons("keyword", cons('"'+l.slice(1)+'"', build_nil()))
-        else if (isNumber(l))
+        */
+        if (isNumber(l))
         {
             if(isInteger(l))
                 return new Toy_Number(parseFloat(l), 1, RATIO);
@@ -518,19 +520,7 @@ var eval_quasiquote = function(list, env)
     }
     return cons(v, eval_quasiquote(cdr(list), env)); 
 }
-var eval_cond = function(clauses, env)
-{
-    while(clauses!==null)
-    {
-        var clause = car(clauses)
-        var predicate = car(clause);
-        var body = cdr(clause);
-        if(predicate == "else" || toy_eval(predicate, env)!==null)
-            return eval_begin(body, env)
-        clauses = cdr(clauses);
-    }
-    return null;
-}
+
 var eval_lambda = function(lambda_args, lambda_body, env)
 {
     if(lambda_args.car!=="vector"){console.log("ERROR: when defining lambda, please use (lambda [args] body) format");return "undefined"}
@@ -544,24 +534,51 @@ var eval_lambda = function(lambda_args, lambda_body, env)
         var v = car(lambda_args);
         if(typeof(v) === 'string') /* (lambda (a) a) a is string */
         {
-            arg.arg_name_list.push(v); // add arg name
-            arg.arg_val_list.push("undefined"); // add default arg value
-        }
-        else
-        {
-            if(car(v) === "keyword") /* (lambda (:a 12) a) */
+            if(v[0] === ":") /* (lambda (:a 12) a) */
             {
-                var var_name = cadr(v); var_name =var_name.slice(1, var_name.length - 1)            
+                var var_name = v.slice(1);          
                 lambda_args = cdr(lambda_args);
                 var var_val = toy_eval(car(lambda_args), env);
                 arg.arg_name_list.push(var_name);  // add arg name
                 arg.arg_val_list.push(var_val);   // add default arg value
             }
+            else if (v === ".") // rest
+            {
+                arg.arg_name_list.push("."); arg.arg_val_list.push("undefined"); // save .
+                lambda_args = cdr(lambda_args);
+                v = car(lambda_args);
+                if(v[0]==":")
+                {
+                    //
+                    //    (def (add a . :b 123) b)  the default value of b is 123
+                    //
+                    var var_name = v.slice(1);
+                    lambda_args = cdr(lambda_args);
+                    var var_val = toy_eval(car(lambda_args), env);
+                    arg.arg_name_list.push(var_name);  // add arg name
+                    arg.arg_val_list.push(var_val);   // add default arg value
+                    break;
+                }
+                else
+                {
+                    //
+                    //    (def (add . a) a) => the default value of a is null
+                    //
+                    arg.arg_name_list.push(v); 
+                    arg.arg_val_list.push(null);
+                    break;
+                }
+            }
             else
             {
-                console.log("ERROR: Function definition error.")
-                return "undefined";
+                arg.arg_name_list.push(v); // add arg name
+                arg.arg_val_list.push("undefined"); // add default arg value
             }
+        }
+        else
+        {
+            console.log("ERROR: Function definition error.")
+            return "undefined";
         }
         lambda_args = cdr(lambda_args);
     }
@@ -599,56 +616,6 @@ var macro_expand = function(macro, params, env)
     closure_env.push(new_frame);
     return eval_begin(body, closure_env);
 }
-var eval_procedure = function(proc, params, env)
-{ 
-    var closure_env = proc.closure_env.slice(0);
-    var args = proc.args;
-    var body = proc.body;
-    var new_frame = {}
-    var args_val_list  = args.arg_val_list;  // arg default value list
-    var args_name_list = args.arg_name_list; // arg name list
-   
-    for(var i = 0; i < args_name_list.length; i++)
-    {
-        if(args_name_list[i] === ".") /* rest */
-        {
-            if(params == null)
-            {
-                var arg_name = args_name_list[i+1];
-                new_frame[arg_name] = args_val_list[i+1];
-            }
-            else
-            {
-                var arg_name = args_name_list[i+1];
-                var param_value = eval_list(params, env);
-                new_frame[arg_name] = param_value;
-            }
-            break;
-        }
-        if(params == null) 
-        {
-            new_frame[args_name_list[i]] = args_val_list[i];
-            continue;
-        }
-        var param = car(params);
-        if(param instanceof Cons && car(param) === "keyword") /* (keyword "a") => param name a */
-        {
-            var param_name = cadr(param); param_name = param_name.slice(1, param_name.length - 1);
-            params = cdr(params);
-            var param_value = toy_eval(car(params), env);
-            new_frame[param_name] = param_value;
-        }
-        else
-        {
-            var arg_name = args_name_list[i]; // default name
-            var param_val = toy_eval(car(params), env); // calculate given param
-            new_frame[arg_name] = param_val;
-        }
-        params = cdr(params);
-    }
-    closure_env.push(new_frame);
-    return eval_begin(body, closure_env);
-}
 var eval_begin = function(body, env)
 {
     var return_v = null;
@@ -669,7 +636,8 @@ var toy_eval = function(exp, env)
     {
         if(exp === null) return null;
         else if(typeof(exp) === "string"){
-            if(exp[0]==='"')return exp.slice(1, exp.length-1)
+            if(exp[0]==='"')return exp.slice(1, exp.length-1); // string
+            if(exp[0]===":")return exp.slice(1);               // keyword
             return lookup_env(exp, env);
         }
         else if (exp instanceof Toy_Number)
@@ -772,11 +740,28 @@ var toy_eval = function(exp, env)
             }
             else if (tag === "cond")
             {
-                return eval_cond(cdr(exp), env);
+                var clauses = cdr(exp);
+                var run_body = null;
+                while(clauses!==null)
+                {
+                    var clause = car(clauses)
+                    var predicate = car(clause);
+                    var body = cdr(clause);
+                    if(predicate == "else" || toy_eval(predicate, env)!==null)
+                    {
+                        run_body = body;
+                        env = env;
+                        break;
+                    }
+                    clauses = cdr(clauses);
+                }
+                exp = cons("begin", run_body); // for tail call optimization
+                continue;  
             }
             else if (tag === "begin")
             {
                 var body = cdr(exp);
+                if(body == null) return "undefined";
                 while(body.cdr!==null)
                 {
                     toy_eval(car(body), env);
@@ -826,28 +811,7 @@ var toy_eval = function(exp, env)
                 return "undefined";
             }
             else if (tag.TYPE === PROCEDURE)
-            {   /*
-                var proc = tag;var params = cdr(exp);
-                var closure_env = proc.closure_env.slice(0);
-                var args = proc.args;
-                var body = proc.body;
-                var new_frame = {};
-                while(args!==null)
-                {   var var_name = car(args);
-                    if(var_name === ".")
-                    {
-                        new_frame[cadr(args)] = eval_list(params, env);
-                        break;  
-                    }
-                    var var_value = toy_eval(car(params), env);
-                    new_frame[var_name] = var_value;
-                    args = cdr(args); params = cdr(params);
-                }
-                closure_env.push(new_frame);
-
-                exp = cons("begin", body);
-                env = closure_env;
-                continue; */
+            {  
                 var proc = tag;var params = cdr(exp);
                 var closure_env = proc.closure_env.slice(0);
                 var args = proc.args;
@@ -856,7 +820,7 @@ var toy_eval = function(exp, env)
                 var args_val_list  = args.arg_val_list;  // arg default value list
                 var args_name_list = args.arg_name_list; // arg name list
                
-                for(var i = 0; i < args_name_list.length; i++)
+                for(var i = 0; i < args_name_list.length; i++) // add parameters
                 {
                     if(args_name_list[i] === ".") // rest 
                     {
@@ -880,9 +844,9 @@ var toy_eval = function(exp, env)
                         continue;
                     }
                     var param = car(params);
-                    if(param instanceof Cons && car(param) === "keyword") // (keyword "a") => param name a 
+                    if(param[0] === ":") // :a => param name a 
                     {
-                        var param_name = cadr(param); param_name = param_name.slice(1, param_name.length - 1);
+                        var param_name = param.slice(1);
                         params = cdr(params);
                         var param_value = toy_eval(car(params), env);
                         new_frame[param_name] = param_value;
@@ -899,10 +863,7 @@ var toy_eval = function(exp, env)
                     params = cdr(params);
                 }
                 closure_env.push(new_frame);
-                exp = cons("begin", body); env = closure_env; continue; // tail call optimization 
-                // return eval_begin(body, closure_env);
-                
-                // return eval_procedure(tag, cdr(exp), env);
+                exp = cons("begin", body); env = closure_env; continue; // tail call optimization                 
             }
             else if (tag.TYPE === MACRO)
             {
@@ -1083,7 +1044,7 @@ var primitive_builtin_functions =
             return "undefined"
         }
     },
-    "keyword":function(stack_param){return stack_param[0]},
+    /*"keyword":function(stack_param){return stack_param[0]},  // deprecated*/
     "vector":function(stack_param){return stack_param},
     "dictionary":function(stack_param){
         var output = {};
