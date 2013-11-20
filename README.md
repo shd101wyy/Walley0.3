@@ -424,16 +424,16 @@ pow == ** == ^
 
 	Learn from Python
 	So if I want to add default value for a, b. then I could define the function like
-		(def add (lambda (:a 12 :b 15) (+ a b)))
+		(def add (lambda [:a 12 :b 15] (+ a b))) or (def (add :a 12 :b 15) (+ a b))
 		then (add) will return 12 + 15  => 27 
 			 (add :a 20) return 20 + 15 => 35
 			 (add 14 :a 13) return 13 + 15 => 28; a will be assigned as 14 first, then assigned as 13.
 			 (add :b 1 :a 2) return 2 + 1  => 3
  
-		(def add (lambda (:a 12 b) (+ a b))) => {:a 12, :b "undefined"}
+		(def add (lambda [:a 12 b] (+ a b))) or (def (add :a 12 b) (+ a b)) => {:a 12, :b "undefined"}
 		then (add 3)  will cause error because of => 12 + "undefined" => "12undefined"
 		then (add 13 14) => {:a 13, :b 14}  => 13 + 14 => 27
-	Okay. I just finished implement this
+	Okay. I just finished implementing this
 ``
 
 

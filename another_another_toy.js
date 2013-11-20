@@ -646,18 +646,6 @@ var eval_procedure = function(proc, params, env)
         }
         params = cdr(params);
     }
-    /*
-    while(args!==null)
-    {   var var_name = car(args);
-        if(var_name === ".")
-        {
-            new_frame[cadr(args)] = eval_list(params, env);
-            break;  
-        }
-        var var_value = toy_eval(car(params), env);
-        new_frame[var_name] = var_value;
-        args = cdr(args); params = cdr(params);
-    }*/
     closure_env.push(new_frame);
     return eval_begin(body, closure_env);
 }
@@ -781,11 +769,6 @@ var toy_eval = function(exp, env)
                     exp = alter; continue;
                 }
                 exp = conseq; continue;
-                /*
-                if(test!==null)
-                    return toy_eval(conseq, env);
-                return toy_eval(alter, env);
-                */
             }
             else if (tag === "cond")
             {
@@ -794,7 +777,13 @@ var toy_eval = function(exp, env)
             else if (tag === "begin")
             {
                 var body = cdr(exp);
-                return eval_begin(body, env);
+                while(body.cdr!==null)
+                {
+                    toy_eval(car(body), env);
+                    body = body.cdr;
+                }
+                exp = body.car;
+                continue;
             }
             else if (tag === "eval")
             {
@@ -859,7 +848,61 @@ var toy_eval = function(exp, env)
                 exp = cons("begin", body);
                 env = closure_env;
                 continue; */
-                return eval_procedure(tag, cdr(exp), env);
+                var proc = tag;var params = cdr(exp);
+                var closure_env = proc.closure_env.slice(0);
+                var args = proc.args;
+                var body = proc.body;
+                var new_frame = {}
+                var args_val_list  = args.arg_val_list;  // arg default value list
+                var args_name_list = args.arg_name_list; // arg name list
+               
+                for(var i = 0; i < args_name_list.length; i++)
+                {
+                    if(args_name_list[i] === ".") // rest 
+                    {
+                        if(params == null)
+                        {
+                            var arg_name = args_name_list[i+1];
+                            new_frame[arg_name] = args_val_list[i+1];
+                        }
+                        else
+                        {
+                            var arg_name = args_name_list[i+1];
+                            var param_value = eval_list(params, env);
+                            new_frame[arg_name] = param_value;
+                        }
+                        break;
+                    }
+                    if(params == null) 
+                    {
+                        if(args_name_list[i] in new_frame) continue;
+                        new_frame[args_name_list[i]] = args_val_list[i];
+                        continue;
+                    }
+                    var param = car(params);
+                    if(param instanceof Cons && car(param) === "keyword") // (keyword "a") => param name a 
+                    {
+                        var param_name = cadr(param); param_name = param_name.slice(1, param_name.length - 1);
+                        params = cdr(params);
+                        var param_value = toy_eval(car(params), env);
+                        new_frame[param_name] = param_value;
+
+                        if(param_name!==args_name_list[i] && !(args_name_list[i] in new_frame))
+                            new_frame[args_name_list[i]] = args_val_list[i];
+                    }
+                    else
+                    {
+                        var arg_name = args_name_list[i]; // default name
+                        var param_val = toy_eval(car(params), env); // calculate given param
+                        new_frame[arg_name] = param_val;
+                    }
+                    params = cdr(params);
+                }
+                closure_env.push(new_frame);
+                exp = cons("begin", body); env = closure_env; continue; // tail call optimization 
+                // return eval_begin(body, closure_env);
+                
+                // return eval_procedure(tag, cdr(exp), env);
             }
             else if (tag.TYPE === MACRO)
             {
@@ -893,10 +936,14 @@ var toy_eval = function(exp, env)
                     console.log("ERROR:Invalid Function");
                     return "undefined"
                 }
-                return toy_eval(
+                /* continue */
+                exp = application;
+                env = env;
+                continue;
+                /* return toy_eval(
                                    application
                                     , env
-                                    )
+                                    ) */
             }
         }
         else
