@@ -598,21 +598,44 @@ var eval_list = function(list, env)
 }
 var macro_expand = function(macro, params, env)
 {
+    var add_parameter = function(new_frame, args, params)
+    {
+        while(args!==null)
+        {   
+            if(params === null) /* Error */
+            {
+                console.log("ERROR: Invalid macro. Pattern doesn't match");
+                return;
+            }
+            var var_name = car(args); 
+            if(var_name instanceof Cons)
+            {
+                if(args.car.car === "vector")
+                    add_parameter(new_frame, args.car.cdr, params.car.cdr)
+                else
+                    add_parameter(new_frame, args.car, params.car);
+            }
+            else if(var_name === ".")
+            {
+                console.log("IT IS .")
+                new_frame[cadr(args)] = params;
+                break;
+            }
+            else
+            {
+                var var_value = car(params); // does not calculate
+                new_frame[var_name] = var_value;
+            }
+            args = cdr(args); params = cdr(params);
+        }
+    }
     var closure_env = macro.closure_env.slice(0);
     var args = macro.args;
     var body = macro.body;
     var new_frame = {};
-    while(args!==null)
-    {   var var_name = car(args); 
-        if(var_name === ".")
-        {
-            new_frame[cadr(args)] = params;
-            break;
-        }
-        var var_value = car(params); // does not calculate
-        new_frame[var_name] = var_value;
-        args = cdr(args); params = cdr(params);
-    }
+
+    add_parameter(new_frame, args, params); // add parameters
+
     closure_env.push(new_frame);
     return eval_begin(body, closure_env);
 }
@@ -782,14 +805,17 @@ var toy_eval = function(exp, env)
             {
                 var eval_list_to_array = function(list, env)
                 {
-                    var output = []; while(list!==null){output.push(toy_eval(car(list), env)); list = cdr(list)}
+                    var output = []; while(list!==null)
+                    {
+                        output.push(toy_eval(car(list), env));
+                        list = cdr(list)
+                    }
                     return output;
                 }
                return tag.call(null, eval_list_to_array(cdr(exp), env));
             }
             else if (tag === "macroexpand-1")
             {
-                var v = toy_eval(cadr(exp), env);
                 return macro_expand(toy_eval(car(v), env),
                                     cdr(v),
                                     env);
@@ -844,7 +870,7 @@ var toy_eval = function(exp, env)
                         continue;
                     }
                     var param = car(params);
-                    if(param[0] === ":") // :a => param name a 
+                    if(typeof(param) === "string" && param[0] === ":") // :a => param name a 
                     {
                         var param_name = param.slice(1);
                         params = cdr(params);
@@ -880,7 +906,7 @@ var toy_eval = function(exp, env)
                 }
                 return tag[index.numer];
             }
-            else if (tag instanceof Object)
+            else if (tag instanceof Object && !(tag instanceof Toy_Number)  && !(tag instanceof Cons))
             {
                 var key = toy_eval(cadr(exp), env);
                 if( key in tag)
@@ -892,7 +918,7 @@ var toy_eval = function(exp, env)
             {
                 var proc = toy_eval(car(exp), env);
                 var application =   cons(proc, cdr(exp));
-                if(proc === "undefined")
+                if(proc === "undefined" || proc instanceof Toy_Number)
                 {
                     console.log("ERROR:Invalid Function");
                     return "undefined"

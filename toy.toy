@@ -206,6 +206,16 @@
 (def (csc x) (/ 1 (sin x)))
 (def (cot x) (/ 1 (tan x)))
 
-
+;; append element to list
+(def (append a b)
+	(if (null? a) b
+		(cons (car a) (append (cdr a) b))))
+;; reverse the list
+(def (reverse l)
+	(def (reverse-iter result l)
+		(if (null? l) 
+			result
+			(reverse-iter (cons (car l) result) (cdr l))))
+	(reverse-iter () l))
 
 
