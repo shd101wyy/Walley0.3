@@ -617,7 +617,6 @@ var macro_expand = function(macro, params, env)
             }
             else if(var_name === ".")
             {
-                console.log("IT IS .")
                 new_frame[cadr(args)] = params;
                 break;
             }
