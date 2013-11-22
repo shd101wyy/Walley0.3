@@ -1,0 +1,12 @@
+;; translation
+(defmacro defn [fn_name args . body] (list 'def fn_name (cons 'lambda (cons args body)) ))
+(def 定义函数 defn)
+(def 如果 if)
+(def 等于? eq?)
+(def 条件 cond)
+;; Define factorial function
+(定义函数 阶乘 [n] (如果 (等于? n 0)
+					1
+					(* n (阶乘 (- n 1)))))
+;; test 
+(display (阶乘 100))

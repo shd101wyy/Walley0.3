@@ -222,3 +222,33 @@
 (defmacro defn [fn_name args . body] (list 'def fn_name (cons 'lambda (cons args body)) ))
 ;; comment macro
 (defmacro comment [. args] ())
+
+;; map function
+;; (+ (2 3) (5 6)) => (7 9)
+;; apply (+ (2 5)) and (+ (3 6))
+(def (map func . args)
+	(def length (len (car args)))
+	;; organize
+	(def (get-args-list args i)
+		(if (null? args)
+			()
+			(cons (ref (car args) i) (get-args-list (cdr args) i)))) 
+	;; ((1 2) (3 4)) => (1 3) (2 4)
+	(def (map-iter func args i)
+		(cond ((eq? i length) ())
+			  (else (cons (apply func (get-args-list args i))
+			  			  (map-iter func args (+ i 1))))))
+	(map-iter func args 0))
+;; (display (map + '(3 4) '(5 6))) => (8 10)
+
+
+
+
+
+
+
+
+
+
+
+
