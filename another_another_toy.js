@@ -109,7 +109,7 @@ var getDenominator = function(n)
 {
     return n.slice(n.indexOf("/")+1);
 }
-var car = function(l){return l.car};
+var car = function(l){if(l===null){console.log("ERROR: Cannot get car of ()");return null;}return l.car};
 var cdr = function(l){return l.cdr};
 var caar = function(obj){return car(car(obj))}
 var cadr = function(obj){return car(cdr(obj))}
@@ -193,6 +193,12 @@ var parser = function(l)
     var rest = l; // keep track of rest
     var parse_list = function(l)
     {
+        if(l === null)
+        {
+            console.log("ERROR: Incomplete Statement. Missing )");
+            rest = null;
+            return null;
+        }
         if(car(l) === ")") // finish
         {
             rest = cdr(l);
