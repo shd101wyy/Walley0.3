@@ -508,7 +508,20 @@ var eval_quasiquote = function(list, env)
 {
     if(list === null) return null;
     var v = car(list);
-    if(typeof(v)==="string") return cons(v, eval_quasiquote(cdr(list), env));
+    if(typeof(v)==="string") 
+    {
+        if(v === ".") // pair
+        {
+            v = cadr(list);
+            if(typeof(v) === "string") return v;
+            else
+            {
+                if(car(v) === "unquote") return toy_eval(cadr(v), env);
+                return eval_quasiquote(v, env);
+            }
+        }
+        return cons(v, eval_quasiquote(cdr(list), env))
+    }
     else if (v.TYPE === LIST)
     {
         if(car(v) === "unquote")

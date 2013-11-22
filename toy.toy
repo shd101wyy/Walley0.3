@@ -218,4 +218,7 @@
 			(reverse-iter (cons (car l) result) (cdr l))))
 	(reverse-iter () l))
 
-
+;; defn macro
+(defmacro defn [fn_name args . body] (list 'def fn_name (cons 'lambda (cons args body)) ))
+;; comment macro
+(defmacro comment [. args] ())
