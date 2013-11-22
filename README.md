@@ -101,14 +101,15 @@ Define Atom/String:
 Define NULL(NIL):  
 	()  
 	'()  
-Define Lambda:
-	(lambda [params] body)
-	eg:
-		(lambda [a b] (+ a b))
-Define Macro:
-	(defmacro macro_name [params] body)
-	eg:
-		(defmacro square [x] `(* ~x ~x))  
+Define Lambda:  
+	(lambda [params] body)  
+	eg:  
+		(lambda [a b] (+ a b))  
+Define Macro:  
+	(defmacro macro_name [params] body)  
+	eg:  
+		(defmacro square [x] `(* ~x ~x))   then (square 12) -> (* 12 12) => 144  
+		(defmacro test [[a b] c] `(+ ~a ~b ~c)) theb (test [2 3] 4) -> (+ 2 3 4) => 9  
 ```
 ===================      
 <h2>Basic Usage</h2>    

@@ -816,6 +816,7 @@ var toy_eval = function(exp, env)
             }
             else if (tag === "macroexpand-1")
             {
+                var v = toy_eval(cadr(exp), env);
                 return macro_expand(toy_eval(car(v), env),
                                     cdr(v),
                                     env);
