@@ -1038,7 +1038,7 @@ var primitive_builtin_functions =
         return arg0 === arg1  ? 'true':null;
     },
     "number?":function(param_array){return param_array[0] instanceof Toy_Number ? 'true':null;},
-    "ratio?":function(param_array){return param_array[0] instanceof Toy_Number && param_array[0].TYPE === RATIO ? 'true':null;},
+    "ratio?":function(param_array){return param_array[0] instanceof Toy_Number && param_array[0].TYPE === RATIO && param_array[0].denom !== 1 ? 'true':null;},
     "float?":function(param_array){return param_array[0] instanceof Toy_Number && param_array[0].TYPE === FLOAT ? 'true':null;},
     /* get numerator of number */
     "numerator": function(stack_param){ 
