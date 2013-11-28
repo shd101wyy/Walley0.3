@@ -242,6 +242,7 @@
 	(map-iter func args 0))
 ;; (display (map + '(3 4) '(5 6))) => (8 10)
 
+;; convert list to string
 (def (str . args)
 	(def (str-iter result args)
 		(if (null? args)
@@ -252,6 +253,9 @@
 ;; test string function
 ;; (str 12 15 "Hi")
 
+;; change ratio or integer to float
+;; only work for number
+(def (->float num) (* num 1.0))
 
 
 

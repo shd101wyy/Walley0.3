@@ -1475,6 +1475,7 @@ var primitive_builtin_functions =
         var output = eval(js_func).apply(null, params_array)
         if(isNumber(output)) return new Toy_Number(output, 1, FLOAT);  // number
         if(typeof(output)==='boolean') return output===true?"true":null;      // boolean
+        if(typeof(output)==='undefined') return 'undefined' // undefined
         return output
     },
     "true":"true", "false":null,
