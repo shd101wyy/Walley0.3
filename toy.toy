@@ -190,13 +190,14 @@
 (def (list? arg) pair?)
 (def (integer? arg) (and (ratio? arg) (eq? (denominator arg) 1)))
 (def (atom? arg) (eq? (typeof arg) 'atom))
-(def (string? arg) atom?)
+(def string? atom?)
 (def (vector? arg) (eq? (typeof arg) 'vector))
 (def (dictionary? arg) (eq? (typeof arg) 'dictionary))
 (def (undefined? arg) (eq? arg 'undefined))
 (def (procedure? arg) (eq? (typeof arg) 'procedure))
 (def (function? arg) procedure?)
 (def (macro? arg) (eq? (typeof arg) 'macro))
+;; (def (rational? arg) (or (integer? arg) (ratio? arg)))
 ;; Math
 (def ** pow)
 (def ^ pow)
@@ -241,7 +242,15 @@
 	(map-iter func args 0))
 ;; (display (map + '(3 4) '(5 6))) => (8 10)
 
-
+(def (str . args)
+	(def (str-iter result args)
+		(if (null? args)
+			result
+			(str-iter (+ result (->str (car args))) (cdr args))
+				))
+	(str-iter "" args))
+;; test string function
+(str 12 15 "Hi")
 
 
 
