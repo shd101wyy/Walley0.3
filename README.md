@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.08  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.09  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -260,7 +260,7 @@ denominator:
 	   (denominator 5)   => 1  
 	   (denominator 6.0) => 1  
 ->ratio:  
-	eg (->ratio 1.5)     => 3/2 convert number to rational number  
+	eg (->ratio 1.5)     => 3/2 convert number to rational ratio number  
 
 ```
 <h2>List Operation</h2>
@@ -361,7 +361,7 @@ len:             return the length of vector
 MISC  
 </h2>  
 <strong>  
-	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1
+	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str
 </strong>  
 ```
 quote: return value without calculation  
@@ -401,6 +401,10 @@ apply:     apply procedure
 macroexpand-1:       expand macro:  
 	(defmacro square [x] `(* ~x ~x))  
 	(macroexpand-1 '(square 12)) => (* 12 12)  
+map:   (map proc arg0 arg1 ...)  but this map function is not efficient... it is written in toy language and Idk good way of implement it  
+	(map + '(2 3) '(5 6)) => (7 9)  
+str: convert argument to string  
+	(str 1 "hi" 5) => "1hi5"  
 ```
 <h2>Math</h2>
 <strong>
@@ -437,7 +441,12 @@ pow == ** == ^
 	Okay. I just finished implementing this
 ``
 
-
+<strong>
+	Change Log:  
+</strong>
+```
+		 11/28/2013  0.3.09 : Add 'str' and 'map' functions. Fix 'string?' function bug.  Happy Thanksgiving! ;)
+```
 Hope I could transfer to CS successfully ;)
 Enjoy!
 

@@ -250,7 +250,7 @@
 				))
 	(str-iter "" args))
 ;; test string function
-(str 12 15 "Hi")
+;; (str 12 15 "Hi")
 
 
 
