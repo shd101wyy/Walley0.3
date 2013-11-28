@@ -467,7 +467,29 @@ var formatDictionary = function(d)
     return output;
 }
 
-
+/* to string*/
+var to_string = function(v)
+{
+    if(number$(v))
+            return (formatNumber(v));
+    else if (typeof(v) === "string" )
+        return v;
+    else if (v instanceof Cons)
+        return (formatList(v));
+    else if (v instanceof Array)
+        return (formatVector(v));
+    else if (v.TYPE === PROCEDURE)
+        return ("< user-defined-procedure >");
+    else if (v.TYPE === BUILTIN_PRIMITIVE_PROCEDURE)
+        return ('undefined');
+    else if (v instanceof Object)
+        return (formatDictionary(v));
+    else
+    {
+        console.log("Function display: Invalid Parameters Type");
+        return 'undefined';
+    }
+}
 
 
 
@@ -939,7 +961,8 @@ var toy_eval = function(exp, env)
                 var application =   cons(proc, cdr(exp));
                 if(proc === "undefined" || proc instanceof Toy_Number)
                 {
-                    console.log("ERROR:Invalid Function");
+                    console.log("ERROR:Invalid Function " + (proc instanceof Toy_Number?formatNumber(proc):proc));
+                    console.log("      WITH EXP: "+to_string(exp))
                     return "undefined"
                 }
                 /* continue */
@@ -1287,25 +1310,7 @@ var primitive_builtin_functions =
     {
         // change obj to atom
         var v = stack_param[0];
-        if(number$(v))
-            return (formatNumber(v));
-        else if (typeof(v) === "string" )
-            return v;
-        else if (v instanceof Cons)
-            return (formatList(v));
-        else if (v instanceof Array)
-            return (formatVector(v));
-        else if (v.TYPE === PROCEDURE)
-            return ("< user-defined-procedure >");
-        else if (v.TYPE === BUILTIN_PRIMITIVE_PROCEDURE)
-            return ('undefined');
-        else if (v instanceof Object)
-            return (formatDictionary(v));
-        else
-        {
-            console.log("Function display: Invalid Parameters Type");
-            return new ATOM('undefined');
-        }
+        return to_string(v);
     },
     "typeof":function(stack_param)
     {
@@ -1453,6 +1458,27 @@ var primitive_builtin_functions =
     "sinh":function(stack_param){return new Toy_Number(Math.sinh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
     "tan":function(stack_param){return new Toy_Number(Math.tan(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
     "tanh":function(stack_param){return new Toy_Number(Math.tanh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
+    /* 
+        call js function
+        (js "Math.sin" '(12)) => Math.sin(12) => Math.sin.apply(null, [12])
+    */
+    "js":function(stack_param)
+    {
+        var js_func = stack_param[0]; var params_list = stack_param[1];
+        var params_array = []
+        while(params_list!=null)
+        {
+            var param = car(params_list);
+            if(param instanceof Toy_Number)
+                param = param.numer/param.denom
+            params_array.push(param)
+            params_list = cdr(params_list);
+        }
+        var output = eval(js_func).apply(null, params_array)
+        if(isNumber(output)) return new Toy_Number(output, 1, FLOAT);  // number
+        if(typeof(output)==='boolean') return output===true?"true":null;      // boolean
+        return output
+    },
     "true":"true", "false":null,
     "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", "while":"while",
     "virtual_file_system":{} /* this is virtual file system used to save code as virtual file */
