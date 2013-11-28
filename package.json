@@ -1,6 +1,6 @@
 {
   "name": "walley-language",
-  "version": "0.3.09",
+  "version": "0.3.10",
   "description": "walley language (toy) is a simple script language ;)",
   "main": "another_another_toy.js",
   "scripts": {

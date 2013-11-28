@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.09  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.10  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -454,6 +454,7 @@ pow == ** == ^
 </strong>
 ```
 		 11/28/2013  0.3.09 : Add 'str' and 'map' functions. Fix 'string?' function bug.  Happy Thanksgiving! ;)
+		 11/28/2013  0.3.10 : Now support calling JavaScript functions using (js js_func_name arg0 arg1 arg2 ...).  Happy Thanksgiving! ;)
 ```
 Hope I could transfer to CS successfully ;)
 Enjoy!
