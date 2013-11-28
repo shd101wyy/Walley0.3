@@ -1460,19 +1460,17 @@ var primitive_builtin_functions =
     "tanh":function(stack_param){return new Toy_Number(Math.tanh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
     /* 
         call js function
-        (js "Math.sin" '(12)) => Math.sin(12) => Math.sin.apply(null, [12])
+        (js js_function_name arg0 arg1 arg2 ...)
+        (js "Math.sin" 12) => Math.sin(12) => Math.sin.apply(null, [12])
     */
     "js":function(stack_param)
     {
         var js_func = stack_param[0]; var params_list = stack_param[1];
-        var params_array = []
-        while(params_list!=null)
+        var params_array = stack_param.slice(1);
+        for(var i = 0; i < params_array.length; i++)
         {
-            var param = car(params_list);
-            if(param instanceof Toy_Number)
-                param = param.numer/param.denom
-            params_array.push(param)
-            params_list = cdr(params_list);
+            if(params_array[i] instanceof Toy_Number)
+                params_array[i] = params_array[i].numer/params_array[i].denom;
         }
         var output = eval(js_func).apply(null, params_array)
         if(isNumber(output)) return new Toy_Number(output, 1, FLOAT);  // number

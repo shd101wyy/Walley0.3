@@ -418,7 +418,15 @@ very simple math functions
 pow == ** == ^
 (^ 3/4 2) => 9/16
 ```
+<strong> Call JavaScript Function </strong>
+```
+    (js js_function_name arg0 arg1 arg2 ...)
+    eg:
+		(js "Date") => current data as string
+		(js "Math.sin" 12) => Math.sin(12)
+		(js "Object.keys" {:a 12}) => ['a']
 
+```
 <strong>
 	My Idea
 	Function define, default argument value
