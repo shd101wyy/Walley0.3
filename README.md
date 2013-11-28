@@ -447,7 +447,7 @@ pow == ** == ^
 		then (add 3)  will cause error because of => 12 + "undefined" => "12undefined"
 		then (add 13 14) => {:a 13, :b 14}  => 13 + 14 => 27
 	Okay. I just finished implementing this
-``
+```
 
 <strong>
 	Change Log:  
