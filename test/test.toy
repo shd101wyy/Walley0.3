@@ -1,9 +1,27 @@
-(def (str . args)
-	(def (str-iter result args)
-		(if (null? args)
-			result
-			(str-iter (+ result (->str (car args))) (cdr args))
-				))
-	(str-iter "" args))
-;; test string function
-(display (str 12 15 "Hi"))
+;; diff func
+;; eg d(x^2)/dx at point 0 is
+;; (diff (lambda [x] (^ x 2)) 0)
+(def (diff func diff-at-point :error 0.000001)
+     (def (diff_ error)
+	  (/  (- (func diff-at-point)
+	  		 (func (- diff-at-point error)))
+	   	  error))
+	(diff_ error))
+;; (display (diff (lambda [x] (^ x 2)) 2))
+
+
+;; simple integral func
+;; eg integral of sin(x) from 0 to 1 with dx = 0.0001
+;; (integral (lambda [x] (sin x)) 0 1 0.0001) 
+(def (integral func a b :dx 0.001)
+	(def (sum term a next b)
+		(if (> a b)
+			0
+			(+ (term a)
+				(sum term (next a) next b))))
+	(def (add-dx x) (+ x dx))
+	(* (sum func (+ a (/ dx 2.0)) add-dx b)
+		dx))
+
+;; (display (integral (lambda [x] x) 0 2 0.001))
+;; (display (integral (lambda [x] (* x x x)) 0 1 0.01))

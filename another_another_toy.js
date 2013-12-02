@@ -1478,6 +1478,10 @@ var primitive_builtin_functions =
         if(typeof(output)==='undefined') return 'undefined' // undefined
         return output
     },
+    "read":function(stack_param)
+    {
+        return parser(lexer(stack_param[0]))
+    },
     "true":"true", "false":null,
     "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", "while":"while",
     "virtual_file_system":{} /* this is virtual file system used to save code as virtual file */
