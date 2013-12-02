@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.10  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.11  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -71,8 +71,10 @@ It's a Language For FUN ;)
 	' => quote          eg: 'Hello => (quote Hello)  
 	"" => string        eg:  "Hello World"  
 	: => keyword        eg:  :a => "a" or 'a . so :a === 'a    
-	~ => unquote        eq:  ~x => (unquote x)  
-	` => quasiquote     eq:  `(~x x) => (quasiquote ((unquote x) x))  
+	~ => unquote        eg:  ~x => (unquote x)  
+	` => quasiquote     eg:  `(~x x) => (quasiquote ((unquote x) x))  
+	~@ => unquote-splice eg: `(~@'(1 2 3) 4) => (1 2 3 4)
+                             `(0 ~@'(1 2 3) 4) => (0 1 2 3 4)
 ```
 <h2> Builtin Procedures and Macros </h2>  
 ```
@@ -455,6 +457,7 @@ pow == ** == ^
 ```
 		 11/28/2013  0.3.09 : Add 'str' and 'map' functions. Fix 'string?' function bug.  Happy Thanksgiving! ;)
 		 11/28/2013  0.3.10 : Now support calling JavaScript functions using (js js_func_name arg0 arg1 arg2 ...).  Happy Thanksgiving! ;)
+		 12/02/2013  0.3.11 : Add ~@ support
 ```
 Hope I could transfer to CS successfully ;)
 Enjoy!
