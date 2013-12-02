@@ -167,6 +167,8 @@ var lexer = function(input_str)
             return cons( "(", cons( "dictionary", lexer_iter(input_str, i + 1)));
         else if(input_str[i]===")" || input_str[i]=="]" || input_str[i]=="}")
             return cons( ")", lexer_iter(input_str, i + 1));
+        else if(input_str[i]==="~" && input_str[i+1]==="@")
+            return cons("~@", lexer_iter(input_str, i+2));
         else if(input_str[i]==="'" || input_str[i]=="`" || input_str[i]=="~")
             return cons( input_str[i], lexer_iter(input_str, i + 1));
         else if(input_str[i]==='"')
@@ -208,7 +210,7 @@ var parser = function(l)
         {
             return cons(parse_list(cdr(l)), parse_list(rest));
         }
-        else if (car(l) === "'" || car(l) === "~" || car(l) === "`")  // quote unquote quasiquote
+        else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@")  // quote unquote quasiquote unquote-splice
         {
             return cons(parse_special(l), parse_list(rest));
         }
@@ -224,6 +226,8 @@ var parser = function(l)
             tag = "quote"
         else if (car(l) === "~")
             tag = "unquote"
+        else if (car(l) === "~@")
+            tag = "unquote-splice"
         else tag = 'quasiquote'
         l = cdr(l);
         if (car(l) === "(") // list
@@ -264,8 +268,8 @@ var parser = function(l)
     {
         return cons(parse_list(cdr(l)), parser(rest));
     }
-    // quote // unquote // quasiquote
-    else if (car(l) === "'" || car(l) === "~" || car(l) === "`")
+    // quote // unquote // quasiquote // unquote-splice
+    else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@")
     {
         return cons(parse_special(l), rest);
     }
@@ -555,6 +559,21 @@ var eval_quasiquote = function(list, env)
         if(car(v) === "unquote")
             return cons(toy_eval(cadr(v), env),
                         eval_quasiquote(cdr(list), env));
+        if(car(v) === "unquote-splice")
+        {
+            var append = function(a, b)
+            {
+                if(a == null) return b;
+                return cons(car(a), append(cdr(a), b))
+            }
+            var value = toy_eval(cadr(v), env);
+            if(!(value instanceof Cons))
+            {
+                console.log("ERROR: ~@ only support list type value")
+                return null;
+            }
+            return append(value, eval_quasiquote(cdr(list), env));
+        }
         return cons(eval_quasiquote(v, env),
                     eval_quasiquote(cdr(list), env))
 
