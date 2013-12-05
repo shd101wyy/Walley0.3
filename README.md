@@ -424,7 +424,7 @@ pow == ** == ^
 ```
     (js js_function_name arg0 arg1 arg2 ...)
     eg:
-		(js "Date") => current data as string
+		(js "Date") => current date as string
 		(js "Math.sin" 12) => Math.sin(12)
 		(js "Object.keys" {:a 12}) => ['a']
 

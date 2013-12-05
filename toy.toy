@@ -263,7 +263,7 @@
 ;; (diff (lambda [x] (^ x 2)) 0)
 (def (diff func diff-at-point :error 0.000001)
      (def (diff_ error)
-	  (/  (- (func diff-at-point)
+	      (/  (- (func diff-at-point)
 	  		 (func (- diff-at-point error)))
 	   	  error))
 	(diff_ error))

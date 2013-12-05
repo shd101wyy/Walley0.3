@@ -7,7 +7,7 @@
 	  		 (func (- diff-at-point error)))
 	   	  error))
 	(diff_ error))
-;; (display (diff (lambda [x] (^ x 2)) 2))
+;; (display (diff (lambda [x] (^ x 2)) 4))
 
 
 ;; simple integral func
