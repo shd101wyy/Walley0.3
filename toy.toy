@@ -273,7 +273,7 @@
 ;; simple integral func
 ;; eg integral of sin(x) from 0 to 1 with dx = 0.0001
 ;; (integral (lambda [x] (sin x)) 0 1 0.0001) 
-(def (integral func a b :dx 0.001)
+(def (integral func a b :dx 0.01)
 	(def (sum term a next b)
 		(if (> a b)
 			0

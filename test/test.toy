@@ -25,3 +25,6 @@
 
 ;; (display (integral (lambda [x] x) 0 2 0.001))
 ;; (display (integral (lambda [x] (* x x x)) 0 1 0.01))
+
+
+(define (integral func a b dx) (define (sum term a next b) (if (> a b) 0 (+ (term a) (sum term (next a) next b)))) (define (add-dx x) (+ x dx)) (* (sum func (+ a (/ dx 2.0)) add-dx b) dx))
