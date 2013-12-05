@@ -592,6 +592,7 @@ var eval_lambda = function(lambda_args, lambda_body, env)
     var arg = {}
     arg.arg_name_list = [];
     arg.arg_val_list  = [];
+    arg.inside_lambdas = {};
     while(lambda_args!=null)
     {
         var v = car(lambda_args);
@@ -654,6 +655,7 @@ var eval_lambda = function(lambda_args, lambda_body, env)
        so regard 'test' as argument name and eval its lambda body
     */
     var p = lambda_body;
+    var new_lambda_body = null; /* create new lambda body. Remove all lambda define exp in this lambda */
     while(p!=null)
     {
         var exp = car(p);
@@ -669,14 +671,23 @@ var eval_lambda = function(lambda_args, lambda_body, env)
             if(car(val) === "lambda") // lambda
             {
                 var lambda_value = eval_lambda(cadr(val), cddr(val), env);
-                arg.arg_name_list.push(var_name);
-                arg.arg_val_list.push(lambda_value);
+                arg.inside_lambdas[var_name] = lambda_value;
+                // arg.arg_name_list.push(var_name);
+                // arg.arg_val_list.push(lambda_value);
             }
+            else // it's not lambda
+            {
+                new_lambda_body = cons(exp, new_lambda_body); // append to new lambda body
+            }
+        }
+        else
+        {
+            new_lambda_body = cons(exp, new_lambda_body);  // append to new lambda body
         }
         p = cdr(p);
     }
 
-    return new Procedure(arg, lambda_body, env.slice(0));   
+    return new Procedure(arg, /*lambda_body*/new_lambda_body, env.slice(0));   
 }
 var eval_macro = function(macro_args, macro_body, env)
 {
@@ -939,6 +950,7 @@ var toy_eval = function(exp, env)
                 var new_frame = {}
                 var args_val_list  = args.arg_val_list;  // arg default value list
                 var args_name_list = args.arg_name_list; // arg name list
+                var inside_lambdas = args.inside_lambdas; // inside lambdas
                
                 for(var i = 0; i < args_name_list.length; i++) // add parameters
                 {
@@ -982,7 +994,12 @@ var toy_eval = function(exp, env)
                     }
                     params = cdr(params);
                 }
-                closure_env.push(new_frame);
+                /* lambda inside */
+                for(var i in inside_lambdas)
+                {
+                    new_frame[i] = inside_lambdas[i];
+                }
+                closure_env.push(new_frame); // add new frame
                 exp = cons("begin", body); env = closure_env; continue; // tail call optimization                 
             }
             else if (tag.TYPE === MACRO)
