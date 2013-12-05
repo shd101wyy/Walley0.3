@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.11  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.12  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -251,6 +251,7 @@ eg:
 	numerator,  
 	denominator,  
 	->ratio  
+	->float  
 </strong>  
 ```
 numerator:  
@@ -263,6 +264,8 @@ denominator:
 	   (denominator 6.0) => 1  
 ->ratio:  
 	eg (->ratio 1.5)     => 3/2 convert number to rational ratio number  
+->float:
+	eg (->float 3/4)     => 0.75
 
 ```
 <h2>List Operation</h2>
@@ -363,7 +366,8 @@ len:             return the length of vector
 MISC  
 </h2>  
 <strong>  
-	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str
+	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str,
+	read
 </strong>  
 ```
 quote: return value without calculation  
@@ -407,11 +411,15 @@ map:   (map proc arg0 arg1 ...)  but this map function is not efficient... it is
 	(map + '(2 3) '(5 6)) => (7 9)  
 str: convert argument to string  
 	(str 1 "hi" 5) => "1hi5"  
+read: parse string and return list. Only support string(atom) and list type parameter
+	(read "(def x 12)") => '((def x 12))
+
 ```
 <h2>Math</h2>
 <strong>
 	acos, acosh, asin, asinh, atan, atanh, ceil, cos, cosh, exp,
-	floor, loge, pow (**, ^), log, sin, sinh, tan, tanh
+	floor, loge, pow (**, ^), log, sin, sinh, tan, tanh,
+	diff, integral
 </strong>
 ```
 very simple math functions
@@ -419,8 +427,18 @@ very simple math functions
 (log 2 8) => 3
 pow == ** == ^
 (^ 3/4 2) => 9/16
+
+experimental "diff" "integral" functions from sicp
+diff: (diff lambda diff_point error) where error is 0.000001 by default
+	eg:
+		(diff (lambda [x] (* x x)) 12) => 23.9999989731
+		(diff (lambda [x] (* x x x)) 2 0.0001) => 11.9994000100. which is near 3*x^2 when x = 2 => 12
+		
+integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.01 by default
+	eg:
+		(integral (lambda [x] x) 0 1) => 0.5000000000
 ```
-<strong> Call JavaScript Function </strong>
+<h2> Call JavaScript Function </h2>
 ```
     (js js_function_name arg0 arg1 arg2 ...)
     eg:
@@ -428,6 +446,14 @@ pow == ** == ^
 		(js "Math.sin" 12) => Math.sin(12)
 		(js "Object.keys" {:a 12}) => ['a']
 
+```
+<h2> embed toy in your javascript program </h2>
+```
+	<script src="another_another_toy.js"></script>
+	<script type="text/javascript">
+		var the_string_u_want_to_run = "(def x 12)"
+		var output_value = eval_begin(parser(lexer(the_string_u_want_to_run)), ENVIRONMENT); // parse and eval
+	</script>
 ```
 <strong>
 	My Idea

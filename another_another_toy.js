@@ -131,7 +131,10 @@ var lexer = function(input_str)
     var find_final_string_index = function(input_str, i)  // find final index of string 
     {
         if(i == input_str.length)
+        {
             console.log("ERROR: Incomplete String");
+            return i;
+        }
         else if(input_str[i]=="\\")
             return find_final_string_index(input_str, i+2);
         else if(input_str[i]==='"')
@@ -1432,57 +1435,64 @@ var primitive_builtin_functions =
     },
     "display":function(stack_param)
     {
-        var v = stack_param[0];
-        if(v===null)
-        {
-            console.log("()")
-            return "undefined"
+        try{
+            var v = stack_param[0];
+            if(v===null)
+            {
+                console.log("()")
+                return "undefined"
+            }
+            if(number$(v))
+            {
+                console.log(formatNumber(v));
+                return 'undefined'
+            }
+            else if (typeof(v) === "string")
+            {
+                console.log((v));
+                return ('undefined')
+            }
+            else if (v instanceof Cons)
+            {
+                console.log(formatList(v));
+                return ('undefined')
+            }
+            else if (v instanceof Array)
+            {
+                console.log(formatVector(v));
+                return ('undefined')
+            }
+            else if (v.TYPE === PROCEDURE)
+            {
+                console.log("< user-defined-procedure >");
+                return ('undefined')
+            }
+            else if (typeof(v) === 'function')
+            // else if (v.TYPE === BUILTIN_PRIMITIVE_PROCEDURE)
+            {
+                console.log("< builtin-procedure >")
+                return ('undefined')
+            }
+            else if (v.TYPE === MACRO)
+            {
+                console.log("< macro >")
+                return "undefined"
+            }
+            else if (v instanceof Object)
+            {
+                console.log(formatDictionary(v));
+                return ('undefined')
+            }
+            else
+            {
+                console.log("Function display: Invalid Parameters Type");
+                return ('undefined')
+            }
         }
-        if(number$(v))
+        catch(e)
         {
-            console.log(formatNumber(v));
-            return 'undefined'
-        }
-        else if (typeof(v) === "string")
-        {
-            console.log((v));
-            return ('undefined')
-        }
-        else if (v instanceof Cons)
-        {
-            console.log(formatList(v));
-            return ('undefined')
-        }
-        else if (v instanceof Array)
-        {
-            console.log(formatVector(v));
-            return ('undefined')
-        }
-        else if (v.TYPE === PROCEDURE)
-        {
-            console.log("< user-defined-procedure >");
-            return ('undefined')
-        }
-        else if (typeof(v) === 'function')
-        // else if (v.TYPE === BUILTIN_PRIMITIVE_PROCEDURE)
-        {
-            console.log("< builtin-procedure >")
-            return ('undefined')
-        }
-        else if (v.TYPE === MACRO)
-        {
-            console.log("< macro >")
-            return "undefined"
-        }
-        else if (v instanceof Object)
-        {
-            console.log(formatDictionary(v));
-            return ('undefined')
-        }
-        else
-        {
-            console.log("Function display: Invalid Parameters Type");
-            return ('undefined')
+            console.log(e);
+            return 'undefined';
         }
     },
     "acos":function(stack_param){return new Toy_Number(Math.acos(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
@@ -1530,6 +1540,7 @@ var primitive_builtin_functions =
     },
     "read":function(stack_param)
     {
+        if(stack_param[0] instanceof Cons) return cons(stack_param[0], null);
         return parser(lexer(stack_param[0]))
     },
     "true":"true", "false":null,
