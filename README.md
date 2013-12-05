@@ -481,6 +481,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/05/2013  0.3.13 : fix 'integer?' function bug
 		 12/05/2013  0.3.12 : Improve lambda. Add 'read' 'diff' 'integra' '->float' functions. Improve error detection.           Final Fighting!!! ;)
 		 12/02/2013  0.3.11 : Add ~@ support
 		 11/28/2013  0.3.10 : Now support calling JavaScript functions using (js js_func_name arg0 arg1 arg2 ...).  Happy Thanksgiving! ;)

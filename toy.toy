@@ -188,7 +188,6 @@
 ;; check type
 (def (pair? arg) (eq? (typeof arg) 'list))
 (def (list? arg) pair?)
-(def (integer? arg) (and (ratio? arg) (eq? (denominator arg) 1)))
 (def (atom? arg) (eq? (typeof arg) 'atom))
 (def string? atom?)
 (def (vector? arg) (eq? (typeof arg) 'vector))
