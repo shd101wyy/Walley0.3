@@ -654,10 +654,12 @@ var eval_lambda = function(lambda_args, lambda_body, env)
        it has (def (test) 12) inside
        so regard 'test' as argument name and eval its lambda body
     */
+    /*
+    Well I finally figure out that this part is wrong
 
     var p = lambda_body;
-    var new_lambda_body = null; /* create new lambda body. Remove all lambda define exp in this lambda */
-    /*while(p!=null)
+    var new_lambda_body = null; // create new lambda body. Remove all lambda define exp in this lambda 
+    while(p!=null)
     {
         var exp = car(p);
         if(exp instanceof Cons && car(exp) === "def") // check lambda (def add (lambda [] ...))
@@ -687,7 +689,6 @@ var eval_lambda = function(lambda_args, lambda_body, env)
         }
         p = cdr(p);
     }*/
-
     return new Procedure(arg, lambda_body/*new_lambda_body*/, env.slice(0));   
 }
 var eval_macro = function(macro_args, macro_body, env)
@@ -997,6 +998,8 @@ var toy_eval = function(exp, env)
                 }
                 /* lambda inside */
                 /*
+                    This part is wrong
+
                 for(var i in inside_lambdas)
                 {
                     new_frame[i] = inside_lambdas[i];
