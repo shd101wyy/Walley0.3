@@ -285,4 +285,11 @@
 ;; (display (integral (lambda [x] x) 0 2 0.001))
 ;; (display (integral (lambda [x] (* x x x)) 0 1 0.01))
 
+;; non-destructive set-car, which will return new created value
+(def (set-car x value) (cons value (cdr x)))
+
+;; non-destructive set-cdr, which will return new created value
+(def (set-cdr x value) (cons (car x) value))
+
+
 

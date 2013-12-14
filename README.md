@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.13  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.14  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -270,7 +270,7 @@ denominator:
 ```
 <h2>List Operation</h2>
 <strong>
-	car, cdr, cons  set-car! set-cdr! conj ref len pop slice ->str
+	car, cdr, cons  set-car! set-cdr! set-car set-cdr conj ref len pop slice ->str
 </strong>
 ```
 car:                             get first element  
@@ -288,6 +288,12 @@ set-car!:         destructive
 set-cdr!:         destructive  
 	(def x '(1 2 3)) => x now is (1 2 3)  
 	(set-cdr! x 12)  => x now is (1 . 12)  ; set-cdr will replace rest elements of list  
+set-car:         non-destructive:  
+    (def x '(1 2 3)) => x now is (1 2 3)  
+    (set-car x 12) => return (12 2 3); but x is still (1 2 3)  
+set-cdr:         non-destructive:
+    (def x '(1 2 3)) => x now is (1 2 3)  
+    (set-cdr x 12) => return (1 . 12); but x is still (1 2 3)  
 ref:              ref element at specific index  
 	(def x '(1 2 3)) => x now is (1 2 3)  
 	(ref x 0)        => find the element at index 0, so will return 1  
@@ -481,6 +487,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/14/2013  0.3.14 : add 'set-car set-cdr' two functions... so sad for my differential equation final and cs418 final... huhhh... need to work harder ;)
 		 12/05/2013  0.3.13 : fix 'integer?' function bug. Fix lambda bug. improve index.html of the 
 		 					  terminal emulator.
 		 					  Final Fighting!!! ;)
