@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.15  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.16  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -487,6 +487,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/16/2013  0.3.16 : Sorry;;;;;; Fix 'let' function bug... improve + - * / > < eq? >= <= functions
 		 12/16/2013  0.3.15 : Improve macro to avoid the accidental capture of identifiers. (by using closure)
 		                      eg: (defmacro test [x] `(list ~x))
 		                          (test 12) => (12)

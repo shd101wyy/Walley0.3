@@ -6,66 +6,77 @@
 (def (list . args) args)
 
 ;; rewrite + - * / functions
-(def o_+ +) ;; store old + procedure
 ;; new + procedure that admit more than one arguments
-(def (+ . args)
-	(def (+_iter result args)
-		(cond ((null? args) result)
-			  (else
-			  	(+_iter (o_+ result (car args))
-			  			(cdr args)) 
-			  	)))
-	(cond ((null? args) 
-		   (display "ERROR: Function + invalid parameters. Please provide parameters"))
-		  (else
-		  	(+_iter (car args) (cdr args)))))
+(set! + 
+	(let 
+		[o_+ + ;; store old +
+		+_iter (lambda [result args]
+					(cond ((null? args) result)
+					  (else
+					  	(+_iter (o_+ result (car args))
+					  			(cdr args)) 
+					  	)))
+			]
+		(lambda [. args]
+			(cond ((null? args) 
+				   (display "ERROR: Function + invalid parameters. Please provide parameters"))
+				  (else
+				  	(+_iter (car args) (cdr args))))
+			)))
 
-(def o_- -) ;; store old - procedure
 ;; new - procedure that admit more than one arguments
-(def (- . args)
-	(def (-_iter result args)
-		(cond ((null? args) result)
-			  (else
-			  	(-_iter (o_- result (car args))
-			  			(cdr args)) 
-			  	)))
-	(cond ((null? args) 
-		   (display "ERROR: Function - invalid parameters. Please provide parameters"))
-		  ((null? (cdr args))
-		  	(o_- 0 (car args)))
-		  (else
-		  	(-_iter (car args) (cdr args) ))))
+(set! - 
+	(let [o_- - ;; store old - procedure
+		  -_iter (lambda [result args]
+					(cond ((null? args) result)
+					  (else
+					  	(-_iter (o_- result (car args))
+					  			(cdr args)) 
+					  	))
+		  			)
+			]
+		(lambda [. args]
+			(cond ((null? args) 
+				   (display "ERROR: Function - invalid parameters. Please provide parameters"))
+				  ((null? (cdr args))
+				  	(o_- 0 (car args)))
+				  (else
+				  	(-_iter (car args) (cdr args)))))))
 
-(def o_* *) ;; store old * procedure
+
 ;; new * procedure that admit more than one arguments
-(def (* . args)
-	(def (*_iter result args)
-		(cond ((null? args) result)
-			  (else
-			  	(*_iter (o_* (car args) result)
-			  			(cdr args)) 
-			  	)))
-	(cond ((null? args)
-		   (display "ERROR: Function * invalid parameters. Please provide parameters"))
-		  (else
-		  	(*_iter (car args) (cdr args)))))
+(set! * 
+	(let [o_* * ;; store old * procedure
+		  *_iter (lambda [result args]
+		  			(cond ((null? args) result)
+					  (else
+					  	(*_iter (o_* (car args) result)
+					  			(cdr args)) 
+					  	)))]
 
-(def o_/ /) ;; store old / procedure
+		(lambda [. args]
+			(cond ((null? args)
+		   		(display "ERROR: Function * invalid parameters. Please provide parameters"))
+		  	(else
+		  		(*_iter (car args) (cdr args)))))))
+
 ;; new / procedure that admit more than one arguments
-(def (/ . args)
-	(def length (len args))
-	(def (/_iter result args)
-		(cond ((null? args) result)
+(set! / 
+	(let [o_/ / ;; store old / procedure
+		  /_iter (lambda [result args]
+		  			(cond ((null? args) result)
+					  (else
+					  	(/_iter (o_/ result (car args))
+					  			(cdr args)) 
+					  	)))]
+		(lambda [. args]
+			(cond ((null? args) 
+			   (display "ERROR: Function / invalid parameters. Please provide parameters"))
+			  ((null? (cdr args))
+			  	(o_/ 1 (car args)))
 			  (else
-			  	(/_iter (o_/ result (car args))
-			  			(cdr args)) 
-			  	)))
-	(cond ((null? args) 
-		   (display "ERROR: Function / invalid parameters. Please provide parameters"))
-		  ((null? (cdr args))
-		  	(o_/ 1 (car args)))
-		  (else
-		  	(/_iter (car args) (cdr args) ))))
+			  	(/_iter (car args) (cdr args) ))))))
+
 
 ;; true and false scheme style
 (def #t "true")
@@ -90,77 +101,75 @@
 (def (>= arg0 arg1) (or (> arg0 arg1) (eq? arg0 arg1)))
 
 ;; now make >= <= eq? > < support vardic param
-(def old-< <)
-(def (< . args)
-	(let [<-iter (lambda [args cur]
-		  			(if (null? args) true
+(set! < 
+	(let [old-< <
+		  <-iter (lambda [args cur]
+					(if (null? args) true
 		  				(if (old-< cur (car args))
 		  					(<-iter (cdr args) (car args))
 		  					false)
 		  				))
-		  ]
-		(if (null? args)
-			(display "Please provide arguments for <")
-			(<-iter (cdr args) (car args)))
-		))
+			]
+		(lambda [. args]
+			(if (null? args)
+				(display "Please provide arguments for <")
+				(<-iter (cdr args) (car args))))))
 
-
-(def old-> >)           ;; save old >
-(def (> . args)
-	(let [>-iter (lambda [args cur]
+(set! > 
+	(let [old-> >
+		 >-iter (lambda [args cur]
 		  			(if (null? args) true
 		  				(if (old-> cur (car args))
 		  					(>-iter (cdr args) (car args))
 		  					false)
-		  				))
-		  ]
-		(if (null? args)
-			(display "Please provide arguments for >")
-			(>-iter (cdr args) (car args)))
-		))
+		  				))]
 
-(def old-eq? eq?)  ;; save old eq?
-(def (eq? . args)
-	(let [eq?-iter (lambda [args cur]
+		(lambda [. args]
+			(if (null? args)
+				(display "Please provide arguments for >")
+				(>-iter (cdr args) (car args))))))
+
+
+(set! eq? (let [old-eq? eq?
+				eq?-iter (lambda [args cur]
 		  			(if (null? args) true
 		  				(if (old-eq? cur (car args))
 		  					(eq?-iter (cdr args) (car args))
 		  					false)
-		  				))
-		  ]
-		(if (null? args)
-			(display "Please provide arguments for eq?")
-			(eq?-iter (cdr args) (car args)))
-		))
+		  				))]
 
+			(lambda [. args]
+				(if (null? args)
+					(display "Please provide arguments for eq?")
+					(eq?-iter (cdr args) (car args))))))
 
-(def old-<= <=)   ;; save old <=
-(def (<= . args)   ;; def new <=
-	(let [<=-iter (lambda [args cur]
+(set! <=
+	(let [old-<= <=
+		  <=-iter (lambda [args cur]
 		  			(if (null? args) true
 		  				(if (old-<= cur (car args))
 		  					(<=-iter (cdr args) (car args))
 		  					false)
-		  				))
-		  ]
-		(if (null? args)
-			(display "Please provide arguments for <=")
-			(<=-iter (cdr args) (car args)))
-		))
+		  				))]
+		 (lambda [. args]
+		 	(if (null? args)
+				(display "Please provide arguments for <=")
+				(<=-iter (cdr args) (car args))))))
 
-(def old->= >=)   ;; save old >=
-(def (>= . args)   ;; def new >=
-	(let [>=-iter (lambda [args cur]
+(set! >= 
+	(let [old->= >=
+		  >=-iter (lambda [args cur]
 		  			(if (null? args) true
 		  				(if (old->= cur (car args))
 		  					(>=-iter (cdr args) (car args))
 		  					false)
-		  				))
-		  ]
-		(if (null? args)
-			(display "Please provide arguments for >=")
-			(>=-iter (cdr args) (car args)))
-		))
+		  				))]
+		(lambda [. args]
+			(if (null? args)
+				(display "Please provide arguments for >=")
+				(>=-iter (cdr args) (car args))))))
+
+
 
 ;; now 'and' and 'or' functions can accept more than two parameters
 (def (and . args)
