@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.14  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.15  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -487,6 +487,19 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/16/2013  0.3.15 : Improve macro to avoid the accidental capture of identifiers. (by using closure)
+		                      eg: (defmacro test [x] `(list ~x))
+		                          (test 12) => (12)
+		                          (let [list +] (test 12)) => (12) ... it would return 12 in previous, but now it will return (12). Improved macro
+		                      eg: (defmacro sett [var val] `(def ~var ~val))
+		                          (def x 12)
+		                          in the past:
+		                          	(let [x 15] (sett x 20) x) => 20.
+		                          	and the x in global scope is still 12
+		                          now:
+		                          	(let [x 15] (sett x 20) x) => 15. The x in this scope will not change
+		                          	but the x in global scopte will change to 20
+
 		 12/14/2013  0.3.14 : add 'set-car set-cdr' two functions... so sad for my differential equation final and cs418 final... huhhh... need to work harder ;)
 		 12/05/2013  0.3.13 : fix 'integer?' function bug. Fix lambda bug. improve index.html of the 
 		 					  terminal emulator.
