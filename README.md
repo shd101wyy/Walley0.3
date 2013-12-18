@@ -10,14 +10,14 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.16  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.17  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
 (Toy Language  (Walley-Language 0.3) by (shd101wyy))
  ===============
 Toy Language is a simple script language written in JavaScript.  
-Influenced by Walley 0.1, Walley 0.2, Scheme, JavaScript, Clojure, Python...
+Influenced by Walley 0.1, Walley 0.2, Scheme, JavaScript, Clojure, Python...  
 It is a lisp dialect with an extremely simple and easy interpreter.  
 It is easy to use.  
 
@@ -373,7 +373,7 @@ MISC
 </h2>  
 <strong>  
 	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str,
-	read
+	read, get-env, gensym, 
 </strong>  
 ```
 quote: return value without calculation  
@@ -417,8 +417,30 @@ map:   (map proc arg0 arg1 ...)  but this map function is not efficient... it is
 	(map + '(2 3) '(5 6)) => (7 9)  
 str: convert argument to string  
 	(str 1 "hi" 5) => "1hi5"  
-read: parse string and return list. Only support string(atom) and list type parameter
-	(read "(def x 12)") => '((def x 12))
+read: parse string and return list. Only support string(atom) and list type parameter  
+	(read "(def x 12)") => '((def x 12))  
+get-env: get the whole enviroment  
+	(get-env)  
+gensym: generate unique non-existent variable name.  
+	(gensym) => t_1  
+	(gensym) => t_2  
+	(def t_3 12)  
+	(gensym) =>  t_4  ;; because t_3 is already defined  
+	...  
+undefined?: check whether variable exists  
+	(undefined? 'x) => true; means "x" is not defined  
+	(def x 12)  
+	(undefined? 'x) => (); means "x" is defined  
+input: this function requires u to write a function in javascript called "TOY_getINPUT" with parameter "stack_param"  
+	for example:  
+		function TOY_getINPUT(stack_param) // stack param is parameter . (input "Hello") then stack_param is ["Hello"]; (input) then stack_param is []  
+		{  
+			if(stack_param.length == 0)  
+			    return prompt("");  
+			else  
+			    return prompt(stack_param[0]);  
+		}  
+		so calling "(def x (input 'user-input))" will call TOY_getINPUT and return string output.  
 
 ```
 <h2>Math</h2>
@@ -487,6 +509,18 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/17/2013  0.3.17 : Add "input" "get-env" "gensym" "undefined?" functions.
+		 					  "input" function requires u to write a function in javascript called "TOY_getINPUT" with parameter "stack_param"
+		 					  for example:
+		 					  	function TOY_getINPUT(stack_param) // stack param is parameter . (input "Hello") then stack_param is ["Hello"]; (input) then stack_param is []  
+								{
+								    if(stack_param.length == 0)
+								        return prompt("");
+								    else
+								        return prompt(stack_param[0]);
+								}
+							   so calling "(def x (input 'user-input))" will call TOY_getINPUT and return string output.
+
 		 12/16/2013  0.3.16 : Sorry;;;;;; Fix 'let' function bug... improve + - * / > < eq? >= <= functions
 		 12/16/2013  0.3.15 : Improve macro to avoid the accidental capture of identifiers. (by using closure)
 		                      eg: (defmacro test [x] `(list ~x))

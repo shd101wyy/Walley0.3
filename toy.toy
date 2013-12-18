@@ -300,5 +300,32 @@
 ;; non-destructive set-cdr, which will return new created value
 (def (set-cdr x value) (cons (car x) value))
 
+;; check variable bounded or not
+;; (def (variable-exists? var-name)
+;;	(def (variable-exists?-iter var-name env count)
+;;		(if (eq? count (len env))
+;;			false
+;;			(if (eq? (ref (ref env count) var-name) 'undefined)
+;;				(variable-exists?-iter var-name env (+ count 1))
+;;				true)))
+;;	(variable-exists?-iter var-name (get-env) 0))
+
+;; check variable exists
+(def (undefined? var-name)
+	(__undefined?__ var-name (get-env)))
+
+
+;; gensym
+(def (make-gensym)
+	(let [count 0 ,
+		  step 1 ,
+		  set-name (lambda []
+		  	(set! count (+ count step)) ;; change count
+		  	(let [var-name (str "t_" count)] ;; create var-name
+		  		(if (undefined? var-name)
+		  			var-name
+		  			(set-name))))]
+		 set-name))
+(def gensym (make-gensym))
 
 
