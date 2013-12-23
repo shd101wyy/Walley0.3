@@ -85,7 +85,7 @@
 
 ;; two kind of factorial
 (def (factorial n) (if (eq? n 0) 1 (* n (factorial (- n 1)))))
-(def (factorial n)(def (factorial-acc n acc)(if (eq? n 0) acc(factorial-acc (- n 1) (* acc n))))(factorial-acc n 1)) ;; currently can only run until 170
+(set! factorial (lambda (vector n) (def (factorial-acc n acc) (if (eq? n 0) acc (factorial-acc (- n 1) (* acc n)))) (factorial-acc n 1)))
 
 ;; and macro
 (defmacro and [arg0 arg1] `(if ~arg0 (if ~arg1 true false) false))
@@ -172,23 +172,9 @@
 
 
 ;; now 'and' and 'or' functions can accept more than two parameters
-(def (and . args)
-	(def (and-iter args)
-		(if (null? args)
-			true
-			(if (car args)
-				(and-iter (cdr args))
-				false)
-			))
-	(and-iter args))
-(def (or . args)
-	(def (or-iter args)
-		(if (null? args)
-			false
-			(if (car args)
-				true
-				(or-iter (cdr args)))))
-	(or-iter args))
+(set! and (lambda (vector . args) (def (and-iter args) (if (null? args) true (if (car args) (and-iter (cdr args)) false))) (and-iter args)))
+(set! or (lambda (vector . args) (def (or-iter args) (if (null? args) false (if (car args) true (or-iter (cdr args))))) (or-iter args)))
+
 
 
 ;; def not
@@ -311,8 +297,7 @@
 ;;	(variable-exists?-iter var-name (get-env) 0))
 
 ;; check variable exists
-(def (undefined? var-name)
-	(__undefined?__ var-name (get-env)))
+(set! undefined? (lambda (vector var-name) (__undefined?__ var-name (get-env))))
 
 
 ;; gensym
