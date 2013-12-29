@@ -62,20 +62,20 @@
 
 ;; new / procedure that admit more than one arguments
 (set! / 
-	(let [o_/ / ;; store old / procedure
-		  /_iter (lambda [result args]
+	(let [o_div / ;; store old / procedure
+		  div_iter (lambda [result args]
 		  			(cond ((null? args) result)
 					  (else
-					  	(/_iter (o_/ result (car args))
+					  	(div_iter (o_div result (car args))
 					  			(cdr args)) 
 					  	)))]
 		(lambda [. args]
 			(cond ((null? args) 
 			   (display "ERROR: Function / invalid parameters. Please provide parameters"))
 			  ((null? (cdr args))
-			  	(o_/ 1 (car args)))
+			  	(o_div 1 (car args)))
 			  (else
-			  	(/_iter (car args) (cdr args) ))))))
+			  	(div_iter (car args) (cdr args) ))))))
 
 
 ;; true and false scheme style

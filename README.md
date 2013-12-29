@@ -336,6 +336,10 @@ ref            :            return value according to key
 [quick-access]:  
 	(dictionary :key)  
 	eg: ({:a 12 :b 14} :a)  => will return 12 by key :a from that dictionary  
+[quick-access2]:  
+	eg:  
+		(def math {:add (lambda [a b] (+ a b))}) => ;;; def namespace add with property add ;;;
+		(math/add 3 4) => 7
 ```
 <h2> Vector </h2>         
 <strong>  
@@ -370,6 +374,7 @@ len:             return the length of vector
 	(len [1]) => 1  
 [quick-access]:  
 	([1,2,3] 0)   => return the element at index 0  
+
 ```
 <h2>  
 MISC  
@@ -514,6 +519,11 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 ```	
 		 12/29/2013  0.3.18 : 1) Redefinition of an existed variable is now not allowed... eg (def x 12) (def x 15) will cause error. in this case use (set! x 15)
 		 					  2) Add ;;; comment ;;; support.
+		 					  3) Add quick access functionality for dictionary(Learnt from Clojure)
+		 					  		eg:
+		 					  			(def math {:add (lambda [a b] (+ a b))}) => ;;; def namespace "math" with property "add" ;;;
+		 					  			(math/add 3 4) => 7
+
 		 12/17/2013  0.3.17 : Add "input" "get-env" "gensym" "undefined?" functions.
 		 					  "input" function requires u to write a function in javascript called "TOY_getINPUT" with parameter "stack_param"
 		 					  for example:
