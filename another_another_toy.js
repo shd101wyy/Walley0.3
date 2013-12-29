@@ -546,7 +546,7 @@ var eval_set = function(var_name, var_value, env)
             return var_value;
         }
     }
-    console.log("ERROR:Function set!, var name "+var_name+" does not exist");
+    console.log("ERROR: Function set!, var name "+var_name+" does not exist");
     return "undefined";
 }
 var eval_quasiquote = function(list, env)
@@ -1005,7 +1005,7 @@ var toy_eval = function(exp, env)
                 var application =   cons(proc, cdr(exp));
                 if(proc === "undefined" || proc instanceof Toy_Number)
                 {
-                    console.log("ERROR:Invalid Function " + (proc instanceof Toy_Number?formatNumber(proc):proc));
+                    console.log("ERROR: Invalid Function " + (proc instanceof Toy_Number?formatNumber(proc):proc));
                     console.log("      WITH EXP: "+to_string(exp))
                     return "undefined"
                 }
@@ -1113,14 +1113,14 @@ var primitive_builtin_functions =
         if(stack_param[0] instanceof Toy_Number)
             return new Toy_Number(stack_param[0].numer, 1, RATIO);
         else
-            console.log("ERROR:Function numerator wrong type parameters")
+            console.log("ERROR: Function numerator wrong type parameters")
         return "undefined"
         },
     "denominator": function(stack_param){ 
         if(stack_param[0] instanceof Toy_Number)
             return new Toy_Number(stack_param[0].denom, 1, RATIO);
         else
-            console.log("ERROR:Function numerator wrong type parameters")
+            console.log("ERROR: Function numerator wrong type parameters")
         return "undefined"
         },
     "null?":function(stack_param){return stack_param[0]===null?'true':null},
@@ -1349,7 +1349,7 @@ var primitive_builtin_functions =
                 return "undefined"
         }
         else
-            console.log("ERROR:Function ref wrong type parameters")      
+            console.log("ERROR: Function ref wrong type parameters")      
     },
     "->str":function(stack_param)
     {
