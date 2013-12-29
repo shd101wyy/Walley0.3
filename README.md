@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.17  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.18  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -64,7 +64,10 @@ It's a Language For FUN ;)
 <h2>Removed characters:</h2>  
 ```
 	, \t \a \n space where be removed when parsing  
-	comment: ; use ;
+	line comment: 
+		 ; use ;               | start with ; and span the rest of the line
+	long comment : 
+		 ;;; your comment ;;;  | start with ;;; end with ;;;
 ```
 <h2>Abbreviation:</h2>
 ```
@@ -509,6 +512,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/29/2013  0.3.18 : 1) Redefinition of an existed variable is now not allowed... eg (def x 12) (def x 15) will cause error. in this case use (set! x 15)
+		 					  2) Add ;;; comment ;;; support.
 		 12/17/2013  0.3.17 : Add "input" "get-env" "gensym" "undefined?" functions.
 		 					  "input" function requires u to write a function in javascript called "TOY_getINPUT" with parameter "stack_param"
 		 					  for example:

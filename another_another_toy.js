@@ -122,11 +122,18 @@ var cadar = function(obj){return car(cdr(car(obj)))}
 /* tokenize string to list */
 var lexer = function(input_str)
 {   
-    var find_final_comment_index = function(input_str, i) // find end index of comment
+    var find_final_comment_index = function(input_str, i) // find end index of comment ; comment
     {
         if(i == input_str.length) return i;
         if(input_str[i]=="\n") return i+1;
         else return find_final_comment_index(input_str, i + 1);
+    }
+    var find_final_long_annotation_index = function(input_str, i) // find end index of long comment ;;; comment ;;;
+    {
+        if(i == input_str.length) return i;
+        if(i + 3 <= input_str.length && input_str.slice(i, i+3) === ";;;")
+            return i+3;
+        return find_final_long_annotation_index(input_str, i+1);
     }
     var find_final_string_index = function(input_str, i)  // find final index of string 
     {
@@ -180,7 +187,10 @@ var lexer = function(input_str)
             return cons(input_str.slice(i, end), lexer_iter(input_str, end))
             // return cons("(", cons("quote", cons(input_str.slice(i, end), cons(")", lexer_iter(input_str, end)))))
         }
-        else if(input_str[i]===";")
+        // long annotation
+        else if (i + 3 <= input_str.length && input_str.slice(i, i+3) === ";;;") // ;;; comment ;;;
+            return lexer_iter(input_str, find_final_long_annotation_index(input_str, i+3));
+        else if(input_str[i]===";") // comment
             return lexer_iter(input_str, find_final_comment_index(input_str, i+1));
         else
         {
