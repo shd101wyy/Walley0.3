@@ -282,14 +282,14 @@ var parser = function(l)
         else if (isRatio(l))
             return new Toy_Number(parseFloat(getNumerator(l)), parseFloat(getDenominator(l)), RATIO)
 
-        var splitted_ = l.split("/");
+        var splitted_ = l.split(":");
         // console.log(l);
         // console.log(splitted_);
-        if(l === "/" || splitted_.length == 1 || splitted_[0].length === 0) //  / or x like
+        if(l === ":"  || splitted_.length == 1 || l[0] === ":" || l[l.length-1] === ":") //  : :abc abc: 
             return l;
-        var ns = splitted_[0]; // eg x/a => ns 'x'  keys ['a']
+        var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
         var keys = splitted_.slice(1);
-        var formatted_ = formatQuickAccess(ns, keys); // eg x/a => (ref x :a) or (x :a)
+        var formatted_ = formatQuickAccess(ns, keys); // eg x:a => (ref x :a) or (x :a)
         // console.log(formatted_);
         return formatted_;
     }
