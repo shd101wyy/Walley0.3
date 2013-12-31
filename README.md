@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.19  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.20  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -451,17 +451,17 @@ input: this function requires u to write a function in javascript called "TOY_ge
 		so calling "(def x (input 'user-input))" will call TOY_getINPUT and return string output.  
 
 ```
-<h2>Math</h2>
+<h2>Math Module</h2>
 <strong>
 	acos, acosh, asin, asinh, atan, atanh, ceil, cos, cosh, exp,
 	floor, loge, pow (**, ^), log, sin, sinh, tan, tanh,
-	diff, integral
+	~~~diff, integral~~~
 </strong>
 ```
 very simple math functions
-(loge 12) => return value with e as base
-(log 2 8) => 3
-pow == ** == ^
+(math:loge 12) => return value with e as base
+(math:log 2 8) => 3
+math:pow == ** == ^
 (^ 3/4 2) => 9/16
 
 experimental "diff" "integral" functions from sicp
@@ -517,18 +517,22 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 12/30/2013  0.3.20 : 1) Change math functions. Now all math functions belongs to math namespace.
+		 					 	 so when calling sin(12), use (math:sin 12).
+		 					  2) add ->int function, which convert number to integer.
+		 					  3) add % remainder function.
 		 12/29/2013  0.3.19 : After thinking carefully, I decided to replace the quick access of the value of dictionary according to key by using : instead of /
 		 						eg:
 		 					  			(def math {:add (lambda [a b] (+ a b))}) => ;;; def namespace "math" with property "add" ;;;
 		 					  			(math:add 3 4) => 7 
 		 12/29/2013  0.3.18 : 1) Redefinition of an existed variable is now not allowed... eg (def x 12) (def x 15) will cause error. in this case use (set! x 15)
 		 					  2) Add ;;; comment ;;; support.
-		 					  <del>
+		 					  ~~~<del>
 		 					  3) Add quick access functionality for dictionary(Learnt from Clojure) (Deprecated)
 		 					  		eg:
 		 					  			(def math {:add (lambda [a b] (+ a b))}) => ;;; def namespace "math" with property "add" ;;;
 		 					  			(math/add 3 4) => 7
-		 					  </del>
+		 					  </del>~~~
 
 		 12/17/2013  0.3.17 : Add "input" "get-env" "gensym" "undefined?" functions.
 		 					  "input" function requires u to write a function in javascript called "TOY_getINPUT" with parameter "stack_param"

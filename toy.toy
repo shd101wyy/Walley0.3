@@ -193,13 +193,24 @@
 (def (macro? arg) (eq? (typeof arg) 'macro))
 ;; (def (rational? arg) (or (integer? arg) (ratio? arg)))
 ;; Math
-(def ** pow)
-(def ^ pow)
-(def (log x y)
-	(/ (loge y) (loge x)))
-(def (sec x) (/ 1 (cos x)))
-(def (csc x) (/ 1 (sin x)))
-(def (cot x) (/ 1 (tan x)))
+(def ** math:pow)
+(def ^ math:pow)
+
+(assoc! math :log (lambda [x y] (/ (math:loge y) (math:loge x))))
+;; (def (log x y) (/ (loge y) (loge x)))
+
+(assoc! math :sec (lambda [x] (/ 1 (math:cos x))))
+;; (def (sec x) (/ 1 (cos x)))
+
+(assoc! math :csc (lambda [x] (/ 1 (math:sin x))))
+;; (def (csc x) (/ 1 (sin x)))
+
+(assoc! math :cot (lambda [x] (/ 1 (math:tan x))))
+;; (def (cot x) (/ 1 (tan x)))
+
+;; remainder function
+(def (% n0 n1) (let [result (->int (/ n0 n1))] (- n0 (* result n1))))
+
 
 ;; append element to list
 (def (append a b)
@@ -247,10 +258,11 @@
 ;; test string function
 ;; (str 12 15 "Hi")
 
-;; change ratio or integer to float
+;; convert ratio or integer to float
 ;; only work for number
 (def (->float num) (* num 1.0))
-
+;; convert number to int
+(def (->int num) (cond ((eq? num 0) 0) ((> num 0) (math:floor num)) (else (math:ceil num))))
 
 ;; diff func
 ;; eg d(x^2)/dx at point 0 is
@@ -266,7 +278,7 @@
 
 ;; simple integral func
 ;; eg integral of sin(x) from 0 to 1 with dx = 0.0001
-;; (integral (lambda [x] (sin x)) 0 1 0.0001) 
+;; (integral (lambda [x] (math:sin x)) 0 1 0.0001) 
 (def (integral func a b :dx 0.01)
 	(def (sum term a next b)
 		(if (> a b)
