@@ -927,6 +927,7 @@ var toy_eval = function(exp, env)
                 env[0][cadr(exp)] = macro;
                 return macro
             }
+            /*
             else if (tag === "while")
             {
                 var test = cadr(exp);
@@ -936,7 +937,7 @@ var toy_eval = function(exp, env)
                     eval_begin(body, env);
                 }
                 return "undefined";
-            }
+            }*/
             else if (tag === "get-env") // return current env
             {
                 return env.slice(0);
@@ -1579,7 +1580,7 @@ var primitive_builtin_functions =
         return "true";
     },
     "true":"true", "false":null,
-    "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", "while":"while",
+    "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", /*"while":"while"*/,
     "virtual_file_system":{} /* this is virtual file system used to save code as virtual file */
 }
 /*
