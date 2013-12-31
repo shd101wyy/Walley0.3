@@ -923,7 +923,8 @@ var toy_eval = function(exp, env)
             else if (tag === "defmacro")
             {
                 var macro = eval_macro(caddr(exp), cdddr(exp), env);
-                env[1][cadr(exp)] = macro;
+                // env[1][cadr(exp)] = macro;
+                env[0][cadr(exp)] = macro;
                 return macro
             }
             else if (tag === "while")
@@ -1605,7 +1606,8 @@ function TOY_getINPUT(stack_param)
 */  
 var create_new_environment = function()
 {
-    return [primitive_builtin_functions, {}];
+    return [primitive_builtin_functions];
+    // return [primitive_builtin_functions, {}];
 }
 var ENVIRONMENT = create_new_environment();
 /*
