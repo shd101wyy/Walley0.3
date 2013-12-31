@@ -528,12 +528,12 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 					  			(math:add 3 4) => 7 
 		 12/29/2013  0.3.18 : 1) Redefinition of an existed variable is now not allowed... eg (def x 12) (def x 15) will cause error. in this case use (set! x 15)
 		 					  2) Add ;;; comment ;;; support.
-		 					  ~~~<del>
+		 					  ~~~
 		 					  3) Add quick access functionality for dictionary(Learnt from Clojure) (Deprecated)
 		 					  		eg:
 		 					  			(def math {:add (lambda [a b] (+ a b))}) => ;;; def namespace "math" with property "add" ;;;
 		 					  			(math/add 3 4) => 7
-		 					  </del>~~~
+		 					  ~~~
 
 		 12/17/2013  0.3.17 : Add "input" "get-env" "gensym" "undefined?" functions.
 		 					  "input" function requires u to write a function in javascript called "TOY_getINPUT" with parameter "stack_param"
