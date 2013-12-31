@@ -518,9 +518,10 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 </strong>
 ```	
 		 12/30/2013  0.3.20 : 1) Change math functions. Now all math functions belongs to math namespace.
-		 					 	 so when calling sin(12), use (math:sin 12).
-		 					  2) add ->int function, which convert number to integer.
-		 					  3) add % remainder function.
+		 					 	 So when calling sin(12), now use (math:sin 12) instead of (sin 12).
+		 					  2) add "->int" function, which convert number to integer.
+		 					  3) add "%" remainder function.
+		 					  4) remove "while" function
 		 12/29/2013  0.3.19 : After thinking carefully, I decided to replace the quick access of the value of dictionary according to key by using : instead of /
 		 						eg:
 		 					  			(def math {:add (lambda [a b] (+ a b))}) => ;;; def namespace "math" with property "add" ;;;

@@ -1580,7 +1580,7 @@ var primitive_builtin_functions =
         return "true";
     },
     "true":"true", "false":null,
-    "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", /*"while":"while"*/,
+    "def":"def","set!":"set!","cond":"cond","if":"if","quote":"quote","quasiquote":"quasiquote","lambda":"lambda","defmacro":"defmacro", /*"while":"while",*/
     "virtual_file_system":{} /* this is virtual file system used to save code as virtual file */
 }
 /*
