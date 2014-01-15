@@ -1626,7 +1626,7 @@ var primitive_builtin_functions =
     {
         if(typeof(readStringFromFile) === 'undefined')
         {
-            console.log("ERROR: Cannot read file. Require NodeJs Support");
+            console.log("ERROR: Cannot read file. Require NodeJS Support");
             return "undefined";
         }
         var file_name = stack_param[0];
@@ -1636,7 +1636,7 @@ var primitive_builtin_functions =
     {
         if(typeof(writeStringToFile) === 'undefined')
         {
-            console.log("ERROR: Cannot write file. Require NodeJs Support");
+            console.log("ERROR: Cannot write file. Require NodeJS Support");
             return "undefined";
         }
         var file_name = stack_param[0];
@@ -1648,7 +1648,7 @@ var primitive_builtin_functions =
     {
         if(typeof(getCurrentDirectory) === 'undefined')
         {
-            console.log("ERROR: Cannot get current directory. Require NodeJs Support");
+            console.log("ERROR: Cannot get current directory. Require NodeJS Support");
             return "undefined";
         }
         return getCurrentDirectory();
@@ -1659,6 +1659,11 @@ var primitive_builtin_functions =
         then calling (x:test) will print string "You successfully require this file"
     */
     {
+        if(typeof(readStringFromFile) === 'undefined')
+        {
+            console.log("ERROR: Cannot require module. Require NodeJS Support");
+            return "undefined";
+        }
         var new_env = create_new_environment();
         var content = readStringFromFile(stack_param[0]);
         var l = lexer(content);

@@ -1,2 +1,2 @@
-(def (test) (display "You successfully require this file"))
+(def (test) (display "You successfully required this file"))
 (def a {:b 12})

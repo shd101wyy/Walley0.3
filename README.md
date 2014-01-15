@@ -481,7 +481,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	eg:
 		(integral (lambda [x] x) 0 1) => 0.5000000000
 ```
-<h2> Require Module (might be changed in the future) # require nodejs support </h2>
+<h2> Require Module </h2>
+<strong>(might be changed in the future) # require nodejs support </strong>
 ```
 "require" function. ps: this function might be changed in the future. (this function require nodejs support)
 
@@ -489,7 +490,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 
 	suppose inside "test.toy" here is :
 	-------------------------------------------------------------------
-		(def (test) (display "You successfully require this file"))
+		(def (test) (display "You successfully required this file"))
 		(def a {:b 12})
 	-------------------------------------------------------------------
 
@@ -497,8 +498,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 			(def x (require "test.toy"))
 		will assign x the value => {test < user-defined-procedure >, a {b 12,},}
 		so
-			(x:test) will print "You successfully require this file"
-			x:a:b will return 12
+			(x:test) => print "You successfully required this file"
+			x:a:b    => 12
 ```
 <h2> Call JavaScript Function </h2>
 ```
@@ -554,7 +555,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 
 		 					  		suppose inside "test.toy" here is :
 		 					  		-------------------------------------------------------------------
-		 					  			(def (test) (display "You successfully require this file"))
+		 					  			(def (test) (display "You successfully required this file"))
 										(def a {:b 12})
 									-------------------------------------------------------------------
 
@@ -562,8 +563,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 											(def x (require "test.toy"))
 											will assign x the value => {test < user-defined-procedure >, a {b 12,},}
 										so
-											(x:test) will print "You successfully require this file"
-											x:a:b will return 12
+											(x:test) => print "You successfully required this file"
+											x:a:b    => 12
 
 		 12/30/2013  0.3.20 : 1) Change math functions. Now all math functions belongs to math namespace.
 		 					 	 So when calling sin(12), now use (math:sin 12) instead of (sin 12).
