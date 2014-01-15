@@ -86,12 +86,13 @@ var Cons = function(x, y)
     this.TYPE = LIST  // for virtual machien check
 }
 // build procedure
-var Procedure = function(args, body, closure_env)
+var Procedure = function(args, body, closure_env, docstring)
 {
     this.args = args;
     this.body = body;
     this.closure_env = closure_env;
     this.TYPE = PROCEDURE;
+    this.docstring = docstring;
 }
 // build macro
 var Macro = function(args, body, closure_env)
@@ -673,8 +674,19 @@ var eval_quasiquote = function(list, env)
     return cons(v, eval_quasiquote(cdr(list), env)); 
 }
 
-var eval_lambda = function(lambda_args, lambda_body, env)
+var eval_lambda = function(/*lambda_args, lambda_body */ lambda__ ,env)
 {
+
+    var lambda_args = car(lambda__);
+    var lambda_body = cdr(lambda__);
+    var docstring = "This function has no information provided";
+    if(typeof(lambda_args) === "string" && lambda_args[0] === '"')
+    {
+        // docstring
+        docstring = lambda_args.slice(1, lambda_args.length-1);
+        lambda_args = car(lambda_body);
+        lambda_body = cdr(lambda_body);
+    }
     if(lambda_args.car!=="vector"){console.log("ERROR: when defining lambda, please use (lambda [args] body) format");return "undefined"}
     lambda_args = cdr(lambda_args);
     /* clean args */
@@ -734,7 +746,7 @@ var eval_lambda = function(lambda_args, lambda_body, env)
         }
         lambda_args = cdr(lambda_args);
     }
-    return new Procedure(arg, lambda_body/*new_lambda_body*/, env.slice(0));   
+    return new Procedure(arg, lambda_body/*new_lambda_body*/, env.slice(0), docstring);   
 }
 var eval_macro = function(macro_args, macro_body, env)
 {
@@ -905,7 +917,7 @@ var toy_eval = function(exp, env)
             }
             else if (tag === "lambda")
             {
-                return eval_lambda(cadr(exp), cddr(exp), env);
+                return eval_lambda(/*cadr(exp), cddr(exp)*/ cdr(exp), env);
             }
             else if (tag === "if")
             {
@@ -1670,6 +1682,11 @@ var primitive_builtin_functions =
         var p = parser(l);
         eval_begin(p, new_env);
         return new_env[1];
+    },
+    // get function docstring
+    "function-doc":function(stack_param)
+    {
+        return stack_param[0].docstring;
     },
     /*
     "sys":function(stack_param)

@@ -9,8 +9,10 @@
                   \\     |   \\     |  |  |  ||    ||      ||         
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
-           ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.21  FOR FUTURE AR,VR,AI  </h1>
+           ---------------------------------------------------|     
+```   	
+			<h1>	VERSION 0.3.22  FOR FUTURE AR,VR,AI  </h1>
+```
 			(display "Hello World ;)")
 ```
 ```
@@ -126,6 +128,7 @@ eg:
 	(def x 12)  
 	(def x [1 2 3])  
 	(def add (lambda [a b] (+ a b)))  
+	(def add2 (lambda "your docstring here" [a b] (+ a b)))  ;; you could use (function-doc add2) to get "your docstring here"
   
 	;; define lambda  
 	(def (add a b) (+ a b))    
@@ -381,7 +384,7 @@ MISC
 </h2>  
 <strong>  
 	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str,
-	read, get-env, gensym, read-file, write-file, get-curr-dir
+	read, get-env, gensym, read-file, write-file, get-curr-dir, function-doc
 </strong>  
 ```
 quote: return value without calculation  
@@ -456,6 +459,8 @@ write-file: # need nodejs support
 	(write-file file-name string-that-write-to-file) write string to file
 get-curr-dir: # need nodejs support
 	(get-curr-dir) return current dir
+function-doc: get function doc
+	(function-doc your_function) => the docstring of that function
 
 ```
 <h2>Math Module</h2>
@@ -544,6 +549,13 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 1/15/2013   0.3.22 : 1) Support function docstring
+		 							usage:
+		 								(defn add "Your doc here" [a b] (+ a b))
+		 							So now "Your doc here is binded to function add"
+		 							and you can get docstring by calling function
+		 								(function-doc add) => "Your doc here"
+
 		 1/15/2013   0.3.21 : 1) add "read-file", "write-file", "get-curr-dir" functions (these 3 functions require nodejs support)
 		 						 usage:
 		 						 	(read-file file-name) return string
