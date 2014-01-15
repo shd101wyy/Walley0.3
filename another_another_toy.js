@@ -5,6 +5,7 @@
 */
 
 var readStringFromFile; // read string from file function, return string
+var writeStringToFile; // write string to file
 // check node
 if(typeof(require) === 'function')
 {
@@ -14,6 +15,11 @@ if(typeof(require) === 'function')
     {
         return fs.readFileSync(path.resolve(__dirname, file_name),"utf8");
     } 
+    writeStringToFile = function(file_name, data)
+    {
+        fs.writeFile(path.resolve(__dirname, file_name), data);
+        return "undefined";
+    }
 }
 
 
@@ -1587,6 +1593,18 @@ var primitive_builtin_functions =
         }
         var file_name = stack_param[0];
         return readStringFromFile(file_name);
+    },
+    "write-file":function(stack_param)
+    {
+        if(typeof(writeStringToFile) === 'undefined')
+        {
+            console.log("ERROR: Cannot write file. Require NodeJs Support");
+            return "undefined";
+        }
+        var file_name = stack_param[0];
+        var data = stack_param[1];
+        return writeStringToFile(file_name, data);
+
     },
     "input":function(stack_param)
     {
