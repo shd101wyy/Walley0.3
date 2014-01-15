@@ -1684,9 +1684,13 @@ var primitive_builtin_functions =
         return new_env[1];
     },
     // get function docstring
-    "function-doc":function(stack_param)
+    "get-function-doc":function(stack_param)
     {
         return stack_param[0].docstring;
+    },
+    "set-function-doc":function(stack_param) /* set docstring to function */
+    {
+        stack_param[0].docstring = stack_param[1]; return "undefined";
     },
     /*
     "sys":function(stack_param)

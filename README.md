@@ -128,7 +128,8 @@ eg:
 	(def x 12)  
 	(def x [1 2 3])  
 	(def add (lambda [a b] (+ a b)))  
-	(def add2 (lambda "your docstring here" [a b] (+ a b)))  ;; you could use (function-doc add2) to get "your docstring here"
+	(def add2 (lambda "your docstring here" [a b] (+ a b)))  ;; you could use (get-function-doc add2) to get "your docstring here"
+															 ;; (set-function-doc add2 "New docstring") to set docstring
   
 	;; define lambda  
 	(def (add a b) (+ a b))    
@@ -384,7 +385,7 @@ MISC
 </h2>  
 <strong>  
 	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str,
-	read, get-env, gensym, read-file, write-file, get-curr-dir, function-doc
+	read, get-env, gensym, read-file, write-file, get-curr-dir, get-function-doc, set-function-doc
 </strong>  
 ```
 quote: return value without calculation  
@@ -459,8 +460,10 @@ write-file: # need nodejs support
 	(write-file file-name string-that-write-to-file) write string to file
 get-curr-dir: # need nodejs support
 	(get-curr-dir) return current dir
-function-doc: get function doc
-	(function-doc your_function) => the docstring of that function
+get-function-doc: get function doc
+	(get-function-doc your_function) => the docstring of that function
+set-function-doc: set function doc
+	(set-function-doc your_function your_doc) => set your_doc as docstring of your_function
 
 ```
 <h2>Math Module</h2>
@@ -554,7 +557,9 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 								(defn add "Your doc here" [a b] (+ a b))
 		 							So now "Your doc here is binded to function add"
 		 							and you can get docstring by calling function
-		 								(function-doc add) => "Your doc here"
+		 								(get-function-doc add) => "Your doc here"
+		 							and you can set docstring by calling function
+		 								(set-function-doc add "Your new docstring here")
 
 		 1/15/2013   0.3.21 : 1) add "read-file", "write-file", "get-curr-dir" functions (these 3 functions require nodejs support)
 		 						 usage:
