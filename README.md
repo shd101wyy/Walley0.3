@@ -10,7 +10,7 @@
                    \\____|    \\____|  \__/\ ||___ ||__e   ||         
            __________________________________________________||         
            ---------------------------------------------------|        	
-			<h1>	VERSION 0.3.20  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.21  FOR FUTURE AR,VR,AI  </h1>
 			(display "Hello World ;)")
 ```
 ```
@@ -381,7 +381,7 @@ MISC
 </h2>  
 <strong>  
 	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str,
-	read, get-env, gensym, 
+	read, get-env, gensym, read-file, write-file, get-curr-dir
 </strong>  
 ```
 quote: return value without calculation  
@@ -450,6 +450,13 @@ input: this function requires u to write a function in javascript called "TOY_ge
 		}  
 		so calling "(def x (input 'user-input))" will call TOY_getINPUT and return string output.  
 
+read-file:  # need nodejs support
+	(read-file file-name) return string
+write-file: # need nodejs support
+	(write-file file-name string-that-write-to-file) write string to file
+get-curr-dir: # need nodejs support
+	(get-curr-dir) return current dir
+
 ```
 <h2>Math Module</h2>
 <strong>
@@ -473,6 +480,25 @@ diff: (diff lambda diff_point error) where error is 0.000001 by default
 integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.01 by default
 	eg:
 		(integral (lambda [x] x) 0 1) => 0.5000000000
+```
+<h2> Require Module (might be changed in the future) # require nodejs support </h2>
+```
+"require" function. ps: this function might be changed in the future. (this function require nodejs support)
+
+	(def as-name (require "the-module-you-want-to-load.toy"))
+
+	suppose inside "test.toy" here is :
+	-------------------------------------------------------------------
+		(def (test) (display "You successfully require this file"))
+		(def a {:b 12})
+	-------------------------------------------------------------------
+
+		then
+			(def x (require "test.toy"))
+		will assign x the value => {test < user-defined-procedure >, a {b 12,},}
+		so
+			(x:test) will print "You successfully require this file"
+			x:a:b will return 12
 ```
 <h2> Call JavaScript Function </h2>
 ```
@@ -517,6 +543,28 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 1/15/2013   0.3.21 : 1) add "read-file", "write-file", "get-curr-dir" functions (these 3 functions require nodejs support)
+		 						 usage:
+		 						 	(read-file file-name) return string
+		 						 	(write-file file-name string-that-write-to-file) write string to file
+		 						 	(get-curr-dir) return current dir
+
+		 					  2) add "require" function. ps: this function might be changed in the future. (this function require nodejs support)
+		 					  		(def as-name (require "the-module-you-want-to-load.toy"))
+
+		 					  		suppose inside "test.toy" here is :
+		 					  		-------------------------------------------------------------------
+		 					  			(def (test) (display "You successfully require this file"))
+										(def a {:b 12})
+									-------------------------------------------------------------------
+
+										then
+											(def x (require "test.toy"))
+											will assign x the value => {test < user-defined-procedure >, a {b 12,},}
+										so
+											(x:test) will print "You successfully require this file"
+											x:a:b will return 12
+
 		 12/30/2013  0.3.20 : 1) Change math functions. Now all math functions belongs to math namespace.
 		 					 	 So when calling sin(12), now use (math:sin 12) instead of (sin 12).
 		 					  2) add "->int" function, which convert number to integer.

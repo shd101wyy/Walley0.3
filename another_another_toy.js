@@ -4,23 +4,61 @@
 
 */
 
+/*
+=========================================================
+=========================================================
+=========================================================
+==== The following functions require nodejs support =====
+=========================================================
+=========================================================
+=========================================================
+
+*/
 var readStringFromFile; // read string from file function, return string
 var writeStringToFile; // write string to file
+var getCurrentDirectory; // get current directory
+// var systemCommand; // call system command
 // check node
 if(typeof(require) === 'function')
 {
     var fs = require("fs");
     var path = require("path");
+    var sys = require('sys')
+    var exec = require('child_process').exec;
+    var out_;
+
     readStringFromFile = function(file_name)
     {
         return fs.readFileSync(path.resolve(__dirname, file_name),"utf8");
-    } 
+    };
     writeStringToFile = function(file_name, data)
     {
         fs.writeFile(path.resolve(__dirname, file_name), data);
         return "undefined";
-    }
+    };
+    getCurrentDirectory = function()
+    {
+        return __dirname;
+    };
+    /*
+    function puts(error, stdout, stderr) { if(error!=null){console.log("EXEC ERROR: \n" + error); return;}; console.log(stdout); console.log(stderr); out_= stdout;};
+    systemCommand = function(cmd)
+    {
+        exec(cmd, puts);
+        return out_;
+    };
+    */
 }
+/*
+=========================================================
+=========================================================
+=========================================================
+=========================================================
+=========================================================
+=========================================================
+=========================================================
+=========================================================
+*/
 
 
 
@@ -1606,6 +1644,39 @@ var primitive_builtin_functions =
         return writeStringToFile(file_name, data);
 
     },
+    "get-curr-dir":function(stack_param)
+    {
+        if(typeof(getCurrentDirectory) === 'undefined')
+        {
+            console.log("ERROR: Cannot get current directory. Require NodeJs Support");
+            return "undefined";
+        }
+        return getCurrentDirectory();
+    },
+    "require":function(stack_param) 
+    /*
+        require module eg: (def x (require "./test/test.toy")), in test.toy here is "(def (test) (display "You successfully require this file"))"
+        then calling (x:test) will print string "You successfully require this file"
+    */
+    {
+        var new_env = create_new_environment();
+        var content = readStringFromFile(stack_param[0]);
+        var l = lexer(content);
+        var p = parser(l);
+        eval_begin(p, new_env);
+        return new_env[1];
+    },
+    /*
+    "sys":function(stack_param)
+    {
+        if(typeof(systemCommand) === 'undefined')
+        {
+            console.log("ERROR: Cannot exec system command. Require NodeJs Support");
+            return "undefined";
+        }
+        return systemCommand(stack_param[0]);
+        // return "undefined";
+    },*/
     "input":function(stack_param)
     {
         return TOY_getINPUT(stack_param); // this function should be written by u, which is supposed to return string
@@ -1650,8 +1721,8 @@ function TOY_getINPUT(stack_param)
 */  
 var create_new_environment = function()
 {
-    return [primitive_builtin_functions];
-    // return [primitive_builtin_functions, {}];
+    // return [primitive_builtin_functions];
+    return [primitive_builtin_functions, {}];
 }
 var ENVIRONMENT = create_new_environment();
 /*
