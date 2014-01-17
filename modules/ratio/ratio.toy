@@ -1,0 +1,26 @@
+;;;
+	添加 ratio data type
+;;;
+;; 安装 ratio data type
+(def (install-ratio-data-type-package)
+	;; create ratio data type
+	;; 创建 ratio 数据类型
+	(def (ratio numer denom)
+		{:numer numer,
+		 :denom denom,
+		 :ratio? true}
+		)
+	;; get gcd
+	;; 得到最大公约数
+	(def (gcd a b)
+		(if (eq? b 0)
+			a
+			(gcd b (% a b))))
+	
+	(def (ratio-add num1 num2)
+		)
+
+	{:gcd gcd})
+
+(def r (install-ratio-data-type-package))
+(display (r:gcd 6 6))
