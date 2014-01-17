@@ -256,7 +256,16 @@ var lexer = function(input_str)
         {
             // atom or number
             var end = find_final_number_of_atom_index(input_str, i+1);
-            return cons( input_str.slice(i, end) , lexer_iter(input_str, end));
+            var __obj = input_str.slice(i, end);
+            if(isRatio(__obj)) // is ratio number
+            {
+                return cons("(", cons("/", cons(parseFloat(getNumerator(__obj)), cons(parseFloat(getDenominator(__obj)), cons(")", lexer_iter(input_str, end))))));
+            }
+            else
+            {
+                return cons(__obj, lexer_iter(input_str, end))
+            }
+            // return cons( input_str.slice(i, end) , lexer_iter(input_str, end));
         }
     }
     return lexer_iter(input_str, 0);
