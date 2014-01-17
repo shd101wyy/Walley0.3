@@ -3,24 +3,183 @@
 ;;;
 ;; 安装 ratio data type
 (def (install-ratio-data-type-package)
+	(def o_+ +) 
+	(def o_- -)
+	(def o_* *)
+	(def o_% %)
+	(def o_/ /) ;; 保存原来的 / 这个 / 只支持 2 个参数的运算
+	
 	;; create ratio data type
 	;; 创建 ratio 数据类型
-	(def (ratio numer denom)
-		{:numer numer,
-		 :denom denom,
-		 :ratio? true}
-		)
+	(def (make-ratio numer denom)
+		(if (eq? denom 1)
+			numer ;; integer
+			{:numer numer,
+			 :denom denom,
+			 :type 'ratio}
+			))
 	;; get gcd
 	;; 得到最大公约数
 	(def (gcd a b)
 		(if (eq? b 0)
 			a
-			(gcd b (% a b))))
+			(gcd b (o_% a b))))
 	
+	;; 加上两个 ratio
 	(def (ratio-add num1 num2)
-		)
+		(let [numer_1 num1:numer 
+			  denom_1 num1:denom
+			  numer_2 num2:numer
+			  denom_2 num2:denom
+			  new_numer 	(o_+ (o_* numer_1 denom_2)
+			  	  			     (o_* numer_2 denom_1))
+			  new_denom (o_* denom_1 denom_2)
+			  gcd_ (gcd new_numer new_denom)
+			  ]
+			  (make-ratio (o_/ new_numer gcd_)
+			  			  (o_/ new_denom gcd_))))
+	;; 
+	(def (ratio-sub num1 num2)
+		(let [numer_1 num1:numer 
+			  denom_1 num1:denom
+			  numer_2 num2:numer
+			  denom_2 num2:denom
+			  new_numer 	(o_- (o_* numer_1 denom_2)
+			  	  			     (o_* numer_2 denom_1))
+			  new_denom (o_* denom_1 denom_2)
+			  gcd_ (gcd new_numer new_denom)
+			  ]
+			  (make-ratio (o_/ new_numer gcd_)
+			  			  (o_/ new_denom gcd_))))
 
-	{:gcd gcd})
+	;;
+	(def (ratio-mul num1 num2)
+		(let [numer_1 num1:numer 
+			  denom_1 num1:denom
+			  numer_2 num2:numer
+			  denom_2 num2:denom
+			  new_numer 	(o_* numer_1 numer_2)
+			  new_denom (o_* denom_1 denom_2)
+			  gcd_ (gcd new_numer new_denom)
+			  ]
+			  (make-ratio (o_/ new_numer gcd_)
+			  			  (o_/ new_denom gcd_))))
+
+	;;
+	(def (ratio-div num1 num2)
+		(let [numer_1 num1:numer 
+			  denom_1 num1:denom
+			  numer_2 num2:numer
+			  denom_2 num2:denom
+			  new_numer 	(o_* numer_1 denom_2)
+			  new_denom (o_* denom_1 numer_2)
+			  gcd_ (gcd new_numer new_denom)
+			  ]
+			  (make-ratio (o_/ new_numer gcd_)
+			  			  (o_/ new_denom gcd_))))
+
+	(def (isNumber o)
+		(or (integer? o) (float? o) (eq? o:type 'ratio)))
+	(def (numerator-for-number num)
+		(cond ((or (integer? num) (float? num))
+				num
+				num:numer)))
+	(def (denominator-for-number num)
+		(cond ((or (integer? num) (float? num))
+				1
+				num:denom)))
+	;; 改变 integer 到 ratio 或者 保持 ratio 到 ratio
+	(def (format-ratio-or-integer num)
+		(if (integer? num)
+			{:numer num, :denom 1, :type 'ratio}
+			num)
+		)
+	;; new version + which supports ratio
+	(set! + (lambda [o1 o2]
+		(let [o1_number? (isNumber o1)
+			  o2_number? (isNumber o2)
+			]
+			(if (and o1_number? o2_number?)
+				;;都是数字
+				(cond ((or (float? o1) (float? o2))
+					   (o_+ (o_/ (numerator-for-number o1)
+					   		   (denominator-for-number o1))
+					   	    (o_/ (numerator-for-number o2)
+					   	  	   (denominator-for-number o2)))
+						)
+				      (else 
+				      	(ratio-add (format-ratio-or-integer o1)
+				      	           (format-ratio-or-integer o2))))
+				;;有不是数字
+				(o_+ o1 o2)
+				))))
+	;; new version - which supports ratio
+	(set! - (lambda [o1 o2]
+		(let [o1_number? (isNumber o1)
+			  o2_number? (isNumber o2)
+			]
+			(if (and o1_number? o2_number?)
+				;;都是数字
+				(cond ((or (float? o1) (float? o2))
+					   (o_- (o_/ (numerator-for-number o1)
+					   		   (denominator-for-number o1))
+					   	    (o_/ (numerator-for-number o2)
+					   	  	   (denominator-for-number o2)))
+						)
+				      (else 
+				      	(ratio-sub (format-ratio-or-integer o1)
+				      	           (format-ratio-or-integer o2))))
+				;;有不是数字
+				(o_+ o1 o2)
+				))))
+	;; new version * which supports ratio
+	(set! * (lambda [o1 o2]
+		(let [o1_number? (isNumber o1)
+			  o2_number? (isNumber o2)
+			]
+			(if (and o1_number? o2_number?)
+				;;都是数字
+				(cond ((or (float? o1) (float? o2))
+					   (o_* (o_/ (numerator-for-number o1)
+					   		   (denominator-for-number o1))
+					   	    (o_/ (numerator-for-number o2)
+					   	  	   (denominator-for-number o2)))
+						)
+				      (else 
+				      	(ratio-mul (format-ratio-or-integer o1)
+				      	           (format-ratio-or-integer o2))))
+				;;有不是数字
+				(o_+ o1 o2)
+				))))
+	;; new version / which supports ratio
+	(set! / (lambda [o1 o2]
+		(let [o1_number? (isNumber o1)
+			  o2_number? (isNumber o2)
+			]
+			(if (and o1_number? o2_number?)
+				;;都是数字
+				(cond ((or (float? o1) (float? o2))
+					   (o_/ (o_/ (numerator-for-number o1)
+					   		   (denominator-for-number o1))
+					   	    (o_/ (numerator-for-number o2)
+					   	  	   (denominator-for-number o2)))
+						)
+				      (else 
+				      	(ratio-div (format-ratio-or-integer o1)
+				      	           (format-ratio-or-integer o2))))
+				;;有不是数字
+				(o_+ o1 o2)
+				))))
+
+	{:gcd gcd ,
+	 :make-ratio make-ratio ,
+	 :r+ ratio-add
+	 :r- ratio-sub
+	 :r* ratio-mul
+	 :r/ ratio-div
+	  })
 
 (def r (install-ratio-data-type-package))
 (display (r:gcd 6 6))
+(display (+ (r:make-ratio 3 4) (r:make-ratio 5 6)))
+(display (+ (r:make-ratio 3 4) 5))
