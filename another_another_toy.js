@@ -696,8 +696,11 @@ var eval_lambda = function(/*lambda_args, lambda_body */ lambda__ ,env)
         lambda_args = car(lambda_body);
         lambda_body = cdr(lambda_body);
     }
-    if(lambda_args.car!=="vector"){console.log("ERROR: when defining lambda, please use (lambda [args] body) format");return "undefined"}
-    lambda_args = cdr(lambda_args);
+    if(lambda_args.car === "vector"){
+ // if(lambda_args.car!=="vector"){console.log("ERROR: when defining lambda, please use (lambda [args] body) format");return "undefined"}
+        lambda_args = cdr(lambda_args);
+    }
+   
     /* clean args */
     var arg = {}
     arg.arg_name_list = [];
@@ -909,8 +912,13 @@ var toy_eval = function(exp, env)
             else if (tag === "let")
             {
                 var var_val_vector = cadr(exp);
-                if(var_val_vector.car!=="vector"){console.log("ERROR: please use [] in let when binding variables. Like (let [a 0 b 2] (+ a b))"); return "undefined"}
-                var_val_vector = cdr(var_val_vector);
+                
+                if(var_val_vector.car==="vector")
+                {
+                    // if(var_val_vector.car!=="vector"){console.log("ERROR: please use [] in let when binding variables. Like (let [a 0 b 2] (+ a b))"); return "undefined"}
+                    var_val_vector = cdr(var_val_vector);
+                }
+                
                 var new_frame = {};
                 env.push(new_frame); // this env has to be here... don't change it
                 while(var_val_vector!==null)
