@@ -11,7 +11,7 @@
            __________________________________________________||         
            ---------------------------------------------------|     
 ```   	
-			<h1>	VERSION 0.3.22  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.23  FOR FUTURE AR,VR,AI  </h1>
 ```
 			(display "Hello World ;)")
 ```
@@ -552,6 +552,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 1/18/2013   0.3.23 : 1) improve macro, fix some macro bugs.
+		 					  2) fix "and" "or" functions bug.
 		 1/15/2013   0.3.22 : 1) Support function docstring
 		 							usage:
 		 								(defn add "Your doc here" [a b] (+ a b))
