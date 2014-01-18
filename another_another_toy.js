@@ -1095,7 +1095,7 @@ var toy_eval = function(exp, env)
                     2014 / 1 / 18
                     solve hygienic macro problem
                 */
-                var format_stm = function(macro_stm, macro_env)
+                var format_stm = function(macro_stm, macro_env, is_head)
                 {
                     if(macro_stm === null)
                         return null;
@@ -1104,9 +1104,54 @@ var toy_eval = function(exp, env)
                     var o = car(macro_stm);
                     if(o instanceof Cons)
                     {
-                        return cons(format_stm(o, macro_env), 
-                                    format_stm(cdr(macro_stm), macro_env));
+                        return cons(format_stm(o, macro_env, true), 
+                                    format_stm(cdr(macro_stm), macro_env, false));
                     }
+                    /*
+                        solve (def add (lambda [a b] (+ a b))) problem
+                        prevent "add" from being replaced
+                    */
+                    else if (is_head)
+                    {
+                        if (o === "def" || o === "set!" || o === "lambda" || o === "let")
+                        {
+                            return cons(o, cons(cadr(macro_stm), 
+                                                format_stm(cddr(macro_stm), macro_env, false)));
+                        }
+                        else if (o === "quote" || o === "quasiquote" || o === "unquote")
+                        {
+                            return macro_stm;
+                        }
+                        else if (o === "defmacro")
+                        {
+                            return cons(o, cons(cadr(macro_stm), cons(caddr(macro_stm), format_stm(cdddr(macro_stm), macro_env, false))));
+                        }
+                        /*
+                        if cond begin 是都要替换掉的
+                        */
+                        else
+                        {
+                            /*
+                                和小面那个else里面的内容一样
+                            */
+                            for(var i = macro_env.length-1; i>=0; i--)
+                            {
+                                if(o in macro_env[i])
+                                {
+                                    return cons(macro_env[i][o], 
+                                                format_stm(cdr(macro_stm), macro_env, false));
+                                }
+                            }
+                            return cons(o, 
+                                        format_stm(cdr(macro_stm), macro_env, false));
+                        }
+                    }
+                    /*
+                    else if (o === "def")
+                    {
+                        return cons(o, cons(cadr(macro_stm), 
+                                            format_stm(cddr(macro_stm), macro_env)))
+                    }*/
                     else
                     {
                         for(var i = macro_env.length-1; i>=0; i--)
@@ -1114,15 +1159,16 @@ var toy_eval = function(exp, env)
                             if(o in macro_env[i])
                             {
                                 return cons(macro_env[i][o], 
-                                            format_stm(cdr(macro_stm), macro_env));
+                                            format_stm(cdr(macro_stm), macro_env, false));
                             }
                         }
                         return cons(o, 
-                                    format_stm(cdr(macro_stm), macro_env))
+                                    format_stm(cdr(macro_stm), macro_env, false))
                     }
                 }
 
-                var formatted_stm = format_stm(macro_stm, macro_env);
+                var formatted_stm = format_stm(macro_stm, macro_env, true);
+                
                 // primitive_builtin_functions["display"]([formatted_stm]);
 
                 return toy_eval(formatted_stm, env);
