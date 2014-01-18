@@ -762,8 +762,9 @@ var eval_lambda = function(/*lambda_args, lambda_body */ lambda__ ,env)
 }
 var eval_macro = function(macro_args, macro_body, env)
 {
-    if(macro_args.car!=="vector"){console.log("ERROR: when defining macro_args, please use (defmacro macro_name [args] body) format");return "undefined"}
-    macro_args = cdr(macro_args);
+    //if(macro_args.car!=="vector"){console.log("ERROR: when defining macro_args, please use (defmacro macro_name [args] body) format");return "undefined"}
+    if(macro_args.car === "vector")
+        macro_args = cdr(macro_args);
     return new Macro(macro_args, macro_body, env.slice(0));
 }
 var eval_list = function(list, env)
@@ -778,11 +779,6 @@ var macro_expand = function(macro, params, env)
     {
         while(args!==null)
         {   
-            if(params === null) /* Error */
-            {
-                console.log("ERROR: Invalid macro. Pattern doesn't match");
-                return;
-            }
             var var_name = car(args); 
             if(var_name instanceof Cons)
             {
@@ -798,6 +794,11 @@ var macro_expand = function(macro, params, env)
             }
             else
             {
+                if(params === null) /* Error */
+                {
+                   console.log("ERROR: Invalid macro. Pattern doesn't match");
+                    return;
+                }
                 var var_value = car(params); // does not calculate
                 new_frame[var_name] = var_value;
             }
