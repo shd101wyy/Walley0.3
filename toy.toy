@@ -94,6 +94,7 @@
 (defmacro or [arg0 arg1] `(if ~arg0 true (if ~arg1 true false)))
 ;;;
 
+; 这个也有问题
 ;; NEW AND OR
 (def (or__ args)
 	(cond ((null? args) false)
@@ -107,6 +108,7 @@
 		  	(and__ (cdr args)))
 		  (else ())))
 (defmacro and [. args] `(and__ (quote ~args)))
+
 
 ;; >
 (def (> arg0 arg1) (< arg1 arg0))

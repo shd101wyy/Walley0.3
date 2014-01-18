@@ -1080,7 +1080,45 @@ var toy_eval = function(exp, env)
             else if (tag.TYPE === MACRO)
             {
             	var expanded_statement = macro_expand(tag, cdr(exp), env);
-                return toy_eval(expanded_statement[0], expanded_statement[1], env);
+
+                var macro_stm = expanded_statement[0];
+                var macro_env = expanded_statement[1];
+                /*
+                    2014 / 1 / 18
+                    solve hygienic macro problem
+                */
+                var format_stm = function(macro_stm, macro_env)
+                {
+                    if(macro_stm === null)
+                        return null;
+                    else if (! (macro_stm instanceof Cons))
+                        return macro_stm;
+                    var o = car(macro_stm);
+                    if(o instanceof Cons)
+                    {
+                        return cons(format_stm(o, macro_env), 
+                                    format_stm(cdr(macro_stm), macro_env));
+                    }
+                    else
+                    {
+                        for(var i = macro_env.length-1; i>=0; i--)
+                        {
+                            if(o in macro_env[i])
+                            {
+                                return cons(macro_env[i][o], 
+                                            format_stm(cdr(macro_stm), macro_env));
+                            }
+                        }
+                        return cons(o, 
+                                    format_stm(cdr(macro_stm), macro_env))
+                    }
+                }
+
+                var formatted_stm = format_stm(macro_stm, macro_env);
+                // primitive_builtin_functions["display"]([formatted_stm]);
+
+                return toy_eval(formatted_stm, env);
+                // return toy_eval(expanded_statement[0], expanded_statement[1]);
             }
             else if (tag instanceof Array)
             {
