@@ -87,11 +87,26 @@
 (def (factorial n) (if (eq? n 0) 1 (* n (factorial (- n 1)))))
 (set! factorial (lambda (vector n) (def (factorial-acc n acc) (if (eq? n 0) acc (factorial-acc (- n 1) (* acc n)))) (factorial-acc n 1)))
 
+;;; WRONG MACROS
 ;; and macro
 (defmacro and [arg0 arg1] `(if ~arg0 (if ~arg1 true false) false))
-
 ;; or macro
 (defmacro or [arg0 arg1] `(if ~arg0 true (if ~arg1 true false)))
+;;;
+
+;; NEW AND OR
+(def (or__ args)
+	(cond ((null? args) false)
+		  ((eval (car args)) true)
+		  (else (or__ (cdr args)))))
+(defmacro or [. args] `(or__ (quote ~args)))
+
+(def (and__ args)
+	(cond ((null? args) true)
+		  ((eval (car args)) 
+		  	(and__ (cdr args)))
+		  (else ())))
+(defmacro and [. args] `(and__ (quote ~args)))
 
 ;; >
 (def (> arg0 arg1) (< arg1 arg0))
@@ -170,12 +185,11 @@
 				(>=-iter (cdr args) (car args))))))
 
 
-
+;;; THIS AND OR FUNCTIONS ARE WRONG
 ;; now 'and' and 'or' functions can accept more than two parameters
 (set! and (lambda (vector . args) (def (and-iter args) (if (null? args) true (if (car args) (and-iter (cdr args)) false))) (and-iter args)))
 (set! or (lambda (vector . args) (def (or-iter args) (if (null? args) false (if (car args) true (or-iter (cdr args))))) (or-iter args)))
-
-
+;;;
 
 ;; def not
 (def (not arg0) (if arg0 false true))
