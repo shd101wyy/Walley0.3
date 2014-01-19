@@ -11,7 +11,7 @@
            __________________________________________________||         
            ---------------------------------------------------|     
 ```   	
-			<h1>	VERSION 0.3.23  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.24  FOR FUTURE AR,VR,AI  </h1>
 ```
 			(display "Hello World ;)")
 ```
@@ -54,7 +54,7 @@ It's a Language For FUN ;)
 	Ratio:    1 2 3 4/5 5/6   ...      
 	Float:    1.2,  3.4,  5.6 ...  
 	List :    '(1 2)  '(hello World)  
-	Vector:   [1 2],   [3 4 5]  
+	Vector:   #[1 2],   #[3 4 5]  (ps: #(...) is the same as #[...])
 	Dictionary: {:a 12} {:hello "World"}  
 	Atom(String): "Hello World" 'Hello-world  
 	Lambda:     (lambda [params] body)
@@ -80,6 +80,9 @@ It's a Language For FUN ;)
 	` => quasiquote     eg:  `(~x x) => (quasiquote ((unquote x) x))  
 	~@ => unquote-splice eg: `(~@'(1 2 3) 4) => (1 2 3 4)
                              `(0 ~@'(1 2 3) 4) => (0 1 2 3 4)
+
+   	[ <=> (  ;  ] <=> ) .
+   		so [def x 12] is also valid
 ```
 <h2> Builtin Procedures and Macros </h2>  
 ```
@@ -94,7 +97,7 @@ Define List :
 	(list 1 2 3)  
 
 Define Vector:  
-	[1 2 3]  
+	#[1 2 3]  
 	(vector 1 2 3)  
 
 Define Dictionary:  
@@ -126,7 +129,7 @@ Define Macro:
 (def (function_name params) body)  
 eg:  
 	(def x 12)  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(def add (lambda [a b] (+ a b)))  
 	(def add2 (lambda "your docstring here" [a b] (+ a b)))  ;; you could use (get-function-doc add2) to get "your docstring here"
 															 ;; (set-function-doc add2 "New docstring") to set docstring
@@ -190,7 +193,7 @@ eg:
 ;; The Macro is still under development...  
 ;; I am still studying macro now ;)  
 ```
-<strong>While</strong>  
+<strong>While</strong>  ;; this function is removed
 ```
 (while (test) body)  ;;return "undefined"  
 eg:  
@@ -243,7 +246,7 @@ eg:
 	(integer? 3)         => true  
 	(float? 3.0)         => true  
 	(integer? 3.0)       =>false  
-	(vector? [1 2 3])    => true  
+	(vector? #[1 2 3])    => true  
 	(dictionary? {:a 12})=> true  
 	(pair? '(1 2))       => true  
 	(list? '(1 2))       => true  
@@ -351,33 +354,33 @@ ref            :            return value according to key
 </strong>  
 ```
 assoc:           return a new array, but change index-value  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(assoc x 0 12)  => return [12 2 3], keep x unchanged  
 assoc!:          destructive assoc  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(assoc! x 0 12)  => will change x to [12 2 3]  
 conj:           append element, like push. nondestructive, this function will return new vector  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(conj x 4) => return new vector [1 2 3 4]  
 conj!:           destructive conj  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(conj x 4) => x now is [1 2 3 4]  
 pop:             remove last element, return a new vector  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(pop x)        => [1 2]  
 
 pop!:            destructive pop  
-	(def x [1 2 3])  
+	(def x #[1 2 3])  
 	(pop! x)       => change x to [1 2]  
 ref:             access element according to index  
-	(ref [1 2 3] 0)  => return value at index 0, which is 1  
+	(ref #[1 2 3] 0)  => return value at index 0, which is 1  
 ->str:           convert vector to string  
 slice:           slice vector  
-	(slice [1 2 3 4] 2 3)  => [3]   slice from 2 to 3  
+	(slice #[1 2 3 4] 2 3)  => [3]   slice from 2 to 3  
 len:             return the length of vector  
-	(len [1]) => 1  
+	(len #[1]) => 1  
 [quick-access]:  
-	([1,2,3] 0)   => return the element at index 0  
+	(#[1,2,3] 0)   => return the element at index 0  
 
 ```
 <h2>  
@@ -391,7 +394,7 @@ MISC
 quote: return value without calculation  
 	(quote (1 2 3 4)) => (1 2 3 4) without calculation  
 	(quote (+ 3 4))   => (+ 3 4)   
-	(quote [1 2 3])   => (vector 1 2 3)  
+	(quote #[1 2 3])   => (vector 1 2 3)  
 	quote could be written as '  
 	'(1 2 3 4)  <===> (quote (1 2 3 4))  
 quasiquote: calculate list cell if it has unquote ahead   
@@ -552,9 +555,17 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
-		 1/18/2013   0.3.23 : 1) improve macro, fix some macro bugs.
+		 1/19/2014   0.3.24 : now semester starts!
+		 					  1) it is now not available to define a vector like [1,2,3]
+		 					  	so (def x [1,2,3]) is wrong
+		 					  	please us (def x #[1,2,3]) ;; ps: #[...] is the same as #(...) when defining vector
+		 					  2) "["<=>"("   
+		 					  	 "]"<=>")"   
+		 					  	 so [def x 12] <=> (def x 12) 
+		 					  	 
+		 1/18/2014   0.3.23 : 1) improve macro, fix some macro bugs.
 		 					  2) fix "and" "or" functions bug.
-		 1/15/2013   0.3.22 : 1) Support function docstring
+		 1/15/2014   0.3.22 : 1) Support function docstring
 		 							usage:
 		 								(defn add "Your doc here" [a b] (+ a b))
 		 							So now "Your doc here is binded to function add"
@@ -563,7 +574,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 							and you can set docstring by calling function
 		 								(set-function-doc add "Your new docstring here")
 
-		 1/15/2013   0.3.21 : 1) add "read-file", "write-file", "get-curr-dir" functions (these 3 functions require nodejs support)
+		 1/15/2014   0.3.21 : 1) add "read-file", "write-file", "get-curr-dir" functions (these 3 functions require nodejs support)
 		 						 usage:
 		 						 	(read-file file-name) return string
 		 						 	(write-file file-name string-that-write-to-file) write string to file

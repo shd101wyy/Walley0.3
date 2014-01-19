@@ -785,9 +785,9 @@ var macro_expand = function(macro, params, env)
             var var_name = car(args); 
             if(var_name instanceof Cons)
             {
-                if(args.car.car === "vector")
-                    add_parameter(new_frame, args.car.cdr, params.car.cdr)
-                else
+                // if(args.car.car === "vector")
+                //    add_parameter(new_frame, args.car.cdr, params.car.cdr)
+                // else
                     add_parameter(new_frame, args.car, params.car);
             }
             else if(var_name === ".")
