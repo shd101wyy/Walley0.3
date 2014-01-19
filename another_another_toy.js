@@ -550,7 +550,7 @@ var formatDictionary = function(d)
     var p = d;  // pointer
     for(var key in p)
     {
-        output = output + key + " "
+        output = output + ":" + key + " "
         var c = p[key];
         if(c === null)
             output = output + "()" + ", ";
