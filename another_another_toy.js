@@ -516,7 +516,7 @@ var formatList = function(l) // format list object to javascript string
 }
 var formatVector = function(v)
 {
-    var output = "[";
+    var output = "#[";
     var p = v; // pointer
     for(var i = 0; i < p.length; i++)
     {

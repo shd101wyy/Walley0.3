@@ -355,28 +355,28 @@ ref            :            return value according to key
 ```
 assoc:           return a new array, but change index-value  
 	(def x #[1 2 3])  
-	(assoc x 0 12)  => return [12 2 3], keep x unchanged  
+	(assoc x 0 12)  => return #[12 2 3], keep x unchanged  
 assoc!:          destructive assoc  
 	(def x #[1 2 3])  
-	(assoc! x 0 12)  => will change x to [12 2 3]  
+	(assoc! x 0 12)  => will change x to #[12 2 3]  
 conj:           append element, like push. nondestructive, this function will return new vector  
 	(def x #[1 2 3])  
-	(conj x 4) => return new vector [1 2 3 4]  
+	(conj x 4) => return new vector #[1 2 3 4]  
 conj!:           destructive conj  
 	(def x #[1 2 3])  
-	(conj x 4) => x now is [1 2 3 4]  
+	(conj x 4) => x now is #[1 2 3 4]  
 pop:             remove last element, return a new vector  
 	(def x #[1 2 3])  
-	(pop x)        => [1 2]  
+	(pop x)        => #[1 2]  
 
 pop!:            destructive pop  
 	(def x #[1 2 3])  
-	(pop! x)       => change x to [1 2]  
+	(pop! x)       => change x to #[1 2]  
 ref:             access element according to index  
 	(ref #[1 2 3] 0)  => return value at index 0, which is 1  
 ->str:           convert vector to string  
 slice:           slice vector  
-	(slice #[1 2 3 4] 2 3)  => [3]   slice from 2 to 3  
+	(slice #[1 2 3 4] 2 3)  => #[3]   slice from 2 to 3  
 len:             return the length of vector  
 	(len #[1]) => 1  
 [quick-access]:  
@@ -558,7 +558,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 1/19/2014   0.3.24 : now semester starts!
 		 					  1) it is now not available to define a vector like [1,2,3]
 		 					  	so (def x [1,2,3]) is wrong
-		 					  	please us (def x #[1,2,3]) ;; ps: #[...] is the same as #(...) when defining vector
+		 					  	please us (def x #[1,2,3]) ;; ps: #[...] is the same as #(...) when defining vector, but recommended to use #[...]
 		 					  2) "["<=>"("   
 		 					  	 "]"<=>")"   
 		 					  	 so [def x 12] <=> (def x 12) 
