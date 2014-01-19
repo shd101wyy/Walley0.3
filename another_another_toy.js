@@ -229,10 +229,13 @@ var lexer = function(input_str)
             return null; // finish
         else if(input_str[i]===" " || input_str[i]=="\n" || input_str[i]=="\t" || input_str[i]===",") // remove space tab newline ,
             return lexer_iter(input_str, i + 1);
-        else if(input_str[i]==="(")
+        else if(input_str[i] === "(" || input_str[i] === "[")
             return cons( "(", lexer_iter(input_str, i + 1));
-        else if(input_str[i]==="[")
-            return cons( "(", cons( "vector", lexer_iter(input_str, i + 1)));
+        // vector
+        else if (input_str[i] === "#" && (input_str[i+1]==="(" || input_str[i+1]==="["))
+            return cons( "(", cons("vector", lexer_iter(input_str, i+2)));
+       // else if(input_str[i]==="[") remove vector support
+       //     return cons( "(", cons( "vector", lexer_iter(input_str, i + 1)));
         else if(input_str[i]==="{")
             return cons( "(", cons( "dictionary", lexer_iter(input_str, i + 1)));
         else if(input_str[i]===")" || input_str[i]=="]" || input_str[i]=="}")
