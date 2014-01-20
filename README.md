@@ -556,7 +556,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 </strong>
 ```	
 		 1/19/2014   0.3.24 : now semester starts!
-		 					  1) it is now <strong>not<strong> available to define a vector like [1,2,3]
+		 					  1) it is now <strong>not</strong> available to define a vector like [1,2,3]
 		 					  	so (def x [1,2,3]) is wrong
 		 					  	please use (def x #[1,2,3]) ;; ps: #[...] is the same as #(...) when defining vector, but recommended to use #[...]
 		 					  2) "["<=>"("   
