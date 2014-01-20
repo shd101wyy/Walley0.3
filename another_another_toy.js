@@ -572,7 +572,7 @@ var formatDictionary = function(d)
         else if (c instanceof Object)
             output = output + formatDictionary(c) + ", ";
     }
-    output = output.slice(0, output.length - 1) + "}"
+    output = output.slice(0, output.length - 2) + "}"
     return output;
 }
 
