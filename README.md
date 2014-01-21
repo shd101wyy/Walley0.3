@@ -11,7 +11,7 @@
            __________________________________________________||         
            ---------------------------------------------------|     
 ```   	
-			<h1>	VERSION 0.3.24  FOR FUTURE AR,VR,AI  </h1>
+			<h1>	VERSION 0.3.25  FOR FUTURE AR,VR,AI  </h1>
 ```
 			(display "Hello World ;)")
 ```
@@ -511,6 +511,16 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		so
 			(x:test) => print "You successfully required this file"
 			x:a:b    => 12
+"load" function: the same as the load function of scheme
+	eg:
+			[this-is-a-dir] -  a.toy
+						     b.toy
+			a.toy:
+			(define x 12)
+
+			b.toy:
+			(load "a.toy")
+			(display x) => 12
 ```
 <h2> Call JavaScript Function </h2>
 ```
@@ -555,6 +565,19 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 1/21/2014   0.3.25 : 1) add "load" function (the same as scheme)
+		 						eg:
+		 						[this-is-a-dir] -  a.toy
+		 									     b.toy
+		 						a.toy:
+		 						(define x 12)
+
+		 						b.toy:
+		 						(load "a.toy")
+		 						(display x) => 12
+
+
+
 		 1/19/2014   0.3.24 : now semester starts!
 		 					  1) it is now <strong>not</strong> available to define a vector like [1,2,3]
 		 					  	so (def x [1,2,3]) is wrong

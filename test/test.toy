@@ -4,5 +4,5 @@
 (display (get-cwd))
 ;;(def (test) (load "./test2.toy"))
 ;;(test)
-(load "./test2.toy")
+(load "test2.toy")
 (display x)
