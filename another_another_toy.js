@@ -17,6 +17,34 @@
 var readStringFromFile; // read string from file function, return string
 var writeStringToFile; // write string to file
 var getCurrentDirectory; // get current directory
+var RunningFileDirectory = "";
+var resolveDirectory = function(param)
+{
+    /*
+        eg
+
+        toy /a/test.toy
+        then dir is /a/
+
+        toy ./test.toy
+
+        dir is process.cwd()+"/"
+    */
+    for(var i = param.length-1; i>=0; i--)
+    {
+        if(param[i] === "/")
+            break;
+    }
+    if(param[0] === "/")
+    {
+        RunningFileDirectory = param.slice(0, i+1);
+    }
+    else
+    {
+        RunningFileDirectory = process.cwd() + param.slice(1, i+1);
+    }
+    // console.log("RunningFileDirectory: " + RunningFileDirectory);
+}
 // var systemCommand; // call system command
 // check node
 if(typeof(require) === 'function')
@@ -29,7 +57,7 @@ if(typeof(require) === 'function')
 
     readStringFromFile = function(file_name)
     {
-        return fs.readFileSync(path.resolve(/*__dirname*/process.cwd(), file_name),"utf8");
+        return fs.readFileSync(path.resolve(/*__dirname*//*process.cwd()*/RunningFileDirectory, file_name),"utf8");
     };
     writeStringToFile = function(file_name, data)
     {
@@ -1858,6 +1886,8 @@ if (typeof(module)!="undefined"){
     module.exports.eval_begin = eval_begin;
     module.exports.display = function(x){primitive_builtin_functions["display"]([x])}
     module.exports.env = ENVIRONMENT;
+
+    module.exports.resolveDirectory = resolveDirectory;
 }
 
 /*

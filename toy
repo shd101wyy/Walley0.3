@@ -52,6 +52,7 @@ else if (argv.length==3){
 
 	var l = toy.lexer(content_in_file);
 	var p = toy.parser(l);
+	toy.resolveDirectory(file_name);
 	var o =  toy.eval_begin(p, toy.env);
 }
 

@@ -2,6 +2,7 @@
 (defmacro load [file-name] 
 		`(eval (cons 'begin (read (read-file ~file-name)))))
 (display (get-cwd))
-(def (test) (load "./test2.toy"))
-(test)
+;;(def (test) (load "./test2.toy"))
+;;(test)
+(load "./test2.toy")
 (display x)
