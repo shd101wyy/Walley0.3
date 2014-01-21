@@ -29,7 +29,7 @@ if(typeof(require) === 'function')
 
     readStringFromFile = function(file_name)
     {
-        return fs.readFileSync(path.resolve(__dirname, file_name),"utf8");
+        return fs.readFileSync(path.resolve(/*__dirname*/process.cwd(), file_name),"utf8");
     };
     writeStringToFile = function(file_name, data)
     {
@@ -1745,14 +1745,16 @@ var primitive_builtin_functions =
         return writeStringToFile(file_name, data);
 
     },
-    "get-curr-dir":function(stack_param)
+    // get current working directory
+    "get-cwd":function(stack_param)
     {
-        if(typeof(getCurrentDirectory) === 'undefined')
+        if(typeof(/*getCurrentDirectory*/process) === 'undefined')
         {
             console.log("ERROR: Cannot get current directory. Require NodeJS Support");
             return "undefined";
         }
-        return getCurrentDirectory();
+        return process.cwd();
+        // return getCurrentDirectory();
     },
     "require":function(stack_param) 
     /*
