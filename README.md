@@ -388,7 +388,7 @@ MISC
 </h2>  
 <strong>  
 	quote, quasiquote, list, random, keyword, display, eval, apply  macroexpand-1, map, str,
-	read, get-env, gensym, read-file, write-file, get-curr-dir, get-function-doc, set-function-doc
+	read, get-env, gensym, read-file, write-file, get-cwd, get-function-doc, set-function-doc
 </strong>  
 ```
 quote: return value without calculation  
@@ -461,8 +461,8 @@ read-file:  # need nodejs support
 	(read-file file-name) return string
 write-file: # need nodejs support
 	(write-file file-name string-that-write-to-file) write string to file
-get-curr-dir: # need nodejs support
-	(get-curr-dir) return current dir
+get-cwd: # need nodejs support
+	(get-cwd) return current working directory
 get-function-doc: get function doc
 	(get-function-doc your_function) => the docstring of that function
 set-function-doc: set function doc
@@ -521,6 +521,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 			b.toy:
 			(load "a.toy")
 			(display x) => 12
+
+			run "b.toy" will print 12
 ```
 <h2> Call JavaScript Function </h2>
 ```
@@ -576,6 +578,8 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 						(load "a.toy")
 		 						(display x) => 12
 
+								run "b.toy" will print 12
+
 
 
 		 1/19/2014   0.3.24 : now semester starts!
@@ -597,7 +601,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 							and you can set docstring by calling function
 		 								(set-function-doc add "Your new docstring here")
 
-		 1/15/2014   0.3.21 : 1) add "read-file", "write-file", "get-curr-dir" functions (these 3 functions require nodejs support)
+		 1/15/2014   0.3.21 : 1) add "read-file", "write-file", <del>"get-curr-dir"</del> functions (these 3 functions require nodejs support)
 		 						 usage:
 		 						 	(read-file file-name) return string
 		 						 	(write-file file-name string-that-write-to-file) write string to file
@@ -672,7 +676,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 11/28/2013  0.3.10 : Now support calling JavaScript functions using (js js_func_name arg0 arg1 arg2 ...).  Happy Thanksgiving! ;)
 		 11/28/2013  0.3.09 : Add 'str' and 'map' functions. Fix 'string?' function bug.  Happy Thanksgiving! ;)
 ```
-Hope I could transfer to CS successfully ;)
+Fightint!!!!!! ;)
 Enjoy!
 
 

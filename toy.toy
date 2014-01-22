@@ -338,4 +338,7 @@
 		 set-name))
 (def gensym (make-gensym))
 
+;; load macro. the same as scheme
+(defmacro load [file-name] `(eval (cons 'begin (read (read-file ~file-name)))))
+
 

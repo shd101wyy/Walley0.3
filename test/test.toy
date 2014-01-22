@@ -1,6 +1,4 @@
-;; load macro. the same as scheme
-(defmacro load [file-name] 
-		`(eval (cons 'begin (read (read-file ~file-name)))))
+
 (display (get-cwd))
 ;;(def (test) (load "./test2.toy"))
 ;;(test)
