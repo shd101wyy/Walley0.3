@@ -11,7 +11,7 @@
            ---------------------------------------------------|     
 ```   	
 =================================
-<h1> VERSION 0.3.25  FOR FUTURE AR,VR,AI  </h1>
+<strong> VERSION 0.3.25  FOR FUTURE AR,VR,AI  </strong>
 
 ```
 			(display "Hello World ;)")
