@@ -11,12 +11,12 @@
            ---------------------------------------------------|     
 ```   	
 =================================
-<strong> VERSION 0.3.25  FOR FUTURE AR,VR,AI  </strong>
+```
+							VERSION 0.3.25 ;)  
 
-```
-			(display "Hello World ;)")
-```
-```
+						(display "Hello World ;)")
+
+
 (Toy Language  (Walley-Language 0.3) by (shd101wyy))
  ===============
 Toy Language is a simple script language written in JavaScript.  
