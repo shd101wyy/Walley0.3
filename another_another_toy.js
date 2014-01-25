@@ -968,7 +968,7 @@ var toy_eval = function(exp, env)
                 }
                 exp = conseq; continue;
             }
-            /*
+            /* cond native support is removed on 01/25/2014
             else if (tag === "cond")
             {
                 var clauses = cdr(exp);

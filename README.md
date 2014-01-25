@@ -569,7 +569,9 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
-		 1/25/2014   0.3.26 : 1) fix one "quasiquote" bug
+		 1/25/2014   0.3.26 : 1) fix "quasiquote" bug
+		 					  2) fix "undefined?" "factorial" bug
+		 					  3) rewrite "cond" in macro
 		 1/21/2014   0.3.25 : 1) add "load" function (the same as scheme)
 		 						eg:
 		 						[this-is-a-dir] -  a.toy
