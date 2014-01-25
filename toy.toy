@@ -5,6 +5,26 @@
 ;; basic list function, generate list(pair)
 (def (list . args) args)
 
+;; cond macro
+;;;
+	(cond (judge1 body1)
+		  (judge2 body2)
+		  ...
+		  (else bodyn))
+;;;
+(defmacro cond [arg . args]
+	(if (eq? (car arg) 'else)
+		(cons 'begin (cdr arg)) ;; else 
+		(if (null? args)
+			(let [judge (car arg)
+				  body (cons 'begin (cdr arg))]
+				`(if ~judge ~body ()))
+			(let [rest (cons 'cond args)
+				  judge (car arg)
+				  body (cons 'begin (cdr arg))]
+				  `(if ~judge ~body ~rest)
+				))))
+
 ;; rewrite + - * / functions
 ;; new + procedure that admit more than one arguments
 (set! + 
@@ -85,7 +105,7 @@
 
 ;; two kind of factorial
 (def (factorial n) (if (eq? n 0) 1 (* n (factorial (- n 1)))))
-(set! factorial (lambda (vector n) (def (factorial-acc n acc) (if (eq? n 0) acc (factorial-acc (- n 1) (* acc n)))) (factorial-acc n 1)))
+(set! factorial (lambda (n) (def (factorial-acc n acc) (if (eq? n 0) acc (factorial-acc (- n 1) (* acc n)))) (factorial-acc n 1)))
 
 ;;; WRONG MACROS
 ;; and macro
@@ -182,13 +202,6 @@
 			(if (null? args)
 				(display "Please provide arguments for >=")
 				(>=-iter (cdr args) (car args))))))
-
-
-;;; THIS AND OR FUNCTIONS ARE WRONG
-;; now 'and' and 'or' functions can accept more than two parameters
-(set! and (lambda (vector . args) (def (and-iter args) (if (null? args) true (if (car args) (and-iter (cdr args)) false))) (and-iter args)))
-(set! or (lambda (vector . args) (def (or-iter args) (if (null? args) false (if (car args) true (or-iter (cdr args))))) (or-iter args)))
-;;;
 
 ;; def not
 (def (not arg0) (if arg0 false true))
@@ -322,7 +335,7 @@
 ;;	(variable-exists?-iter var-name (get-env) 0))
 
 ;; check variable exists
-(set! undefined? (lambda (vector var-name) (__undefined?__ var-name (get-env))))
+(set! undefined? (lambda (var-name) (__undefined?__ var-name (get-env))))
 
 
 ;; gensym

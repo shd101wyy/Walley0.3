@@ -13,7 +13,7 @@
 =================================
 ```
 
-							VERSION 0.3.25 ;)  
+							VERSION 0.3.26 ;)  
 
 						(display "Hello World ;)")
 
@@ -569,6 +569,7 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 1/25/2014   0.3.26 : 1) fix one "quasiquote" bug
 		 1/21/2014   0.3.25 : 1) add "load" function (the same as scheme)
 		 						eg:
 		 						[this-is-a-dir] -  a.toy

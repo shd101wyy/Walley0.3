@@ -4,3 +4,18 @@
 ;;(test)
 (load "test2.toy")
 (display x)
+
+(defmacro cond [arg . args]
+	(display arg)
+	(display args)
+	(if (eq? (car arg) 'else)
+		(cons 'begin (cdr arg)) ;; else 
+		(if (null? args)
+			(let [judge (car arg)
+				  body (cons 'begin (cdr arg))]
+				`(if ~judge ~body ()))
+			(let [rest (cons 'cond args)
+				  judge (car arg)
+				  body (cons 'begin (cdr arg))]
+				  `(if ~judge ~body ~rest)
+				))))
