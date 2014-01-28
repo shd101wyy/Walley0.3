@@ -1,0 +1,137 @@
+;; read module
+;; unfinished
+
+;; define read function
+(def (read input-str)
+     (let [lexer 
+	   (lambda [input-str]
+	     
+	     ;;  find end index of comment ; comment
+	     (let [find-final-comment-index 
+		   (lambda [input-str i]
+		     (if (eq? i (len input-str))
+			 i ;; reach end of input-str
+			 (if (eq? (ref input-str i) "\n")
+			     (+ i 1) ;; reach \n
+			     (find-final-comment-index input-str (+ i 1))) 
+			 ))
+		   ;;  find end index of long comment ;;; comment ;;;
+		   find-final-long-annotation-index
+		   (lambda [input-str i]
+		     (if (eq? i (len input-str))
+			 i ;; reach end of input-str
+			 (if (and (<= (+ i 3) (len input-str)) ; find ;;;
+				  (eq? ";;;" (slice input-str i (+ i 3))))
+			     (+ i 3)
+			     (find-final-long-annotation-index input-str (+ i 1))
+			     )
+			 ))
+		   find-final-string-index ;; find final index of string 
+		   (lambda [input-str i]
+		     (if (eq? i (len input-str))
+			 (begin (display "ERROR: Incomplete String") ;; print error
+				i) ;; return end
+			 (if (eq? (ref input-str i) "\\") ;; \
+			     (find-final-string-index input-str (+ i 2))
+			     (if (eq? (ref input-str i) "\"")
+				 (+ i 1) ;; find end
+				 (find-final-string-index input-str (+ i 1))
+				 )
+			     )
+			 ))
+		   find-final-number-of-atom-index 
+		   (lambda [input-str i]
+		     (if (eq? i (len input-str)) ;; reach end of input-string
+			 i
+			 (let [c (ref input-str i)] 
+			   (if (or (eq? c "(")  ;; reach end
+				   (eq? c ")")
+				   (eq? c "[")
+				   (eq? c "]")
+				   (eq? c "{")
+				   (eq? c "}")
+				   (eq? c " ")
+				   (eq? c "\t")
+				   (eq? c "\n")
+				   (eq? c ";")
+				   (eq? c ","))
+			       i 
+			       (find-final-number-of-atom-index input-str (+ i 1))
+			       )
+			   ))
+		     )
+		   lexer-iter 
+		   (lambda [input-str i]
+		     (let [c (ref input-str i)]
+		       (cond [(>= i (len input-str))
+			      ()]  ;; finished
+			     ;; remove space tab newline ,
+			     [(or (eq? c " " )
+				  (eq? c "\n")
+				  (eq? c "\t")
+				  (eq? c "," ) )  
+			      (lexer-iter input-str (+ i 1))]
+			     ;; replace [ and ( to (
+			     [(or (eq? c "[")
+				  (eq? c "("))
+			      (cons "(" (lexer-iter input-str (+ i 1)))]
+			     ;; vector
+			     [(and (eq? c "#")
+				   (or (eq? (ref input-str (+ i 1)) "(")
+				       (eq? (ref input-str (+ i 1)) "["))
+				   )
+			      (cons "(" (cons "vector" (lexer-iter input-str (+ i 2))))]
+			     ;; dictionary
+			     [(eq? c "{")
+			      (cons "(" (cons "dictionary" (lexer-iter input-str (+ i 1))))]
+			     ;; replace ) ] } with )
+			     [(or (eq? c "}")
+				  (eq? c "]")
+				  (eq? c ")"))
+			      (cons ")" (lexer-iter input-str (+ i 1)))]
+			     ;; ~@ unquote-slice
+			     [(and (eq? c "~")
+				   (eq? (ref input-str (+ i 1)) "@"))
+			      (cons "~@" (lexer-iter input-str (+ i 2)))]
+			     ;; ' ` ~
+			     [(or (eq? c "'")
+				  (eq? c "`")
+				  (eq? c "~"))
+			      (cons c (lexer-iter input-str (+ i 1)))]
+			     ;; string
+			     [(eq? c "\"")
+			      (let [end (find-final-string-index input-str (+ i 1))]
+				(cons (slice input-str i end)
+				      (lexer-iter input-str end)))]
+			     ;; long annotation
+			     [(and (<= (+ i 3) (len input-str))
+				   (eq? ";;;"  (slice input-str i (+ i 3))))
+			      (lexer-iter input-str 
+					  (find-final-long-annotation-index input-str (+ i 3)))
+			      ]
+			     ;; comment
+			     [(eq? c ";")
+			      (lexer-iter input-str (find-final-comment-index input-str (+ i 1)))]
+			     ;; atom or number
+			     [else
+			      (let [
+				    end (find-final-number-of-atom-index input-str (+ i 1))
+				    __obj (slice input-str i end)
+					]
+				;;(if (isRatio __obj)
+				;;    (cons "(" (cons "/" (cons (->int (getNumerator __obj))
+				;;			      (cons (->int (getDenominator __obj)) (cons ")" (lexer-iter input-str end))))))
+				    (cons __obj (lexer-iter input-str end))
+				;;    )
+				)
+			      ]
+			     )
+		       )
+		     )
+		   ])
+	     )
+
+	   ;; parser 
+	   parser 
+	   (lambda [l]
+	     )]))
