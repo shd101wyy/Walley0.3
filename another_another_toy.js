@@ -1218,9 +1218,11 @@ var toy_eval = function(exp, env)
             {
                 var proc = toy_eval(car(exp), env);
                 var application =   cons(proc, cdr(exp));
-                if(proc === "undefined" || proc instanceof Toy_Number)
+                if(proc === "undefined" || proc instanceof Toy_Number || typeof(proc) === "string")
                 {
-                    console.log("ERROR: Invalid Function " + (proc instanceof Toy_Number?formatNumber(proc):proc));
+                    console.log("ERROR: Invalid Function: " + (proc instanceof Toy_Number? ("number type: " + formatNumber(proc)) 
+                                                                                            : 
+                                                                                            "string type: " + proc));
                     console.log("      WITH EXP: "+to_string(exp))
                     return "undefined"
                 }
