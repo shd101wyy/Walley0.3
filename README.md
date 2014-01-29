@@ -578,9 +578,15 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
          					     (defmacro test [] (if (eq? x 0) 1 2)))
          					     ((lambda [] 
          					     	(set! x 1) ;; change x to 1
-         					     	(test)     ;; will still return 1 not 2(in this case x = 0) 
+         					     	(test)     ;; will still return 1 not 2(in this case x = 0 , (set! x 1) hasn't been run) 
          					     			   ;; the (test) above will be expanded as 1 after defining lambda
          					     	))
+         					  3) I am now thinking that should I make difference between "symbol" and "string" data types.
+         					  	eg: 
+         					  		'a        !=       "a"
+         					  		[symbol]          [string]  
+
+        						(´(エ)｀ ?) 
 
 
          1/25/2014   0.3.26 : 1) fix "quasiquote" bug
