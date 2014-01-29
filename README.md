@@ -13,7 +13,7 @@
 =================================
 ```
 
-							VERSION 0.3.26 ;)  
+							VERSION 0.3.27 ;)  
 
 						(display "Hello World ;)")
 
@@ -569,7 +569,21 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
-		 1/25/2014   0.3.26 : 1) fix "quasiquote" bug
+         1/28/2014   0.3.27 : 1) fix string as procedure bug
+         						 eg: ((car '(+)) 3 4) will cause error now
+         						 	use ((car `(~+)) 3 4)
+         					  2) improve macro
+         					     eg:
+         					     (def x 0)
+         					     (defmacro test [] (if (eq? x 0) 1 2)))
+         					     ((lambda [] 
+         					     	(set! x 1) ;; change x to 1
+         					     	(test)     ;; will still return 1 not 2(in this case x = 0) 
+         					     			   ;; the (test) above will be expanded as 1 after defining lambda
+         					     	))
+
+
+         1/25/2014   0.3.26 : 1) fix "quasiquote" bug
 		 					  2) fix "undefined?" "factorial" bug
 		 					  3) rewrite "cond" in macro
 		 1/21/2014   0.3.25 : 1) add "load" function (the same as scheme)
