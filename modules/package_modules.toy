@@ -1,0 +1,18 @@
+(def modules 
+	'(toy.toy ,
+	  loop.toy ,
+	  ./string/string.toy))
+(def (compress-modules modules)
+	(let [
+		   helper 
+		   (lambda [output modules]
+		   		(if (null? modules)
+		   			(display output)
+		   			(helper (+ output 
+		   					   (str (car 
+		   					   			(read (read-file (car modules))))))
+		   					(cdr modules))))
+			]
+		(helper "" modules)))
+
+(compress-modules modules)

@@ -789,6 +789,91 @@ var eval_lambda = function(/*lambda_args, lambda_body */ lambda__ ,env)
         }
         lambda_args = cdr(lambda_args);
     }
+    /*
+        extend lambda_body
+        展开 宏.
+        eg 
+        (def x 0)
+        (defmacro t [] (if (= x 0) "x is 0" "x is 1"))
+        ((lambda [] 
+            (def x 1) ;; change x to 1
+            (t)       ;; => "x is 0" . even though above (def x 1) but it is not runned, so x is still 0 所以展开为 "x is 0"
+            ))
+    */
+    var extend_macro_for_lambda = function(lambda_body, is_head)
+    {
+        if(lambda_body === null)
+            return null;
+        // is cons
+        if(lambda_body instanceof Cons)
+        {
+            var c = car(lambda_body)
+            if(c instanceof Cons) // is cons
+            {  
+                return cons(extend_macro_for_lambda(c, true), 
+                            extend_macro_for_lambda(cdr(lambda_body, false)));
+            }
+            // is not cons
+            // is head, so check whether it's macro
+            if(is_head === true && typeof(c) === "string")
+            {
+                for(var i = env.length-1; i>=0; i--)
+                {
+                    // find it and it's macro
+                    if(c in env[i])
+                    {
+                        if(env[i][c] instanceof Macro)
+                        {
+                            var expanded_statement = macro_expand(env[i][c], cdr(lambda_body), env);
+
+                            var macro_stm = expanded_statement[0];
+                            var macro_env = expanded_statement[1];
+
+                            var formatted_stm = format_stm_for_macro(macro_stm, macro_env, true);
+
+                            return extend_macro_for_lambda(formatted_stm, true)
+                        }
+                        else // it is not macro
+                        {
+                             // it is not macro
+                             return cons(c, 
+                                 extend_macro_for_lambda(cdr(lambda_body), false));
+                        }
+                    }
+                }
+                // it is not macro
+                return cons(c, 
+                            extend_macro_for_lambda(cdr(lambda_body), false));
+            }
+            // c is macro
+            else if(is_head === true && c instanceof Macro)
+            {
+                var expanded_statement = macro_expand(c, cdr(lambda_body), env);
+                var macro_stm = expanded_statement[0];
+                var macro_env = expanded_statement[1];
+
+                var formatted_stm = format_stm_for_macro(macro_stm, macro_env, true);
+
+                return extend_macro_for_lambda(formatted_stm, true)
+            }
+            // is not head
+            else
+            {
+                return cons(c, 
+                            extend_macro_for_lambda(cdr(lambda_body), false));
+            }
+        }
+        // is not cons
+        else
+        {
+            return lambda_body;
+        }
+    }
+
+    /* Debug 这个函数用。 现实展开后的 lambda_body */
+    // primitive_builtin_functions["display"]([extend_macro_for_lambda(lambda_body, false)])
+    lambda_body = extend_macro_for_lambda(lambda_body, false)
+
     return new Procedure(arg, lambda_body/*new_lambda_body*/, env.slice(0), docstring);   
 }
 var eval_macro = function(macro_args, macro_body, env)
@@ -839,6 +924,82 @@ var macro_expand = function(macro, params, env)
     closure_env.push(new_frame);
     return [eval_begin(body, closure_env), macro.closure_env];
 }
+/*
+    2014 / 1 / 18
+    solve hygienic macro problem
+*/
+var format_stm_for_macro = function(macro_stm, macro_env, is_head)
+{
+    if(macro_stm === null)
+        return null;
+    else if (! (macro_stm instanceof Cons))
+        return macro_stm;
+    var o = car(macro_stm);
+    if(o instanceof Cons)
+    {
+        return cons(format_stm_for_macro(o, macro_env, true), 
+                    format_stm_for_macro(cdr(macro_stm), macro_env, false));
+    }
+    /*
+        solve (def add (lambda [a b] (+ a b))) problem
+        prevent "add" from being replaced
+    */
+    else if (is_head)
+    {
+        if (o === "def" || o === "set!" || o === "lambda" || o === "let")
+        {
+            return cons(o, cons(cadr(macro_stm), 
+                                format_stm_for_macro(cddr(macro_stm), macro_env, false)));
+        }
+        else if (o === "quote" || o === "quasiquote" || o === "unquote")
+        {
+            return macro_stm;
+        }
+        else if (o === "defmacro")
+        {
+            return cons(o, cons(cadr(macro_stm), cons(caddr(macro_stm), format_stm_for_macro(cdddr(macro_stm), macro_env, false))));
+        }
+        /*
+        if cond begin 是都要替换掉的
+        */
+        else
+        {
+            /*
+                和小面那个else里面的内容一样
+            */
+            for(var i = macro_env.length-1; i>=0; i--)
+            {
+                if(o in macro_env[i])
+                {
+                    return cons(macro_env[i][o], 
+                                format_stm_for_macro(cdr(macro_stm), macro_env, false));
+                }
+            }
+            return cons(o, 
+                        format_stm_for_macro(cdr(macro_stm), macro_env, false));
+        }
+    }
+    /*
+    else if (o === "def")
+    {
+        return cons(o, cons(cadr(macro_stm), 
+                            format_stm_for_macro(cddr(macro_stm), macro_env)))
+    }*/
+    else
+    {
+        for(var i = macro_env.length-1; i>=0; i--)
+        {
+            if(o in macro_env[i])
+            {
+                return cons(macro_env[i][o], 
+                            format_stm_for_macro(cdr(macro_stm), macro_env, false));
+            }
+        }
+        return cons(o, 
+                    format_stm_for_macro(cdr(macro_stm), macro_env, false))
+    }
+}
+
 var eval_begin = function(body, env)
 {
     var return_v = null;
@@ -874,6 +1035,7 @@ var toy_eval = function(exp, env)
                 {
                     if(l == null) return null;
                     var v = car(l);
+                    // if(typeof(v) === "string" && v[0] === '"') v = v.slice(1, v.length-1);
                     if(v instanceof Cons) return cons(quote_list(v), quote_list(cdr(l)));
                     else if (v === ".") return cadr(l);
                     return cons(v, quote_list(cdr(l)));
@@ -1112,83 +1274,9 @@ var toy_eval = function(exp, env)
 
                 var macro_stm = expanded_statement[0];
                 var macro_env = expanded_statement[1];
-                /*
-                    2014 / 1 / 18
-                    solve hygienic macro problem
-                */
-                var format_stm = function(macro_stm, macro_env, is_head)
-                {
-                    if(macro_stm === null)
-                        return null;
-                    else if (! (macro_stm instanceof Cons))
-                        return macro_stm;
-                    var o = car(macro_stm);
-                    if(o instanceof Cons)
-                    {
-                        return cons(format_stm(o, macro_env, true), 
-                                    format_stm(cdr(macro_stm), macro_env, false));
-                    }
-                    /*
-                        solve (def add (lambda [a b] (+ a b))) problem
-                        prevent "add" from being replaced
-                    */
-                    else if (is_head)
-                    {
-                        if (o === "def" || o === "set!" || o === "lambda" || o === "let")
-                        {
-                            return cons(o, cons(cadr(macro_stm), 
-                                                format_stm(cddr(macro_stm), macro_env, false)));
-                        }
-                        else if (o === "quote" || o === "quasiquote" || o === "unquote")
-                        {
-                            return macro_stm;
-                        }
-                        else if (o === "defmacro")
-                        {
-                            return cons(o, cons(cadr(macro_stm), cons(caddr(macro_stm), format_stm(cdddr(macro_stm), macro_env, false))));
-                        }
-                        /*
-                        if cond begin 是都要替换掉的
-                        */
-                        else
-                        {
-                            /*
-                                和小面那个else里面的内容一样
-                            */
-                            for(var i = macro_env.length-1; i>=0; i--)
-                            {
-                                if(o in macro_env[i])
-                                {
-                                    return cons(macro_env[i][o], 
-                                                format_stm(cdr(macro_stm), macro_env, false));
-                                }
-                            }
-                            return cons(o, 
-                                        format_stm(cdr(macro_stm), macro_env, false));
-                        }
-                    }
-                    /*
-                    else if (o === "def")
-                    {
-                        return cons(o, cons(cadr(macro_stm), 
-                                            format_stm(cddr(macro_stm), macro_env)))
-                    }*/
-                    else
-                    {
-                        for(var i = macro_env.length-1; i>=0; i--)
-                        {
-                            if(o in macro_env[i])
-                            {
-                                return cons(macro_env[i][o], 
-                                            format_stm(cdr(macro_stm), macro_env, false));
-                            }
-                        }
-                        return cons(o, 
-                                    format_stm(cdr(macro_stm), macro_env, false))
-                    }
-                }
 
-                var formatted_stm = format_stm(macro_stm, macro_env, true);
+
+                var formatted_stm = format_stm_for_macro(macro_stm, macro_env, true);
                 
                 // primitive_builtin_functions["display"]([formatted_stm]);
 
