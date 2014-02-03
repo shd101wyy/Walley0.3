@@ -13,7 +13,7 @@
 =================================
 ```
 
-							VERSION 0.3.27 ;)  
+							VERSION 0.3.28 ;)  
 
 						(display "Hello World ;)")
 
@@ -569,6 +569,16 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+		 2/3/2014    0.3.28 : 1) support hexadecimal octal numbers
+		 						 eg: (def x 0x123) ;; hexadecimal
+		 						 	 (def x 0321)  ;; octal 
+		 					  2) add >> << shift functions
+		 					  3) add bitwise 
+		 					  		(bitwise:and a b)  ;; &
+		 					  		(bitwise:or  a b)  ;; |
+		 					  		(bitwise:not a)    ;; ~
+		 					  		(bitwise:xor a b)  ;; ^
+
          1/28/2014   0.3.27 : 1) fix string as procedure bug
          						 eg: ((car '(+)) 3 4) will cause error now
          						 	use ((car `(~+)) 3 4)
