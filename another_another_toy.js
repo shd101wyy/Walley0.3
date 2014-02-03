@@ -163,7 +163,7 @@ var isInteger = function(n)
 { 
     if(n.length==0)return false; 
     if(n[0]=="-") n = n.slice(1);
-    return n==="0" || /^[1-9][0-9]*$/.test(n) }
+    return (n==="0" || /^[1-9][0-9]*$/.test(n) || /^0x[0-9A-F]{1,4}$/i.test(n) || /^0[1-9][0-9]*$/.test(n)) }
 var isFloat = function(n){return isNumber(n) && !(isInteger(n))}
 var isRatio = function(n) // can only check string
 {
@@ -376,7 +376,13 @@ var parser = function(l)
         if (isNumber(l))
         {
             if(isInteger(l))
-                return new Toy_Number(parseFloat(l), 1, RATIO);
+            {
+                // octal
+                if((l.length>2 && l[0] === "-" && l[1]==="0") || (l.length>=2 && l[0]==="0" && l[1]!=="x"))
+                    return new Toy_Number(parseInt(l, 8), 1, RATIO);
+                // hex or decimal
+                return new Toy_Number(parseInt(l), 1, RATIO);
+            }
             else return new Toy_Number(parseFloat(l), 1 ,FLOAT);
         }
         else if (isRatio(l))
@@ -1821,6 +1827,10 @@ var primitive_builtin_functions =
         "tan":function(stack_param){return new Toy_Number(Math.tan(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
         "tanh":function(stack_param){return new Toy_Number(Math.tanh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)}
     },
+    /*
+        add bitwise & | ^ ~
+    */
+
     /* 
         call js function
         (js js_function_name arg0 arg1 arg2 ...)
