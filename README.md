@@ -572,12 +572,13 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 		 2/3/2014    0.3.28 : 1) support hexadecimal octal numbers
 		 						 eg: (def x 0x123) ;; hexadecimal
 		 						 	 (def x 0321)  ;; octal 
-		 					  2) add >> << shift functions
-		 					  3) add bitwise 
-		 					  		(bitwise:and a b)  ;; &
-		 					  		(bitwise:or  a b)  ;; |
-		 					  		(bitwise:not a)    ;; ~
-		 					  		(bitwise:xor a b)  ;; ^
+		 					  2) add bitwise 
+		 					  		(bitwise:and a b)  ;; &   and
+		 					  		(bitwise:or  a b)  ;; |   or 
+		 					  		(bitwise:not a)    ;; ~   not 
+		 					  		(bitwise:xor a b)  ;; ^   xor
+		 					  		(bitwise:<<  a b)  ;; <<  left shift
+		 					  		(bitwise:>>  a b)  ;; >>  right shift
 
          1/28/2014   0.3.27 : 1) fix string as procedure bug
          						 eg: ((car '(+)) 3 4) will cause error now

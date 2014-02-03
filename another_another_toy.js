@@ -1883,32 +1883,32 @@ var primitive_builtin_functions =
             console.log("ERROR: ~ wrong type parameters");
             return "undefined";
         },
-    },
-    ">>":function(stack_param)
-    {
-        var arg0 = stack_param[0]; var arg1 = stack_param[1];
-        var arg0_number = arg0 instanceof Toy_Number;
-        var arg1_number = arg1 instanceof Toy_Number;
-        if(arg0_number && arg1_number)
+        ">>":function(stack_param)
         {
-            if(arg0.TYPE === FLOAT || arg1.TYPE === FLOAT) return new Toy_Number(arg0.numer/arg0.denom >> arg1.numer/arg1.denom, 1, FLOAT);
-            return new Toy_Number(arg0.numer >> arg1.numer, 1, RATIO);
-        } 
-        console.log("ERROR: >> wrong type parameters");
-        return "undefined";
-    },
-    "<<":function(stack_param)
-    {
-        var arg0 = stack_param[0]; var arg1 = stack_param[1];
-        var arg0_number = arg0 instanceof Toy_Number;
-        var arg1_number = arg1 instanceof Toy_Number;
-        if(arg0_number && arg1_number)
+            var arg0 = stack_param[0]; var arg1 = stack_param[1];
+            var arg0_number = arg0 instanceof Toy_Number;
+            var arg1_number = arg1 instanceof Toy_Number;
+            if(arg0_number && arg1_number)
+            {
+                if(arg0.TYPE === FLOAT || arg1.TYPE === FLOAT) return new Toy_Number(arg0.numer/arg0.denom >> arg1.numer/arg1.denom, 1, FLOAT);
+                return new Toy_Number(arg0.numer >> arg1.numer, 1, RATIO);
+            } 
+            console.log("ERROR: >> wrong type parameters");
+            return "undefined";
+        },
+        "<<":function(stack_param)
         {
-            if(arg0.TYPE === FLOAT || arg1.TYPE === FLOAT) return new Toy_Number(arg0.numer/arg0.denom << arg1.numer/arg1.denom, 1, FLOAT);
-            return  new Toy_Number(arg0.numer << arg1.numer, 1, RATIO);
-        } 
-        console.log("ERROR: << wrong type parameters");
-        return "undefined";
+            var arg0 = stack_param[0]; var arg1 = stack_param[1];
+            var arg0_number = arg0 instanceof Toy_Number;
+            var arg1_number = arg1 instanceof Toy_Number;
+            if(arg0_number && arg1_number)
+            {
+                if(arg0.TYPE === FLOAT || arg1.TYPE === FLOAT) return new Toy_Number(arg0.numer/arg0.denom << arg1.numer/arg1.denom, 1, FLOAT);
+                return  new Toy_Number(arg0.numer << arg1.numer, 1, RATIO);
+            } 
+            console.log("ERROR: << wrong type parameters");
+            return "undefined";
+        }
     },
 
 
