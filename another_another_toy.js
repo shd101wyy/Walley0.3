@@ -373,7 +373,8 @@ var parser = function(l)
         if(l[0]==":")
             return cons("keyword", cons('"'+l.slice(1)+'"', build_nil()))
         */
-        if (isNumber(l))
+        if(l[0]==="\"") return l; // string
+        else if (isNumber(l))
         {
             if(isInteger(l))
             {
@@ -550,6 +551,7 @@ var formatList = function(l) // format list object to javascript string
 }
 var formatVector = function(v)
 {
+    if (v.length == 0) return "#[]";
     var output = "#[";
     var p = v; // pointer
     for(var i = 0; i < p.length; i++)
@@ -580,6 +582,7 @@ var formatVector = function(v)
 }
 var formatDictionary = function(d)
 {
+    if(Object.keys(d).length === 0) return "{}";
     var output = "{";
     var p = d;  // pointer
     for(var key in p)

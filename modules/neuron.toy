@@ -1,0 +1,240 @@
+;; this matrix package is using vector as matrix
+;; and not using list as matrix
+(def (install-matrix-package)
+     
+     ;; clone vector
+     (def (vector-clone _vector)
+	  (let [output #[] ,
+		length (len _vector)
+		clone (lambda (n)
+			(if (eq? n length)
+			    output
+			    (begin (conj! output [ref _vector n])
+				   (clone (+ n 1)))))
+		
+		]
+	    (clone 0)))
+     ;; make zeros matrix
+     (def (zeros m n)
+	  (let [
+		make-vector-zeros-with-length (lambda (n :output_ #[])
+					       
+						(if (eq? n 0)
+						    output_
+						    (make-vector-zeros-with-length (- n 1) (conj! output_ 0)))),
+		make-zeros (lambda (m :output #[])
+			     (if (eq? m 0)
+				 output
+				 (make-zeros (- m 1) (conj! output (make-vector-zeros-with-length n #[])))))]
+	    (make-zeros m #[])))
+     
+     ;; make ones matrix
+     (def (ones m n)
+	  (let [
+		make-vector-ones-with-length (lambda (n :output_ #[])
+					       
+						(if (eq? n 0)
+						    output_
+						    (make-vector-ones-with-length (- n 1) (conj! output_ 1)))),
+		make-ones (lambda (m :output #[])
+			     (if (eq? m 0)
+				 output
+				 (make-ones (- m 1) (conj! output (make-vector-ones-with-length n #[])))))]
+	    (make-ones m #[])))
+     ;; add 2 vectors 
+     ;; eg (add-two-vectors #[1,2,3] #[4,5,6])
+     (def (add-two-vectors v0 v1)
+	  (if (not (eq? (len v0) (len v1)))
+	      (begin (display "ERROR: couldn't add   ")
+		     (display v0)
+		     (display " and ")
+		     (display v1)
+		     (display " because they don't have same length"))
+	      (let [output (vector-clone v0)
+		    length (len v0)
+		    add (lambda [n]
+			  (if (eq? n length)
+			      output
+			      (begin (assoc! output n (+ (ref output n) (ref v1 n)))
+				     (add (+ n 1)))))]
+		(add 0))))
+     (def (sub-two-vectors v0 v1)
+	  (if (not (eq? (len v0) (len v1)))
+	      (begin (display "ERROR: couldn't subtract   ")
+		     (display v0)
+		     (display " and ")
+		     (display v1)
+		     (display " because they don't have same length"))
+	      (let [output (vector-clone v0)
+		    length (len v0)
+		    sub (lambda [n]
+			  (if (eq? n length)
+			      output
+			      (begin (assoc! output n (- (ref output n) (ref v1 n)))
+				     (sub (+ n 1)))))]
+		(sub 0))))
+     
+     ;; add two matrix
+     ;; eg (matrix-add #[#[1,2]] #[#[3,4]]) => #[#[4,6]]
+     (def (matrix-add mat0 mat1)
+	  (if (not (eq? (len mat0) (len mat1)))
+	      (begin (display "ERROR: couldn't add   ")
+		     (display v0)
+		     (display " and ")
+		     (display v1)
+		     (display " because they don't have same length"))
+	      
+	      (let [output #[]
+		    length (len mat0)
+		    add-matrix (lambda [n]
+				 (if (eq? n length)
+				     output
+				     (begin (conj! output (add-two-vectors (ref mat0 n) (ref mat1 n)))
+					    (add-matrix (+ n 1)))))
+		]
+		(add-matrix 0)))
+	  )
+     ;; subtract two matrix
+     (def (matrix-sub mat0 mat1)
+	  (if (not (eq? (len mat0) (len mat1)))
+	      (begin (display "ERROR: couldn't subtract   ")
+		     (display v0)
+		     (display " and ")
+		     (display v1)
+		     (display " because they don't have same length"))
+	      
+	      (let [output #[]
+		    length (len mat0)
+		    sub-matrix (lambda [n]
+				 (if (eq? n length)
+				     output
+				     (begin (conj! output (sub-two-vectors (ref mat0 n) (ref mat1 n)))
+					    (sub-matrix (+ n 1)))))
+		]
+		(sub-matrix 0)))
+	  )
+     ;; transpose a matrix
+     (def (transpose mat)
+	  (let [m (len mat)
+		n (len (ref mat 0))
+		output (zeros n m)
+		f1 (lambda [m_]
+		     (if (eq? m_ m)
+			 output
+			 (begin (f2 m_ 0)
+				(f1 (+ m_ 1)))))
+
+		f2 (lambda [m_ n_]
+		     (if (eq? n_ n)
+			 'Done
+			 (begin (assoc! (ref output n_) m_ (ref (ref mat m_) n_))
+				(f2 m_ (+ n_ 1)))))]
+	    (f1 0)
+	    ))
+     ;; multiply two matrices
+     (def (matrix-mul mat0 mat1)
+	  (let [m0 (len mat0)
+		n0 (len (ref mat0 0))
+		m1 (len mat1)
+		n1 (len (ref mat1 0))]
+	    (if (not (eq? n0 m1))
+		(begin (display "ERROR: couldn't multiply those two matrices. Wrong dimension\n")
+		       (display mat0)
+		       (display " and ")
+		       (display mat1))
+		(let [output (zeros m0 n1)
+		      calculate-value-for (lambda [x, y] ;; calculate value for x,y
+					    (let [helper (lambda [i value]
+							   (if (eq? i n0) ;; finish
+							       value
+							       (helper (+ i 1)
+								       (+ value (* (ref (ref mat0 x) i)
+										   (ref (ref mat1 i) y))
+									  ))
+							       ))]
+					      (helper 0 0))) 
+		      f1 (lambda [m_]
+			   (if (eq? m_ m0)
+			       output
+			       (begin (f2 m_ 0)
+				      (f1 (+ 1 m_)))))
+		      f2 (lambda [m_ n_]
+			   (if (eq? n_ n1)
+			       'Done
+			       (begin (assoc! (ref output m_) n_ (calculate-value-for m_ n_))
+				      (f2 m_ (+ n_ 1)))))]
+		  (f1 0)
+		  ))))
+     ;; test zeros function
+     ;; (display (zeros 3 4))
+     
+     ;; test ones function
+     ;; (display (ones 12 14))
+     
+     ;; test add-two-vectors function
+     ;; (def x #[1,2,3])
+     ;; (display (add-two-vectors x #[3,4, 6]))
+     
+     ;; test matrix-add function
+     ;; (display (matrix-add #[#[1,2], #[3,4]], #[#[5,6], #[7,8]]))
+     
+     ;; test matrix-sub function
+     ;; (display (matrix-sub #[#[1,2], #[3,4]], #[#[5,6], #[7,9]]))
+
+     ;; test transpose
+     ;; (display (transpose #[#[1,2,5], #[3,4,6]]))
+     
+     ;; test multiplication
+     ;; (display (matrix-mul #[#[1,2], #[4,5]], #[#[1,2], #[3,4]]))
+     ;; finish install-matrix-package
+     {:zeros zeros,
+      :ones ones,
+      :+ matrix-add
+      :- matrix-sub
+      :* matrix-mul
+      :transpose transpose
+      }
+     )
+;; neural network package
+(def (install-neuron-package)
+     "This is the neural network package"
+     
+     ;; fire functions
+     ;; from book Artificial Neural Network Design
+     (def fire-functions
+	  {:hardlim (lambda [v]
+		      (if (< v 0)
+			  0
+			  1)) ,
+	   :hardlims (lambda [v]
+		       (if (< v 0)
+			   -1
+			   1)) ,
+	   :purelin (lambda [v] v) ,
+	   :satlin (lambda [v]
+		     (if (< v 0)
+			 0
+			 (if (> v 1)
+			     1
+			     v))) ,
+	   :satlins (lambda [v]
+		     (if (< v 0)
+			 -1
+			 (if (> v 1)
+			     1
+			     v))) ,
+	   :logsig (lambda [v]
+		     (/ 1.0 (+ 1.0 (math:exp (- v))))) ,
+	   :tansig (lambda [v]
+		     (/ (- (math:exp v) (math:exp (- v)))
+			(+ (math:exp v) (math:exp (- v))))) ,
+	   :poslin (lambda [v]
+		     (if (< v 0)
+			 0
+			 v)) ,
+	   
+	   })
+     )
+
+;; (def matrix (install-matrix-package))
+;; (display (matrix:+ #[#[1,2], #[3,4]] #[#[5,6], #[6,7]]))
