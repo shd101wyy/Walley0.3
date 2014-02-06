@@ -1029,7 +1029,7 @@ var toy_eval = function(exp, env)
     {
         if(exp === null) return null;
         else if(typeof(exp) === "string"){
-            if(exp[0]==='"')return exp.slice(1, exp.length-1); // string
+            if(exp[0]==='"')return eval(exp); // string
             if(exp[0]===":")return exp.slice(1);               // keyword
             return lookup_env(exp, env);
         }

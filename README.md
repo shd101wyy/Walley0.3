@@ -569,6 +569,11 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
+					 0.3.29 consider to add
+					 		eg: (def x #[1,2,3])
+					 			x[0] => 1 support
+					 			x[(+ 1 1)] => 3 
+		 2/6/2014    0.3.29 : 1) fix string bug "Hello\n" \+ will work now
 		 2/3/2014 ~ 2/5/2014    
 		 			 0.3.28 : 1) support hexadecimal octal numbers
 		 						 eg: (def x 0x123) ;; hexadecimal
