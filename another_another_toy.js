@@ -477,6 +477,12 @@ var div_rat = function (x,y){
 /*
     format values to string
 */
+var formatString = function(str)
+{
+    if(str.indexOf(" ")===-1)
+        return str 
+    return "#str{"+str+"}#"; // means it is string, but with space, so used #{}# to indicate it
+}
 var formatNumber = function(num)
 {
     if(num.TYPE === FLOAT) return ""+num.numer.toFixed(10);
@@ -509,7 +515,7 @@ var formatList = function(l) // format list object to javascript string
                 else if(number$(c))
                     output = output + formatNumber(c) + ")";
                 else if (typeof(c) === "string")
-                    output = output + c + ")";
+                    output = output + formatString(c) + ")";
                 else if (c  instanceof Cons)
                     output = output + formatList(c) + ")";
                 else if (c instanceof Array)
@@ -530,7 +536,7 @@ var formatList = function(l) // format list object to javascript string
             else if(number$(c))
                 output = output + formatNumber(c) + " ";
             else if (typeof(c) === "string")
-                output = output + c + " ";
+                output = output + formatString(c) + " ";
             else if (c  instanceof Cons)
                 output = output + formatList(c) + " ";
             else if (c instanceof Array)
@@ -562,7 +568,7 @@ var formatVector = function(v)
         else if(number$(c))
             output = output + formatNumber(c) + " ";
         else if (typeof(c) === "string")
-            output = output + c + " ";
+            output = output + formatString(c) + " ";
         else if (c instanceof Cons)
             output = output + formatList(c) + " ";
         else if (c instanceof Array)
@@ -594,7 +600,7 @@ var formatDictionary = function(d)
         else if(number$(c))
             output = output + formatNumber(c) + ", ";
         else if (typeof(c) === 'string')
-            output = output + (c) + ", ";
+            output = output + formatString(c) + ", ";
         else if (c instanceof Cons)
             output = output + formatList(c) + ", ";
         else if (c instanceof Array)
@@ -1044,7 +1050,7 @@ var toy_eval = function(exp, env)
                 {
                     if(l == null) return null;
                     var v = car(l);
-                    // if(typeof(v) === "string" && v[0] === '"') v = v.slice(1, v.length-1);
+                    if(typeof(v) === "string" && v[0] === '"') v = eval(v);
                     if(v instanceof Cons) return cons(quote_list(v), quote_list(cdr(l)));
                     else if (v === ".") return cadr(l);
                     return cons(v, quote_list(cdr(l)));

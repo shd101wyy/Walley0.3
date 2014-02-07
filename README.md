@@ -58,7 +58,7 @@ It's a Language For FUN ;)
 	List :    '(1 2)  '(hello World)  
 	Vector:   #[1 2],   #[3 4 5]  (ps: #(...) is the same as #[...])
 	Dictionary: {:a 12} {:hello "World"}  
-	Atom(String): "Hello World" 'Hello-world  
+	Symbol(String): "Hello World" 'Hello-world  
 	Lambda:     (lambda [params] body)
 	Macro:      (defmacro macro_name [params] body)
 	-- Null(nil):   () 
@@ -494,6 +494,21 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	eg:
 		(integral (lambda [x] x) 0 1) => 0.5000000000
 ```
+<h2> Bitwise Module </h2>
+```
+(bitwise:and a b)  ;; &   and
+	eg: (bitwise:and 0x2 0x1) => 0
+(bitwise:or  a b)  ;; |   or 
+	eg: (bitwise:or 0x2 0x1) => 3
+(bitwise:not a)    ;; ~   not 
+	eg: (bitwise:not 0x1) => -2 2'complement
+(bitwise:xor a b)  ;; ^   xor
+	eg: (bitwise:xor 0x5 10) => 15
+(bitwise:<<  a b)  ;; <<  left shift
+	eg: (bitwise:<< 3 2) => 12
+(bitwise:>>  a b)  ;; >>  right shift
+	eg:  (bitwise:>> 8 2) => 2
+```
 <h2> Require Module </h2>
 <strong>(might be changed in the future) # require nodejs support </strong>
 ```
@@ -569,11 +584,10 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 	Change Log:  
 </strong>
 ```	
-					 0.3.29 consider to add
-					 		eg: (def x #[1,2,3])
-					 			x[0] => 1 support
-					 			x[(+ 1 1)] => 3 
+					
 		 2/6/2014    0.3.29 : 1) fix string bug "Hello\n" \+ will work now
+		 					  2) improve support for string
+		 					  
 		 2/3/2014 ~ 2/5/2014    
 		 			 0.3.28 : 1) support hexadecimal octal numbers
 		 						 eg: (def x 0x123) ;; hexadecimal
