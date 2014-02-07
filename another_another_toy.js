@@ -479,6 +479,7 @@ var div_rat = function (x,y){
 */
 var formatString = function(str)
 {
+    if(str.length == 0) return "#str{}"
     if(str.indexOf(" ")===-1)
         return str 
     return "#str{"+str+"}#"; // means it is string, but with space, so used #{}# to indicate it

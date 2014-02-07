@@ -101,7 +101,55 @@
 					     ))]
 				 (helper start-index (string-slice input-str 0 start-index))
 				 )))
-     
+     ;; split string
+     (def string-split (lambda [input-string 
+				split-str
+				:start-index 0
+				:return-vector true]
+			 (let [i start-index
+			       return-vector-func (lambda [output i saved-string]
+						    (if (eq? i (len input-string)) ;; end
+							(conj! output saved-string)
+							;; not end yet
+							(if (> (+ i (len split-str)) (len input-string)) 
+							    ;; couldn't split
+							    (conj! output (+ saved-string (string-slice input-string i (len input-string))))
+							    (if (eq? split-str (string-slice input-string i (+ i (len split-str))))
+								;; could split
+								(return-vector-func (conj! output saved-string)
+										    (+ i (len split-str))
+										    "")
+								(return-vector-func output
+										    (+ i 1)
+										    (+ saved-string (ref input-string i)))
+								)
+							    )
+							)
+						    )
+			       return-list-func (lambda [i saved-string]
+						    (if (eq? i (len input-string)) ;; end
+							`(~saved-string)
+							;; not end yet
+							(if (> (+ i (len split-str)) (len input-string)) 
+							    ;; couldn't split
+							    `(~ (+ saved-string (string-slice input-string i (len input-string))))
+							    (if (eq? split-str (string-slice input-string i (+ i (len split-str))))
+								;; could split
+								(cons saved-string (return-list-func (+ i (len split-str))
+												     ""))
+								(return-list-func (+ i 1)
+										  (+ saved-string (ref input-string i)))
+								)
+							    )
+							)
+						    )
+			       ]
+			   (if return-vector
+			       (return-vector-func #[] start-index "")
+			       (return-list-func start-index ""))
+			   )
+			 ))
+
 
      {:len len , 
       :find string-find ,
@@ -110,10 +158,12 @@
       :replace string-replace , 
       :replace-all string-replace-all ,
       :append string-append ,
-      :eq? string-eq?
+      :eq? string-eq? , 
+      :split string-split
       }			
      )			
 
 ;; set str namespace
 (def string (install-string-package))
 (display (string:replace-all "Hello" "ll" "abcd"))
+(display (string:split "Hellolalblcdl" "l" :return-vector false :start-index 4))
