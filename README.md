@@ -13,7 +13,7 @@
 =================================
 ```
 
-							VERSION 0.3.28 ;)  
+							VERSION 0.3.29 ;)  
 
 						(display "Hello World ;)")
 
@@ -32,7 +32,7 @@ It's a Language For FUN ;)
 ```
 	Toy Language is available online from 
 	----
-	http://planetwalley.com/walley/
+	[a link]http://planetwalley.com/walley/
 	----
 	I am a lazy guy so the code on this website may not be newest.
 	I will try to make it up to date ;)
@@ -586,8 +586,18 @@ integral: (integral lambda a b dx) integral lambda from a to b with dx. dx is 0.
 ```	
 					
 		 2/6/2014    0.3.29 : 1) fix string bug "Hello\n" \+ will work now
-		 					  2) improve support for string
-		 					  
+		 					  2) improve support for string:
+		 					  		in toy language, symbol and string are the same thing
+		 					  	in the previous version, string could be shown incorrectly sometimes:
+		 					  		eg: ==== previous ========
+		 					  			(def x '("Hello abc" abc))
+		 					  			(display x) => (Hello abc abc)
+		 					  		the space in "Hello abc" caused confusion
+		 					  		so now I changed it to:
+		 					  			==== now =============
+		 					  			(def x '("Hello abc" abc))
+		 					  			(display x) => (#str{Hello abc} abc) ;; #str{} means string
+
 		 2/3/2014 ~ 2/5/2014    
 		 			 0.3.28 : 1) support hexadecimal octal numbers
 		 						 eg: (def x 0x123) ;; hexadecimal
