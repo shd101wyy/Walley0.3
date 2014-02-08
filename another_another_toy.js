@@ -363,7 +363,7 @@ var parser = function(l)
         {
             if(count === keys.length)
                 return output;
-            return formatQuickAccess_iter(keys, cons(output, cons(":"+keys[count], null)), count + 1);
+            return formatQuickAccess_iter(keys, cons("ref", cons(output, cons(":"+keys[count], null))), count + 1);
         }
         return formatQuickAccess_iter(keys, cons(ns, cons(":"+keys[0], null)), 1);
     }
@@ -1138,7 +1138,7 @@ var toy_eval = function(exp, env)
             {
                 var test = cadr(exp);
                 var conseq = caddr(exp);
-                var alter = cadddr(exp);
+                var alter = cdddr(exp)!==null?cadddr(exp):null;
 
                 test = toy_eval(test, env);
                 if(test == null){
@@ -1837,6 +1837,12 @@ var primitive_builtin_functions =
         "tan":function(stack_param){return new Toy_Number(Math.tan(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)},
         "tanh":function(stack_param){return new Toy_Number(Math.tanh(stack_param[0].numer/stack_param[0].denom), 1, FLOAT)}
     },
+    // get char code
+    "char-code-at": function(stack_param)
+    {
+        return new Toy_Number(stack_param[0].charCodeAt(stack_param[1].numer), 1, RATIO);
+    },
+
     /*
         add bitwise & | ^ ~
     */

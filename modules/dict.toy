@@ -1,0 +1,201 @@
+;; implement dictionary using binary tree
+(def (create-dict)
+     ;; define node
+     (def (node)
+	  ;; create left node
+	  (def left '())
+	  ;; create right node
+	  (def right '())
+	  ;; parent
+	  (def parent '())
+	  ;; create current key
+	  (def curr-key '())
+	  ;; create current value
+	  (def curr-val '())
+	  ;; return function
+	  (def output (lambda [msg]
+	    (cond ;;[(eq? msg 'key) curr-key]
+		  ;;[(eq? msg 'val) curr-val]
+		  ;;[(eq? msg 'set-left) (lambda [key val]
+	          ;;    		 (set! left (node key val)))]
+		  ;;[(eq? msg 'set-right) (lambda [key val]
+		  ;;			  (set! right (node key val)))]
+		  ;; set value and key
+	          [(eq? msg 'set-p) ;; set parent
+		   (lambda [p] (set! parent p))]
+		  [(eq? msg 'set) (lambda [key val]
+				    (if (null? curr-key) ;; current node is empty
+					(begin (set! curr-key key)
+					       (set! curr-val val))
+					(if (eq? key curr-key)
+					    (set! curr-val val) ;; same key
+					    (if (< key curr-key)
+						(if (null? left)
+						    (begin (set! left (node))
+							   ((left 'set-p) output)
+							   ((left 'set) key val))
+						    ((left 'set) key val)
+						    ) 
+						(if (null? right)
+						    (begin (set! right (node))
+							   ((right 'set-p) output)
+							   ((right 'set) key val))
+						    ((right 'set) key val)
+						    )
+						)
+					    )
+					))]
+		  ;; ref 
+		  [(eq? msg 'ref) (lambda [find-key]		    
+				     (if (null? curr-key) ;; didn't find 
+					 'undefined
+					 (if (eq? curr-key find-key) ;; find
+					     curr-val
+					     (if (< find-key curr-key)
+						 (if (null? left) ;; didn't find
+						     'undefined
+						     ((left 'ref) find-key))
+						 (if (null? right) ;; didn't find
+						     'undefined
+						     ((right 'ref) find-key)))
+					     )))]
+		  ;; get-left-child
+		  [(eq? msg 'get-left-child) (lambda [] left)]
+		  ;; get-right-child
+		  [(eq? msg 'get-right-child) (lambda [] right)]
+		  [else 'ERROR])))
+	  output ;; this could be eliminated because (def) will return value
+	  )
+     ;; define root
+     (def root (node))
+     
+     ;; add key and value
+     (def (set add-key add-value)
+	  ((root 'set) add-key add-value))
+     ;; ref
+     (def (ref_ find-key)
+	  ((root 'ref) find-key))
+     
+     (lambda [msg]
+       (cond [(eq? msg 'set) set]
+	     [(eq? msg 'ref) ref_]))
+     )
+
+;; begin to implement hash table in 
+(def (make-hash-table 
+      :size 32 ;; default size 32
+      )
+     ;; make vector with length
+     (def (make-vector-with-length length)
+	  (let [
+		helper (lambda [i output]
+			 (if (eq? i length)
+			     output
+			     (helper (+ i 1)
+				     (conj! output '()))))]
+	    (helper 0 #[]))
+	  )
+     
+     ;; (def size 32) ;; default size
+     (def elem-num 0) ;; have 0 elements now
+     (def v (make-vector-with-length size))
+     ;; hash function
+     (def (hash input-str hash-table-size)
+	  (let [
+		R 31 ;; R is small prime
+		length (len input-str)
+		f (lambda [i hash-code]
+		     (if (eq? i length)
+			 hash-code
+			 (f (+ i 1)
+			    (% (+ (* R hash-code)
+				  (char-code-at input-str i))
+			       hash-table-size)
+			    )))]
+	    (f 0 0))
+	  )
+     
+     ;; resize function
+     (def (resize )
+	  ;; increase size
+	  (set! size (* size 2))
+	  ;; def new vector
+	  (def new-v (make-vector-with-length size))
+	  (let [helper (lambda [i]
+			 (if (eq? i (len v))
+			     new-v
+			     (let [l (ref v i)]
+			       (if (null? l)
+				   (helper (+ i 1))
+				   (let [f (lambda [l]
+					     (if (null? l) ;; is empty
+						 (helper (+ i 1)) 
+						 (let [key (car (car l))
+						       value (cdr (car l))
+						       hash-code (hash key size)
+						       ]
+						   (assoc! new-v hash-code (cons (cons key value) (ref new-v hash-code))) ;; rehash and assign value
+						   (f (cdr l)))))]
+				     (f l))
+				   ))
+			     )
+			 )]
+	    (set! v (helper 0)) ;; set v
+	    )
+	  )
+     ;; get value according to key
+     (def (get key)
+	  (let [hash-code (hash key size)
+		l (ref v hash-code)
+		f (lambda [l]
+		    (if (null? l)
+			'undefined
+			(if (eq? (car (car l)) key)
+			    (cdr (car l)) ;; find key and return value
+			    (f (cdr l))) ;; continue
+			))]
+		(f l)))
+     ;; hash table set value
+     (def (set key value)
+	  (set! elem-num (+ elem-num 1)) ;; increase elem num
+	  (if (> (/ elem-num size)  0.7) ;; resize if necessary
+	      (resize))
+	  (let [h (hash key size) ;; get hash-code
+		  ]             ;; pair
+	    (assoc! v h (cons (cons key value) (ref v h))) ;; append to hash table vector
+	    )
+	  )
+     ;; hash table get value
+     (lambda [msg]
+       (cond [(eq? msg 'get)
+	      get]
+	     [(eq? msg 'set)
+	      set]
+	     [(eq? msg 'get-size) (lambda [] size)]
+	     [(eq? msg 'hash) (lambda [key] (hash key size))]
+	     [else 'ERROR])))
+
+(def x (create-dict))
+((x 'set) "werq" 123)
+((x 'set) "asdf" 13213)
+((x 'set) "zsadf" 12321321)
+((x 'set) "asdb" 32423)
+((x 'set) "asdb" 123123)
+(display ((x 'ref) "asdb") )
+
+(def y (make-hash-table))
+((y 'set) "Hello" 12)
+((y 'set) "AAA" 14)
+((y 'set) "ABC" 15)
+(display ((y 'get) "Hello"))
+(display ((y 'hash) "Hello"))
+(display ((y 'get) "AAA"))
+(display ((y 'hash) "AAA"))
+(display ((y 'get) "ABC"))
+(display ((y 'hash) "ABC"))
+(display ((y 'hash) "Hello"))
+(display ((y 'get-size)))
+
+
+
+

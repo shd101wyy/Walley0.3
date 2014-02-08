@@ -27,6 +27,7 @@
 				 )]
 			   (helper start-index "")
 			   )))
+    
      ;; string find string
      ;; eg: (str:find "Hello" "H")   => 0
      ;; eg: (str:find "Hello" "l" 3) => 3
@@ -149,7 +150,112 @@
 			       (return-list-func start-index ""))
 			   )
 			 ))
+     
+     ;; eg "Hello" => Hello
+     ;; eg "Hello abc" => #str{Hello abc}
+     (def (format-string input-str)
+	  (let [i (string-find input-str " ")]
+	    (if (eq? i -1)
+		input-str
+		(string-append "#str{" input-str "}"))))
+     
+     ;; (def (format-number input-str)
+	;;  (cond [(integer? input-str)
+	;;	 ]))
 
+     ;; test format-string
+     ;; (display (format-string "hab c"))
+     
+      ;; string to upper case
+     (def string-toupper (lambda [input-str]
+	  (let [length (len input-str)
+	        helper (lambda [i output]
+			 (if (eq? i length)
+			     output
+			     (let [c (ref input-str i)]
+			       (cond [(eq? c "a")
+				      (helper (+ i 1)
+					      (+ output "A"))]
+				      [(eq? c "b")
+				       (helper (+ i 1)
+					       (+ output "B"))]
+				      [(eq? c "c")
+				      (helper (+ i 1)
+					      (+ output "C"))]
+				      [(eq? c "d")
+				       (helper (+ i 1)
+					      (+ output "D"))]
+				      [(eq? c "e")
+				       (helper (+ i 1)
+					      (+ output "E"))]
+				      [(eq? c "f")
+				       (helper (+ i 1)
+					      (+ output "F"))]
+				      [(eq? c "g")
+				       (helper (+ i 1)
+					      (+ output "G"))]
+				      [(eq? c "h")
+				       (helper (+ i 1)
+					      (+ output "H"))]
+				      [(eq? c "i")
+				       (helper (+ i 1)
+					      (+ output "I"))]
+				      [(eq? c "j")
+				       (helper (+ i 1)
+					      (+ output "J"))]
+				      [(eq? c "k")
+				       (helper (+ i 1)
+					      (+ output "K"))]
+				      [(eq? c "l")
+				       (helper (+ i 1)
+					      (+ output "L"))]
+				      [(eq? c "m")
+				       (helper (+ i 1)
+					      (+ output "M"))]
+				      [(eq? c "n")
+				      (helper (+ i 1)
+					      (+ output "N"))]
+				      [(eq? c "o")
+				      (helper (+ i 1)
+					      (+ output "O"))]
+				      [(eq? c "p")
+				       (helper (+ i 1)
+					      (+ output "P"))] 
+				      [(eq? c "q")
+				       (helper (+ i 1)
+					      (+ output "Q"))]
+				      [(eq? c "r")
+				       (helper (+ i 1)
+					       (+ output "R"))]
+				      [(eq? c "s")
+				       (helper (+ i 1)
+					      (+ output "S"))]
+				      [(eq? c "t")
+				       (helper (+ i 1)
+					       (+ output "T"))] 
+				      [(eq? c "u")
+				       (helper (+ i 1)
+					      (+ output "U"))]
+				      [(eq? c "v")
+				       (helper (+ i 1)
+					       (+ output "V"))]
+				      [(eq? c "w")
+				       (helper (+ i 1)
+					       (+ output "W"))]
+				      [(eq? c "x")
+				       (helper (+ i 1)
+					       (+ output "X"))]
+				      [(eq? c "y")
+				       (helper (+ i 1)
+					       (+ output "Y"))]
+				      [(eq? c "z")
+				       (helper (+ i 1)
+					       (+ output "Z"))]
+				      
+				      [else (helper (+ i 1)
+						    (+ output c))] ;; huhhhh
+				      ))))]
+	    (helper 0 ""))))
 
      {:len len , 
       :find string-find ,
@@ -159,7 +265,8 @@
       :replace-all string-replace-all ,
       :append string-append ,
       :eq? string-eq? , 
-      :split string-split
+      :split string-split ,
+      :toupper string-toupper
       }			
      )			
 
@@ -167,3 +274,32 @@
 (def string (install-string-package))
 (display (string:replace-all "Hello" "ll" "abcd"))
 (display (string:split "Hellolalblcdl" "l" :return-vector false :start-index 4))
+(display (string:toupper "Hasdadb"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
