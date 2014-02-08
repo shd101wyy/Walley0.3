@@ -81,7 +81,7 @@
 	     [(eq? msg 'ref) ref_]))
      )
 
-;; begin to implement hash table in 
+;; begin to implement hash table using separate chaining
 (def (make-hash-table 
       :size 32 ;; default size 32
       )
@@ -167,13 +167,39 @@
 	  )
      ;; hash table get value
      (lambda [msg]
-       (cond [(eq? msg 'get)
+       (cond [(eq? msg 'get) ;; get value according to key
 	      get]
-	     [(eq? msg 'set)
+	     [(eq? msg 'set) ;; set value according to key
 	      set]
-	     [(eq? msg 'get-size) (lambda [] size)]
+	     [(eq? msg 'type) ;; get type => hash-table
+	      'hash-table]
+	     [(eq? msg 'get-size) (lambda [] size)] ;; get size
 	     [(eq? msg 'hash) (lambda [key] (hash key size))]
 	     [else 'ERROR])))
+;; create hash-table
+;; eg (hash-table :a 12 :b 15 :c 16) => {:a 12 :b 15 :c 16}
+(def (hash-table . args)
+     (let [t (make-hash-table)
+	   f (lambda [args]
+	       (if (null? args)
+		   t
+		   (let [key (car args)
+			 value (car (cdr args))]
+		     (begin ((t 'set) key value)
+			    ;; (display (t 'type))
+			    (f (cdr (cdr args)))))))]
+       (f args)
+       ))
+
+;; eg 
+;; (for [i '(1 2 3)] (display i))
+(defmacro for [[i l] . body]
+  `(let [f (lambda [l] (if (null? l)
+			   'undefined
+			   (let [~i (car l)]
+			     ~@body
+			     (f (cdr l)))))]
+     (f ~l)))
 
 (def x (create-dict))
 ((x 'set) "werq" 123)
@@ -195,6 +221,13 @@
 (display ((y 'hash) "ABC"))
 (display ((y 'hash) "Hello"))
 (display ((y 'get-size)))
+(for [i '(Hello World I am Here)]
+     (display i))
+(display (y 'type))
+
+(def z (hash-table :a 12 :b 15 :c 16))
+;; (display ((z 'type)))
+(display ((z 'get) "a"))
 
 
 

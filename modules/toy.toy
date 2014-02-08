@@ -207,10 +207,11 @@
 (def (not arg0) (if arg0 false true))
 
 ;; check type
+;; there is not atom or symbol anymore, only string
 (def (pair? arg) (eq? (typeof arg) 'list))
 (def (list? arg) pair?)
-(def (atom? arg) (eq? (typeof arg) 'atom))
-(def string? atom?)
+(def (string? arg) (eq? (typeof arg) 'string))
+;; (def string? atom?)
 (def (vector? arg) (eq? (typeof arg) 'vector))
 (def (dictionary? arg) (eq? (typeof arg) 'dictionary))
 (def (undefined? arg) (eq? arg 'undefined))
@@ -354,4 +355,13 @@
 ;; load macro. the same as scheme
 (defmacro load [file-name] `(eval (cons 'begin (read (read-file ~file-name)))))
 
+;; for macro
+;; (for [i '(1 2 3)] (display i)) => 1 2 3 one by one
+(defmacro for [[i l] . body]
+  `(let [f (lambda [l] (if (null? l)
+			   'undefined
+			   (let [~i (car l)]
+			     ~@body
+			     (f (cdr l)))))]
+     (f ~l)))
 
