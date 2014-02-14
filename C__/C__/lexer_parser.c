@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 WangYiyi. All rights reserved.
 //
 
-#include "to_string.c"
+#include "pair_funcs.c"
 
 int Lexer_find_final_comment_index(char *input_str, int length, int start) // find end index of comment ; comment
 {
@@ -39,7 +39,9 @@ int Lexer_find_final_string_index(char * input_str, int length, int start) // fi
             continue;
         }
         if(input_str[i] == '"')
+        {
             return i + 1;
+        }
     }
     printf("ERROR: Incomplete String");
     return i;
@@ -71,14 +73,14 @@ Object * Lexer_iter(char *input_str, int i, int length)
     else if(input_str[i] == '{')
         return cons( Object_initString("("), cons(Object_initString("dictionary"), Lexer_iter(input_str, i + 1, length)));
     else if(input_str[i] == ')' || input_str[i] == ']' || input_str[i] == '}')
-        return cons( Object_initString(")"), Lexer_iter(input_str, i + 1, length));
+        return cons( Object_initString(")"), Lexer_iter(input_str, i+1, length));
     else if(input_str[i] == '~' && input_str[i+1] == '@')
         return cons( Object_initString("~@"), Lexer_iter(input_str, i+2, length));
     else if(input_str[i] == '\'' || input_str[i] == '`' || input_str[i] == '~')
         return cons( Object_initString( String_charToString(input_str[i]) ), Lexer_iter(input_str, i + 1, length));
     else if(input_str[i] == '"')
     {
-        int end = Lexer_find_final_comment_index(input_str, length, i+1);
+        int end = Lexer_find_final_string_index(input_str, length, i+1);
         return cons( Object_initString(String_slice(input_str, i, end)), Lexer_iter(input_str, end, length));
     }
     // long annotation
@@ -99,7 +101,6 @@ Object * Lexer_iter(char *input_str, int i, int length)
         {
             return cons(Object_initString(__obj), Lexer_iter(input_str, end, length));
         }
-        // return cons( input_str.slice(i, end) , lexer_iter(input_str, end));
     }
 }
 // lexer
@@ -108,8 +109,117 @@ Object * Lexer(char * input_str)
     int length = (int)strlen(input_str);
     return Lexer_iter(input_str, 0, length);
 }
+static Object * Parser_Rest = NULL;
+// parse List
+Object * Parser_List(Object * l)
+{
+    if(l==NULL)
+    {
+        printf("ERROR: Incomplete Statement, missing )");
+        Parser_Rest = NULL;
+        return  NULL;
+    }
+    else if(0 == ObjectString_CompareS(car(l), ")")) // reach end
+    {
+        Parser_Rest = cdr(l);
+        return NULL;
+    }
+    else if(0 == ObjectString_CompareS(car(l), "("))
+    {
+        return cons(Parser_List(cdr(l)), Parser_List(Parser_Rest));
+    }
+    else if (0 == ObjectString_CompareS(car(l), "'") || 0 == ObjectString_CompareS(car(l), "~") || 0 == ObjectString_CompareS(car(l), "`") || 0 == ObjectString_CompareS(car(l), "~@"))  // quote unquote quasiquote unquote-splice
+    {
+        return cons(Parser_Special(l), Parser_List(Parser_Rest));
+    }
+    else  // symbol or number
+    {
+        return cons(Parser_Symbol_or_Number(car(l)), Parser_List(cdr(l)));
+    }
+}
+// parse special
+Object * Parser_Special(Object * l)
+{
+    Object * tag ;
+    if(ObjectString_EqualS(car(l), "'"))
+        tag = Object_initString("quote");
+    else if (ObjectString_EqualS(car(l), "~"))
+        tag = Object_initString("unquote");
+    else if (ObjectString_EqualS(car(l) ,"~@"))
+        tag = Object_initString("unquote-splice");
+    else
+        tag = Object_initString("quasiquote");
+    l = cdr(l);
+    if (ObjectString_EqualS(car(l), "(")) // list
+    {
+        return cons(tag, cons(Parser_List(cdr(l)), NULL));
+    }
+    else if (ObjectString_EqualS(car(l) ,"'") || ObjectString_EqualS(car(l), "~") || ObjectString_EqualS(car(l), "`"))  // quote unquote quasiquote
+    {   // here my be some errors
+        return cons(tag, cons(Parser_Special(l), NULL));
+    }
+    else  // symbol or number
+    {
+        Parser_Rest = cdr(l);
+        return cons(tag, cons(Parser_Symbol_or_Number(car(l)), NULL));
+    }
+}
+// parse symbol or number
+Object * Parser_Symbol_or_Number(Object * l)
+{
+    char * v = l->data.String.v;
+    if(l->data.String.v[0] == '\"') return l; // string
+    else if (isInteger(v))
+    {
+        return Object_initInteger(atol(v));
+    }
+    else if (isFloat(v))
+    {
+        return Object_initDouble(atof(v));
+    }
+    return l; // symbol
+    /*
+    var splitted_ = l.split(":");
+    // console.log(l);
+    // console.log(splitted_);
+    if(l === ":"  || splitted_.length == 1 || l[0] === ":" || l[l.length-1] === ":") //  : :abc abc:
+        return l;
+    var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
+    var keys = splitted_.slice(1);
+    var formatted_ = formatQuickAccess(ns, keys); // eg x:a => (ref x :a) or (x :a)
+    // console.log(formatted_);
+    return formatted_;
+    */
+    printf("Parser Symbol or Number error");
+    return NULL;
+}
 
 
+// parser
+Object * Parser(Object * l)
+{
+    // done
+    if(l == NULL)
+        return NULL;
+    // list
+    else if (ObjectString_EqualS(car(l), "("))
+    {
+        return cons(Parser_List(cdr(l)), Parser(Parser_Rest));
+    }
+    // quote // unquote // quasiquote // unquote-splice
+    else if (ObjectString_EqualS(car(l), "'") ||
+             ObjectString_EqualS(car(l), "~") ||
+             ObjectString_EqualS(car(l), "`") ||
+             ObjectString_EqualS(car(l),"~@"))
+    {
+        return cons(Parser_Special(l), Parser_Rest);
+    }
+    // symbol or number
+    else
+    {
+        return cons(Parser_Symbol_or_Number( car(l) ), Parser(cdr(l)));
+    }
+}
 
 
 

@@ -65,7 +65,7 @@ Object * allocateObject()
 /*
 	initialize integer
 */
-Object * Object_initInteger(int v)
+Object * Object_initInteger(long v)
 {
 	Object * o = allocateObject();
 	o->type = INTEGER;

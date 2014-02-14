@@ -19,6 +19,7 @@ int main()
     Object * e = cons(d, NULL);
 	String_debug(e);
     
-    String_debug(Lexer("(define x 12/4)"));
+    Object * x = Lexer("(define x {1 2 3}) (define x #[1,2,3]) (define x (lambda [a b] (+ a b))) (define x '(q e v 12 3))");
+    String_debug(Parser(x));
 	return 0;
 }

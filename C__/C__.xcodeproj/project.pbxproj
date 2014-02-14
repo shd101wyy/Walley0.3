@@ -14,6 +14,8 @@
 		F69C3CFA18ADA96F0044009B /* ratio.c in Sources */ = {isa = PBXBuildFile; fileRef = F69C3CF918ADA96F0044009B /* ratio.c */; };
 		F69C3CFC18ADAF560044009B /* lexer_parser.c in Sources */ = {isa = PBXBuildFile; fileRef = F69C3CFB18ADAF560044009B /* lexer_parser.c */; };
 		F69C3CFE18ADB4620044009B /* funcs.c in Sources */ = {isa = PBXBuildFile; fileRef = F69C3CFD18ADB4620044009B /* funcs.c */; };
+		F69C3D0018ADDDEA0044009B /* string_funcs.c in Sources */ = {isa = PBXBuildFile; fileRef = F69C3CFF18ADDDEA0044009B /* string_funcs.c */; };
+		F69C3D0218ADDEDD0044009B /* pair_funcs.c in Sources */ = {isa = PBXBuildFile; fileRef = F69C3D0118ADDEDD0044009B /* pair_funcs.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -38,6 +40,8 @@
 		F69C3CF918ADA96F0044009B /* ratio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ratio.c; sourceTree = "<group>"; };
 		F69C3CFB18ADAF560044009B /* lexer_parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lexer_parser.c; sourceTree = "<group>"; };
 		F69C3CFD18ADB4620044009B /* funcs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = funcs.c; sourceTree = "<group>"; };
+		F69C3CFF18ADDDEA0044009B /* string_funcs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = string_funcs.c; sourceTree = "<group>"; };
+		F69C3D0118ADDEDD0044009B /* pair_funcs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pair_funcs.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +77,8 @@
 				F69C3CF518ADA89E0044009B /* data.c */,
 				F69C3CF918ADA96F0044009B /* ratio.c */,
 				F69C3CF618ADA89E0044009B /* to_string.c */,
+				F69C3CFF18ADDDEA0044009B /* string_funcs.c */,
+				F69C3D0118ADDEDD0044009B /* pair_funcs.c */,
 				F69C3CEC18ADA8840044009B /* main.c */,
 				F69C3CFB18ADAF560044009B /* lexer_parser.c */,
 				F69C3CEE18ADA8840044009B /* C__.1 */,
@@ -138,6 +144,8 @@
 				F69C3CFE18ADB4620044009B /* funcs.c in Sources */,
 				F69C3CFC18ADAF560044009B /* lexer_parser.c in Sources */,
 				F69C3CFA18ADA96F0044009B /* ratio.c in Sources */,
+				F69C3D0018ADDDEA0044009B /* string_funcs.c in Sources */,
+				F69C3D0218ADDEDD0044009B /* pair_funcs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,6 +253,7 @@
 				F69C3CF418ADA8840044009B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

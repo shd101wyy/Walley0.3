@@ -65,6 +65,7 @@ char *String_formatString(Object * o)
 	if(length == 0) return "#str{}";
 	if(String_find(s, ' ') == -1)
 		return s;
+    printf("%s\n", String_append("#str{", String_append(s, "}#")));
 	return String_append("#str{", String_append(s, "}#"));
 }
 char *String_formatInteger(Object * o)
@@ -107,7 +108,8 @@ char *String_formatPair(Object * o)
             if (c == NULL) output = String_append(output, "()");
             else if (c->type == INTEGER) output = String_append(output, String_formatInteger(c));
             else if (c->type == DOUBLE) output = String_append(output, String_formatDouble(c));
-            else if (c->type == STRING) output = String_append(output, String_formatString(c));
+            else if (c->type == STRING){
+                output = String_append(output, String_formatString(c));}
             else if (c->type == PAIR) output = String_append(output, String_formatPair(c));
             else
             {
