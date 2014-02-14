@@ -237,7 +237,7 @@ var lexer = function(input_str)
         else 
             return find_final_string_index(input_str, i+1)
     }
-    var find_final_number_of_atom_index = function(input_str, i)
+    var find_final_number_or_atom_index = function(input_str, i)
     {
         if(i == input_str.length)
             return i;
@@ -249,7 +249,7 @@ var lexer = function(input_str)
             || input_str[i]==",")
             return i;
         else
-            return find_final_number_of_atom_index(input_str, i+1);
+            return find_final_number_or_atom_index(input_str, i+1);
     }
     var lexer_iter = function(input_str, i)
     {
@@ -286,7 +286,7 @@ var lexer = function(input_str)
         else
         {
             // atom or number
-            var end = find_final_number_of_atom_index(input_str, i+1);
+            var end = find_final_number_or_atom_index(input_str, i+1);
             var __obj = input_str.slice(i, end);
             if(isRatio(__obj)) // is ratio number
             {
@@ -450,6 +450,7 @@ var make_rat = function(numer, denom)
     var g = gcd(numer, denom)
     var numer = numer/g;
     var denom = denom/g;
+
     return new Toy_Number(numer, denom, RATIO);
 }
 /* convert Toy_Number to string */
