@@ -24,6 +24,7 @@ char *String_formatString(Object * o);
 char *String_formatInteger(Object * o);
 char *String_formatDouble(Object * o);
 char *String_formatPair(Object * o);
+char *String_formatVector(Object * o);
 char *String_formatObject(Object * o);
 
 Object * Parser_List(Object * l);

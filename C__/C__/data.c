@@ -11,7 +11,8 @@ typedef enum
 	STRING,
 	PAIR,
 	RATIO,
-	LAMBDA
+	LAMBDA,
+    VECTOR
 } DataType;
 /*
 	several data types
@@ -49,6 +50,12 @@ struct Object
 		{
 			int start;
 		} Lambda;
+        struct
+        {
+            Object ** v;
+            int size;
+            int length;
+        } Vector;
 	} data;
 };
 
@@ -97,6 +104,19 @@ Object * Object_initString(char * v)
 	}
 	strcpy(o->data.String.v, v);
 	return o;
+}
+/*
+    initialize vector
+    default size 32
+ */
+Object * Object_initVector()
+{
+    Object * o = allocateObject();
+    o->type = VECTOR;
+    o->data.Vector.size = 32;
+    o->data.Vector.length = 0;
+    o->data.Vector.v = malloc(sizeof(Object*) * (o->data.Vector.size));
+    return o;
 }
 /*
 	cons

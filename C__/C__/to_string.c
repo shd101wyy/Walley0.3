@@ -95,7 +95,7 @@ char *String_formatPair(Object * o)
 			output = String_append(String_slice(output, 0, (int)strlen(output) - 1), ")");
 			break;
 		}
-		if(p->type != PAIR)
+		if(p->type != PAIR) // pair
 		{
             output = String_append(output, ". ");
             output = String_append(output, String_formatObject(p));
@@ -108,9 +108,9 @@ char *String_formatPair(Object * o)
             if (c == NULL) output = String_append(output, "()");
             else if (c->type == INTEGER) output = String_append(output, String_formatInteger(c));
             else if (c->type == DOUBLE) output = String_append(output, String_formatDouble(c));
-            else if (c->type == STRING){
-                output = String_append(output, String_formatString(c));}
+            else if (c->type == STRING) output = String_append(output, String_formatString(c));
             else if (c->type == PAIR) output = String_append(output, String_formatPair(c));
+            else if (c->type == VECTOR) output = String_append(output, String_formatVector(c));
             else
             {
                 printf("ERROR: formatPair invalid param");
@@ -120,6 +120,33 @@ char *String_formatPair(Object * o)
             p = p->data.Pair.cdr;
 		}
 	}
+    return output;
+}
+char *String_formatVector(Object * v)
+{
+    int length = v->data.Vector.length;
+    if (length == 0) return "#[]";
+    char *output = "#[";
+    int i;
+    for(i = 0; i < length; i++)
+    {
+        Object * c = v->data.Vector.v[i];
+        if(c == NULL)
+            output = String_append(output, "()");
+        else if (c->type == INTEGER) output = String_append(output, String_formatInteger(c));
+        else if (c->type == DOUBLE) output = String_append(output, String_formatDouble(c));
+        else if (c->type == STRING) output = String_append(output, String_formatString(c));
+        else if (c->type == PAIR) output = String_append(output, String_formatPair(c));
+        else if (c->type == VECTOR) output = String_append(output, String_formatVector(c));
+        else
+        {
+            printf("ERROR: formatVector invalid param");
+            exit(0);
+        }
+        if(i != length - 1)
+            output = String_append(output, " ");
+    }
+    output = String_append(output, "]");
     return output;
 }
 char *String_formatObject(Object * o)
@@ -133,6 +160,8 @@ char *String_formatObject(Object * o)
             return String_formatPair(o);
         case STRING:
             return String_formatString(o);
+        case VECTOR:
+            return String_formatVector(o);
         default:
             printf("ERROR:formatObject invalid parameter");
             break;
