@@ -83,15 +83,20 @@ var lexer_iter = function(input_string, index)
 	if (index == input_string.length) return null;
 	if (input_string[index] == "(" || input_string[index] == ")") 
 		return cons(input_string[index], lexer_iter(input_string, index + 1));
-	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t")
+	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
 		return lexer_iter(input_string, index + 1);
+	if (input_string[index] == "~" && input_string[index+1] == "@")
+		return cons("~@", lexer_iter(input_string, index + 2));
+	if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~")
+		return cons(input_string[index], lexer_iter(input_string, index+1));
 	// get number symbol
 	var end = index;
 	while(true)
 	{
 		if (end == input_string.length 
-			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" 
-			|| input_string[end] == ")" || input_string[end] == "(")
+			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" || input_string[index] == ","
+			|| input_string[end] == ")" || input_string[end] == "("
+			|| input_string[end] == "'" || input_string[end] == "`" || input_string[end] == "~")
 			break;
 		end+=1;
 	}
@@ -105,6 +110,31 @@ var lexer = function(input_string)
 	simple parser
 */
 var parser_rest = null;
+var parser_special = function(l)
+{
+	var tag ;
+    if(car(l) === "'")
+        tag = "quote"
+    else if (car(l) === "~")
+        tag = "unquote"
+    else if (car(l) === "~@")
+        tag = "unquote-splice"
+    else tag = 'quasiquote'
+    l = cdr(l);
+    if (car(l) === "(") // list
+    {
+        return cons(tag, cons(parser_list(cdr(l)), null));
+    }
+    else if (car(l) === "'" || car(l) === "~" || car(l) === "`")  // quote unquote quasiquote
+    {   // here my be some errors
+        return cons(tag, cons(parser_special(l), null));
+    }
+    else  // symbol or number
+    {
+        parser_rest = cdr(l);
+        return cons(tag, cons(car(l), null));
+    }
+}
 var parser_list = function(l)
 {
 	if(l == null) 
@@ -123,6 +153,10 @@ var parser_list = function(l)
 		return cons(parser_list(cdr(l)), 
 					parser_list(parser_rest));
 	}
+    else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@")  // quote unquote quasiquote unquote-splice
+    {
+        return cons(parser_special(l), parser_list(parser_rest));
+    }
 	else // symbol number
 	{
 		return cons(car(l), 
@@ -135,6 +169,9 @@ var parser = function(l)
 		return null;
 	else if (car(l) == "(")
 		return cons(parser_list(cdr(l)), parser(parser_rest));
+	// quote // unquote // quasiquote // unquote-splice
+    else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@")
+        return cons(parser_special(l), parser(parser_rest));
 	else // symbol number
 		return cons(car(l), parser(cdr(l)));
 }
@@ -500,8 +537,10 @@ var Environment = [
 	]
 ];
 
-
-var o = parser(lexer("(def x (cons 12 14)) (cdr x)"));
+var l = lexer("(def x 'anc");
+console.log(l);
+var o = parser(l);
+console.log(o)
 var p = compiler_begin(o, Variable_Table);
 console.log(p);
 console.log(vm(p, Environment, null));
