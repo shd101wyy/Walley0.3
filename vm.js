@@ -249,7 +249,7 @@ var compiler = function(l,   // list
 				if(car(params) == ".") // variadic
 				{
 					variadic_place = counter;
-					vt_[cadr(params)] = counter;
+					vt_[cadr(params)] = [length_of_vt, counter];
 					counter = -1; // means no parameters requirement
 					break;
 				}
@@ -325,7 +325,7 @@ var vm_push_parameters = function(insts,  // parameters calculation instructions
 	{
 		if(variadic_place !=-1 && i == variadic_place) // variadic parameters
 		{
-			for(var j = insts.length; j>=i; j--) // add variadic parameters
+			for(var j = insts.length - 1; j>=i; j--) // add variadic parameters
 			{
 				var inst = insts[j];
 				var v = vm([inst], env, accumulator);
@@ -390,7 +390,6 @@ var vm = function(insts, env, accumulator)
 				if(v instanceof Builtin_Primitive_Procedure)
 				{
 					// primitive 
-					console.log("Builtin_Primitive_Procedure");
 					// calculate param
 					var new_env = vm_push_parameters(inst[3].slice(1), env.slice(), -1, -1);
 					// because it is only builtin primitive procedure
@@ -450,7 +449,7 @@ var Environment = [
 ];
 
 
-var o = parser(lexer("(def test (lambda (a b) (cons a b))) (test (quote a) (quote b))"));
+var o = parser(lexer("(def test (lambda (a . c) (cons a c))) (test (quote a) (quote b) (quote c))"));
 var p = compiler_begin(o, Variable_Table);
 console.log(p);
 console.log(vm(p, Environment, null));
