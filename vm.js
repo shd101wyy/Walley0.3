@@ -38,7 +38,14 @@ var Lambda = function(param_num, variadic_place, body, env)
 	this.body = body;
 	this.env = env;
 }
-
+var Integer = function(num)
+{
+	this.num = num | 0;
+}
+var Float = function(num)
+{
+	this.num = num;
+}
 var car = function(o)
 {
 	return o.car;
@@ -53,6 +60,21 @@ var cadddr = function(o){return car(cdr(cdr(cdr(o))))};
 var cdddr = function(o){return cdr(cdr(cdr(o)))};
 var cddr = function(o){return cdr(cdr(o))};
 
+/*
+    check whether string is number
+*/
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+/*
+    check whether string is integer
+*/
+var isInteger = function(n)
+{ 
+    if(n.length==0)return false; 
+    if(n[0]=="-") n = n.slice(1);
+    return (n==="0" || /^[1-9][0-9]*$/.test(n) || /^0x[0-9A-F]{1,4}$/i.test(n) || /^0[1-9][0-9]*$/.test(n)) }
+var isFloat = function(n){return isNumber(n) && !(isInteger(n))}
 /*
 	suppose list, number, symbol
 */
@@ -122,7 +144,9 @@ var parser = function(l)
 var Variable_Table = [
 // primitive variables
 {
-	"cons" : [0, 0]
+	"cons" : [0, 0],
+	"car" : [0, 1],
+	"cdr" : [0, 2]
 }]; 
 // get variable index
 var vt_getVariableIndex = function(vt, variable_name)
@@ -159,6 +183,13 @@ var compiler = function(l,   // list
 	if(l == null) return [CONSTANT, NULL, 0];
 	if(typeof(l) === "string")
 	{
+		// check number
+		if(isInteger(l))
+			return [CONSTANT, INTEGER, l];
+		if(isFloat(l))
+			return [CONSTANT, FLOAT, l];
+
+		// it is not number
 		// get variable index
 		var m_n = vt_getVariableIndex(vt, l);
 		if(m_n == -1)
@@ -172,10 +203,21 @@ var compiler = function(l,   // list
 	{
 		var tag = car(l);
 		// quote
-		// only support symbol now
+		// only support symbol int float now
 		if (tag == "quote")
 		{
-			return [CONSTANT, STRING, cadr(l)]; // only support string now
+			// check integer
+			if(isInteger(l))
+				return [CONSTANT, INTEGER, l];
+			else if (isFloat(l))
+				return [CONSTANT, FLOAT, l];
+			// check null
+			if(l == null)
+				return [CONSTANT, NULL, 0];
+			// symbol/string
+			var v = cadr(l);
+			if(v[0]!='"') v = '"'+v+'"'
+			return [CONSTANT, STRING, v];
 		}
 		// def
 		else if(tag == "def")
@@ -370,11 +412,13 @@ var vm = function(insts, env, accumulator)
 			// (CONSTANT type value)
 			case CONSTANT:
 				var constant_type = inst[1];
-				// only support string now
+				// only support string, int, float now
 				if(constant_type == STRING)
-				{
 					accumulator = inst[2];
-				}
+				else if (constant_type == INTEGER)
+					accumulator = new Integer(parseInt(inst[2]));
+				else if (constant_type == FLOAT)
+					accumulator = new Float(parseFloat(inst[2]));
 				else // null
 				{
 					// console.log("ERROR: invalid constant type");
@@ -444,12 +488,20 @@ var Environment = [
 	bpp(function(stack_param)
 		{ // cons
 			return new Cons(stack_param[0], stack_param[1]);
+		}),
+	bpp(function(stack_param)
+		{ // car
+			return car(stack_param[0]);
+		}),
+	bpp(function(stack_param)
+		{ // cdr
+			return cdr(stack_param[0]);
 		})
 	]
 ];
 
 
-var o = parser(lexer("(def test (lambda (a . c) (cons a c))) (test (quote a) (quote b) (quote c))"));
+var o = parser(lexer("(def x (cons 12 14)) (cdr x)"));
 var p = compiler_begin(o, Variable_Table);
 console.log(p);
 console.log(vm(p, Environment, null));
