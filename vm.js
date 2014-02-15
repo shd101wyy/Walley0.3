@@ -30,6 +30,15 @@ var Builtin_Primitive_Procedure = function(func)
 	this.func = func;
 }
 var bpp = function(func){return new Builtin_Primitive_Procedure(func)}; // create Builtin_Primitive_Procedure
+
+var Lambda = function(param_num, variadic_place, body, env)
+{
+	this.param_num = param_num;
+	this.variadic_place = variadic_place;
+	this.body = body;
+	this.env = env;
+}
+
 var car = function(o)
 {
 	return o.car;
@@ -40,6 +49,10 @@ var cdr = function(o)
 }
 var cadr = function(o){return car(cdr(o))};
 var caddr = function(o){return car(cdr(cdr(o)))};
+var cadddr = function(o){return car(cdr(cdr(cdr(o))))};
+var cdddr = function(o){return cdr(cdr(cdr(o)))};
+var cddr = function(o){return cdr(cdr(o))};
+
 /*
 	suppose list, number, symbol
 */
@@ -127,9 +140,10 @@ var vt_getVariableIndex = function(vt, variable_name)
 var SET = 1;
 var GET = 2;
 var CALL = 3;
-var CREATE_FUNC = 4;
+var CREATE_LAMBDA = 4;
 var CONSTANT = 5;
 var PUSH_PARAM = 6;
+var IF = 7;
 
 
 var INTEGER = 1;
@@ -201,6 +215,55 @@ var compiler = function(l,   // list
 			console.log("SET! ERROR");
 			return []
 		}
+		// if 
+		// [if test consequent alternative]
+		else if (tag == "if")
+		{
+			var test = cadr(l);
+			var conseq = caddr(l);
+			var alter; 
+			if(cdddr(l) == null) alter = null;
+			else alter = cadddr(l);
+
+			// compile
+			var c_test = compiler(test, vt);
+			var c_conseq = compiler(conseq, vt);
+			var c_alter = compiler(alter, vt);
+
+			return [IF, c_test, c_conseq, c_alter];
+		}
+		// create lambda
+		// [CREATE_LAMBDA parameter_num variadic_place body]
+		// for variadic_place -1 mean no variadic parameters
+		else if (tag == "lambda")
+		{
+			var params = cadr(l); // get parameters
+			var variadic_place = -1; // variadic place
+			var param_num = 0; // parameters num
+			var length_of_vt = vt.length; // length of vt
+			var counter = 0; //
+			var vt_ = {};
+			while(true)
+			{
+				if(params == null) break;
+				if(car(params) == ".") // variadic
+				{
+					variadic_place = counter;
+					vt_[cadr(params)] = counter;
+					counter = -1; // means no parameters requirement
+					break;
+				}
+				vt_[car(params)] = [length_of_vt, counter]; // set parameters to variable table
+				counter+=1;
+				params = cdr(params);
+			}
+			// compile_body
+			var new_vt = vt.slice();
+			new_vt.push(vt_); // add parameters variable table
+			var c_body = compiler_begin(cddr(l), new_vt);
+			return [CREATE_LAMBDA, counter, variadic_place, c_body];
+
+		}
 		// call lambda
 		else
 		{
@@ -244,18 +307,45 @@ var compiler_begin = function(o, vt)
 // push new frame
 // calculate parameters
 // return new env
-var vm_push_parameters = function(insts, env, accumulator)
+var vm_push_parameters = function(insts,  // parameters calculation instructions
+									env,  // new env
+									param_num, // required param num, -1 means no requirement
+									variadic_place // variadic place, -1 means no requirement
+									)
 {
-	var frame = []
-	for(var i = 1; i < insts.length; i++)
+	if(param_num != -1 && insts.length > param_num)
 	{
+		console.log("ERROR: Too many parameters");
+		return env;
+	}
+	var frame = []
+	var accumulator = null;
+	var variadic_l = null;
+	for(var i = 0; i < insts.length; i++)
+	{
+		if(variadic_place !=-1 && i == variadic_place) // variadic parameters
+		{
+			for(var j = insts.length; j>=i; j--) // add variadic parameters
+			{
+				var inst = insts[j];
+				var v = vm([inst], env, accumulator);
+				variadic_l = cons(v, variadic_l);
+			}
+			frame.push(variadic_l);
+			break;
+		}
 		var inst = insts[i];
 		var v = vm([inst], env, accumulator);
 		frame.push(v);
 	}
+	for(; i < param_num; i++) // add null if necessary
+	{
+		frame.push(null);
+	}
 	env.push(frame); // add new frame
 	return env;
 }
+// virtual machine
 var vm = function(insts, env, accumulator)
 {
 	for(var i = 0; i < insts.length; i++)
@@ -285,9 +375,9 @@ var vm = function(insts, env, accumulator)
 				{
 					accumulator = inst[2];
 				}
-				else
+				else // null
 				{
-					console.log("ERROR: invalid constant type");
+					// console.log("ERROR: invalid constant type");
 					return null;
 				}
 				break;
@@ -302,25 +392,49 @@ var vm = function(insts, env, accumulator)
 					// primitive 
 					console.log("Builtin_Primitive_Procedure");
 					// calculate param
-					var new_env = vm_push_parameters(inst[3], env.slice(), null);
+					var new_env = vm_push_parameters(inst[3].slice(1), env.slice(), -1, -1);
 					// because it is only builtin primitive procedure
 					// so only use the top level env
 					accumulator = env[inst[1]][inst[2]].func(new_env[new_env.length - 1]);
 				}
+				// user defined lambda
+				if(v instanceof Lambda)
+				{
+					// get necessary information from v
+					var body = v.body;
+					var param_num = v.param_num;
+					var variadic_place = v.variadic_place;
+					var new_env = v.env;
+					// calculate parameters and get new env
+					new_env = vm_push_parameters(inst[3].slice(1), new_env.slice(), param_num, variadic_place);
+					// call function
+					accumulator = vm(body, new_env, null);
+				}
 				break;
-			case CREATE_FUNC:
+			// [if test conseq alter]
+			case IF:
+				var t = vm([inst[1]], env, null);
+				if(t == null) // run alter
+					accumulator = vm([inst[3]], env, null);
+				else
+					accumulator = vm([inst[2]], env, null);
+
+			// [create_lambda param_num variadic_place body]
+			case CREATE_LAMBDA:
+				accumulator = new Lambda(inst[1], inst[2], inst[3], env.slice());
 				break;
 			/*
 				create new frame and push parameters
 			*/
-			case PUSH_PARAM:
-
-				break;
+			//case PUSH_PARAM:
+			//	break;
 			default:
 				console.log("VM ERROR: invalid parameters: " + opcode);
 				return null;
 		}
 	}
+	console.log("debug: accumulator==> ")
+	console.log(accumulator)
 	return accumulator;
 }
 
@@ -336,9 +450,9 @@ var Environment = [
 ];
 
 
-var o = parser(lexer("(cons (quote a) (quote b))"));
+var o = parser(lexer("(def test (lambda (a b) (cons a b))) (test (quote a) (quote b))"));
 var p = compiler_begin(o, Variable_Table);
-console.log(p)
+console.log(p);
 console.log(vm(p, Environment, null));
 
 
