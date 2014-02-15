@@ -12,7 +12,8 @@ typedef enum
 	PAIR,
 	RATIO,
 	LAMBDA,
-    VECTOR
+    VECTOR,
+   // DICTIONARY
 } DataType;
 /*
 	several data types
