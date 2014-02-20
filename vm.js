@@ -83,12 +83,14 @@ var lexer_iter = function(input_string, index)
 	if (index == input_string.length) return null;
 	if (input_string[index] == "(" || input_string[index] == ")") 
 		return cons(input_string[index], lexer_iter(input_string, index + 1));
-	if (input_string[index] == "#" && input_string[index + 1] == "[") // vector
-		return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
-	if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
-	if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
 	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
 		return lexer_iter(input_string, index + 1);
+	if (input_string[index] == "#" && input_string[index + 1] == "[") // vector
+		return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
+	if (input_string[index] == "{") // dictionary
+		return cons("(", cons("dictionary", lexer_iter(input_string, index + 1)));
+	if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
+	if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
 	if (input_string[index] == "~" && input_string[index+1] == "@")
 		return cons("~@", lexer_iter(input_string, index + 2));
 	if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~")
@@ -99,7 +101,8 @@ var lexer_iter = function(input_string, index)
 	{
 		if (end == input_string.length 
 			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" || input_string[index] == ","
-			|| input_string[end] == ")" || input_string[end] == "(" || input_string[end] == "]"
+			|| input_string[end] == ")" || input_string[end] == "(" 
+			|| input_string[end] == "]" || input_string[end] == "[" || input_string[end] == "{" || input_string[end] == "}"
 			|| input_string[end] == "'" || input_string[end] == "`" || input_string[end] == "~")
 			break;
 		end+=1;
@@ -192,16 +195,17 @@ var Variable_Table = [
 	"vector-ref" : [0, 4],
 	"vector-set!" : [0, 5],
 	"vector-length" : [0, 6],
-	"+" : [0, 7],
-	"-" : [0, 8],
-	"*" : [0, 9],
-	"/" : [0, 10],
-	"=" : [0, 11], // only for number
-	"<" : [0, 12], // only for number
-	">" : [0, 13], // only for number
-	"<=" : [0, 14], // only for number
-	">=" : [0, 15], // only for number
-	"eq?" : [0, 16] 
+	"vector?" : [0, 7],
+	"+" : [0, 8],
+	"-" : [0, 9],
+	"*" : [0, 10],
+	"/" : [0, 11],
+	"=" : [0, 12], // only for number
+	"<" : [0, 13], // only for number
+	">" : [0, 14], // only for number
+	"<=" : [0, 15], // only for number
+	">=" : [0, 16], // only for number
+	"eq?" : [0, 17] 
 }]; 
 
 var Environment = [
@@ -243,61 +247,66 @@ var Environment = [
 			return new Integer(stack_param[0].length)
 		}),
 	bpp(function(stack_param)
-		{ // 7 +
+		{ // 7 vector?
+			if(stack_param[0] instanceof Array) return "true";
+			return null;
+		}),
+	bpp(function(stack_param)
+		{ // 8 +
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num + stack_param[1].num);
 		return new Integer(stack_param[0].num + stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-		{ // 8 -
+		{ // 9 -
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num - stack_param[1].num);
 		return new Integer(stack_param[0].num - stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-		{ // 9 *
+		{ // 10 *
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num * stack_param[1].num);
 		return new Integer(stack_param[0].num * stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-		{ // 10 /
+		{ // 11 /
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num / stack_param[1].num);
 		return new Integer(stack_param[0].num / stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-	{ // 11 = only for number
+	{ // 12 = only for number
 		if (stack_param[0].num == stack_param[1].num)
 			return "true"
 		return null;
 	}),
 	bpp(function(stack_param)
-	{ // 12 < only for number
+	{ // 13 < only for number
 		if (stack_param[0].num < stack_param[1].num)
 			return "true"
 		return null;
 	}),
 	bpp(function(stack_param)
-	{ // 13 > only for number
+	{ // 14 > only for number
 		if (stack_param[0].num > stack_param[1].num)
 			return "true"
 		return null;
 	}),
 	bpp(function(stack_param)
-	{ // 14 <= only for number
+	{ // 15 <= only for number
 		if (stack_param[0].num <= stack_param[1].num)
 			return "true"
 		return null;
 	}),
 	bpp(function(stack_param)
-	{ // 15 >= only for number
+	{ // 16 >= only for number
 		if (stack_param[0].num >= stack_param[1].num)
 			return "true"
 		return null;
 	}),
 	bpp(function(stack_param)
-	{ // 16 eq? 
+	{ // 17 eq? 
 		if ((stack_param[0] instanceof Integer || stack_param[0] instanceof Float) // check number
 			&& (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
 		{
@@ -382,12 +391,21 @@ var compiler = function(l,   // list
 			if(v[0]!='"') v = '"'+v+'"'
 			return [CONSTANT, STRING, v];
 		}
-		// def
+		// def 
+		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
 		else if(tag == "def")
 		{
 			var variable_name = cadr(l);
-			var variable_value = caddr(l);
+			if(variable_name instanceof Cons) // it is lambda format like (def (add a b) (+ a b))
+			{
+				var var_name = car(variable_name);
+				var args = cdr(variable_name);
+				var lambda = cons("lambda", cons(args, cddr(l)));
+				return compiler(cons("def", cons(var_name, cons(lambda, null))), 
+								vt)
+			}
 
+			var variable_value = caddr(l);
 			for(var i = vt.length - 1; i >= 0; i--)
 			{
 				if (variable_name in vt[i])
@@ -463,7 +481,7 @@ var compiler = function(l,   // list
 				params = cdr(params);
 			}
 			// compile_body
-			var new_vt = vt.slice();
+			var new_vt = vt.slice(0);
 			new_vt.push(vt_); // add parameters variable table
 			var c_body = compiler_begin(cddr(l), new_vt);
 			return [CREATE_LAMBDA, counter, variadic_place, c_body];
@@ -513,15 +531,16 @@ var compiler_begin = function(o, vt)
 // calculate parameters
 // return new env
 var vm_push_parameters = function(insts,  // parameters calculation instructions
-									env,  // new env
+									new_env,  // new env
 									param_num, // required param num, -1 means no requirement
-									variadic_place // variadic place, -1 means no requirement
+									variadic_place, // variadic place, -1 means no requirement
+									current_env // env used to calculate parameters
 									)
 {
 	if(param_num != -1 && insts.length > param_num)
 	{
 		console.log("ERROR: Too many parameters");
-		return env;
+		return new_env;
 	}
 	var frame = []
 	var accumulator = null;
@@ -533,22 +552,22 @@ var vm_push_parameters = function(insts,  // parameters calculation instructions
 			for(var j = insts.length - 1; j>=i; j--) // add variadic parameters
 			{
 				var inst = insts[j];
-				var v = vm([inst], env, accumulator);
+				var v = vm([inst], current_env, accumulator);
 				variadic_l = cons(v, variadic_l);
 			}
 			frame.push(variadic_l);
 			break;
 		}
 		var inst = insts[i];
-		var v = vm([inst], env, accumulator);
+		var v = vm([inst], current_env, accumulator);
 		frame.push(v);
 	}
 	for(; i < param_num; i++) // add null if necessary
 	{
 		frame.push(null);
 	}
-	env.push(frame); // add new frame
-	return env;
+	new_env.push(frame); // add new frame
+	return new_env;
 }
 // virtual machine
 var vm = function(insts, env, accumulator)
@@ -598,7 +617,7 @@ var vm = function(insts, env, accumulator)
 				{
 					// primitive 
 					// calculate param
-					var new_env = vm_push_parameters(inst[3].slice(1), env.slice(), -1, -1);
+					var new_env = vm_push_parameters(inst[3].slice(1), env.slice(0), -1, -1, env);
 					// because it is only builtin primitive procedure
 					// so only use the top level env
 					accumulator = env[inst[1]][inst[2]].func(new_env[new_env.length - 1]);
@@ -611,8 +630,10 @@ var vm = function(insts, env, accumulator)
 					var param_num = v.param_num;
 					var variadic_place = v.variadic_place;
 					var new_env = v.env;
+
 					// calculate parameters and get new env
-					new_env = vm_push_parameters(inst[3].slice(1), new_env.slice(), param_num, variadic_place);
+					new_env = vm_push_parameters(inst[3].slice(1), new_env.slice(0), param_num, variadic_place, env);
+
 					// call function
 					accumulator = vm(body, new_env, null);
 				}
@@ -624,10 +645,10 @@ var vm = function(insts, env, accumulator)
 					accumulator = vm([inst[3]], env, null);
 				else
 					accumulator = vm([inst[2]], env, null);
-
+				break;
 			// [create_lambda param_num variadic_place body]
 			case CREATE_LAMBDA:
-				accumulator = new Lambda(inst[1], inst[2], inst[3], env.slice());
+				accumulator = new Lambda(inst[1], inst[2], inst[3], env.slice(0));
 				break;
 			/*
 				create new frame and push parameters
@@ -645,9 +666,7 @@ var vm = function(insts, env, accumulator)
 }
 
 
-
-
-var l = lexer("(def add (lambda [a b] (+ a b))) (add 3 4)");
+var l = lexer("(def f (lambda (n) (if (= n 0) 1 (* n (f (- n 1)))))) (f 10)");
 console.log(l);
 var o = parser(l);
 console.log(o)
