@@ -427,7 +427,7 @@ var compiler = function(l,   // list
 				v = '"'+v+'"'
 				return [CONSTANT, STRING, v];
 			}
-		}/*
+		}
 		else if (tag == "quasiquote") // add quasiquote
 		{
 			var v = cadr(l);
@@ -450,8 +450,8 @@ var compiler = function(l,   // list
 	                {
 	                	if(car(v) === "unquote")
 	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
-	                	//else if (car(v) === "unquote-splice")
-	                	//{}
+	                	else if (car(v) === "unquote-splice")
+	                		return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
 	                	return cons("cons", cons(cons(quasiquote(v), null), cons(quasiquote(cdr(l)), null)));
 	                }
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
@@ -465,7 +465,7 @@ var compiler = function(l,   // list
 				v = '"'+v+'"'
 				return [CONSTANT, STRING, v];
 			}
-		} */
+		} 
 		// def 
 		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
 		else if(tag == "def")
