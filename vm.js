@@ -83,6 +83,10 @@ var lexer_iter = function(input_string, index)
 	if (index == input_string.length) return null;
 	if (input_string[index] == "(" || input_string[index] == ")") 
 		return cons(input_string[index], lexer_iter(input_string, index + 1));
+	if (input_string[index] == "#" && input_string[index + 1] == "[") // vector
+		return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
+	if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
+	if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
 	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
 		return lexer_iter(input_string, index + 1);
 	if (input_string[index] == "~" && input_string[index+1] == "@")
@@ -95,7 +99,7 @@ var lexer_iter = function(input_string, index)
 	{
 		if (end == input_string.length 
 			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" || input_string[index] == ","
-			|| input_string[end] == ")" || input_string[end] == "("
+			|| input_string[end] == ")" || input_string[end] == "(" || input_string[end] == "]"
 			|| input_string[end] == "'" || input_string[end] == "`" || input_string[end] == "~")
 			break;
 		end+=1;
@@ -191,26 +195,32 @@ var Variable_Table = [
 	"+" : [0, 7],
 	"-" : [0, 8],
 	"*" : [0, 9],
-	"/" : [0, 10]
+	"/" : [0, 10],
+	"=" : [0, 11], // only for number
+	"<" : [0, 12], // only for number
+	">" : [0, 13], // only for number
+	"<=" : [0, 14], // only for number
+	">=" : [0, 15], // only for number
+	"eq?" : [0, 16] 
 }]; 
 
 var Environment = [
 	[
 
 	bpp(function(stack_param)
-		{ // cons
+		{ // 0 cons
 			return new Cons(stack_param[0], stack_param[1]);
 		}),
 	bpp(function(stack_param)
-		{ // car
+		{ // 1 car
 			return car(stack_param[0]);
 		}),
 	bpp(function(stack_param)
-		{ // cdr
+		{ // 2 cdr
 			return cdr(stack_param[0]);
 		}),
 	bpp(function(stack_param)
-		{ // vector
+		{ // 3 vector
 		var output = [];
 		var v = statement[0];
 		while(v!=null)
@@ -221,41 +231,83 @@ var Environment = [
 		return output;
 		}),
 	bpp(function(stack_param)
-		{ // vector-ref
+		{ // 4 vector-ref
 		return stack_param[0][stack_param[1].num];
 		}),
 	bpp(function(stack_param)
-		{ // vector-set!
+		{ // 5 vector-set!
 		stack_param[0][stack_param[1].num] = stack_param[2];   return stack_param[2];  
 		}),
 	bpp(function(stack_param)
-		{ // vector-length
+		{ // 6 vector-length
 			return new Integer(stack_param[0].length)
 		}),
 	bpp(function(stack_param)
-		{ // +
+		{ // 7 +
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num + stack_param[1].num);
 		return new Integer(stack_param[0].num + stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-		{ // -
+		{ // 8 -
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num - stack_param[1].num);
 		return new Integer(stack_param[0].num - stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-		{ // *
+		{ // 9 *
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num * stack_param[1].num);
 		return new Integer(stack_param[0].num * stack_param[1].num);
 		}),
 	bpp(function(stack_param)
-		{ // /
+		{ // 10 /
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num / stack_param[1].num);
 		return new Integer(stack_param[0].num / stack_param[1].num);
-		})
+		}),
+	bpp(function(stack_param)
+	{ // 11 = only for number
+		if (stack_param[0].num == stack_param[1].num)
+			return "true"
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 12 < only for number
+		if (stack_param[0].num < stack_param[1].num)
+			return "true"
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 13 > only for number
+		if (stack_param[0].num > stack_param[1].num)
+			return "true"
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 14 <= only for number
+		if (stack_param[0].num <= stack_param[1].num)
+			return "true"
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 15 >= only for number
+		if (stack_param[0].num >= stack_param[1].num)
+			return "true"
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 16 eq? 
+		if ((stack_param[0] instanceof Integer || stack_param[0] instanceof Float) // check number
+			&& (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
+		{
+			if(stack_param[0].num === stack_param[1].num) return "true"; 
+			return false;
+		}
+		if (stack_param[0] === stack_param[1])
+			return "true"
+		return null;
+	}),
 	]
 ];
 
@@ -595,7 +647,7 @@ var vm = function(insts, env, accumulator)
 
 
 
-var l = lexer("(def x 12) (+ x 14)");
+var l = lexer("(def add (lambda [a b] (+ a b))) (add 3 4)");
 console.log(l);
 var o = parser(l);
 console.log(o)
