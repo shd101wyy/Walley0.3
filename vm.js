@@ -85,7 +85,7 @@ var lexer_iter = function(input_string, index)
 		return cons(input_string[index], lexer_iter(input_string, index + 1));
 	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
 		return lexer_iter(input_string, index + 1);
-	if (input_string[index] == "#" && input_string[index + 1] == "[") // vector
+	if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
 		return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
 	if (input_string[index] == "{") // dictionary
 		return cons("(", cons("dictionary", lexer_iter(input_string, index + 1)));
@@ -205,7 +205,11 @@ var Variable_Table = [
 	">" : [0, 14], // only for number
 	"<=" : [0, 15], // only for number
 	">=" : [0, 16], // only for number
-	"eq?" : [0, 17] 
+	"eq?" : [0, 17],
+	"string?" : [0, 18],
+	"integer?" : [0, 19],
+	"float?" : [0, 20],
+	"pair?" : [0, 21]
 }]; 
 
 var Environment = [
@@ -225,14 +229,7 @@ var Environment = [
 		}),
 	bpp(function(stack_param)
 		{ // 3 vector
-		var output = [];
-		var v = statement[0];
-		while(v!=null)
-		{
-			output.push(car(v));
-			v = cdr(v);
-		}
-		return output;
+			return stack_param;
 		}),
 	bpp(function(stack_param)
 		{ // 4 vector-ref
@@ -317,6 +314,30 @@ var Environment = [
 			return "true"
 		return null;
 	}),
+	bpp(function(stack_param)
+	{ // 18 string?
+		if(typeof(stack_param[0]) === "string")
+			return "true";
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 19 integer?
+		if(stack_param[0] instanceof Integer)
+			return "true";
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 20 float?
+		if(stack_param[0] instanceof Float)
+			return "true";
+		return null;
+	}),
+	bpp(function(stack_param)
+	{ // 21 pair?
+		if(stack_param[0] instanceof Cons)
+			return "true";
+		return null;
+	})
 	]
 ];
 
@@ -406,7 +427,7 @@ var compiler = function(l,   // list
 				v = '"'+v+'"'
 				return [CONSTANT, STRING, v];
 			}
-		}
+		}/*
 		else if (tag == "quasiquote") // add quasiquote
 		{
 			var v = cadr(l);
@@ -427,8 +448,10 @@ var compiler = function(l,   // list
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
 	                if(v instanceof Cons) 
 	                {
-	                	if(car(v) == "unquote")
+	                	if(car(v) === "unquote")
 	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
+	                	//else if (car(v) === "unquote-splice")
+	                	//{}
 	                	return cons("cons", cons(cons(quasiquote(v), null), cons(quasiquote(cdr(l)), null)));
 	                }
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
@@ -442,7 +465,7 @@ var compiler = function(l,   // list
 				v = '"'+v+'"'
 				return [CONSTANT, STRING, v];
 			}
-		}
+		} */
 		// def 
 		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
 		else if(tag == "def")
@@ -722,7 +745,7 @@ var vm = function(insts, env, accumulator)
 }
 
 
-var l = lexer("(def a 12)(def x `(~a . b))  (car x)");
+var l = lexer("(def x #[1 2 3]) (vector-length x)");
 console.log(l);
 var o = parser(l);
 console.log(o)
