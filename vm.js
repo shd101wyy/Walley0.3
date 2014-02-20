@@ -378,18 +378,70 @@ var compiler = function(l,   // list
 		// only support symbol int float now
 		if (tag == "quote")
 		{
+			var v = cadr(l);
 			// check integer
-			if(isInteger(l))
+			if(isInteger(v))
 				return [CONSTANT, INTEGER, l];
-			else if (isFloat(l))
+			else if (isFloat(v))
 				return [CONSTANT, FLOAT, l];
 			// check null
-			if(l == null)
+			else if(v == null)
 				return [CONSTANT, NULL, 0];
+			else if (v instanceof Cons) // pair
+			{
+				var quote_list = function(l)
+	            {
+	                if(l == null) return null;
+	                var v = car(l);   
+	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
+	                if(v instanceof Cons) return cons("cons", cons(cons(quote_list(v), null), cons(quote_list(cdr(l)), null)));
+	                else if (v === ".") return cons("quote", cons(cadr(l), null));
+	                return cons("cons", cons( cons("quote", cons(v, "null")), cons(quote_list(cdr(l), null))));
+	            }	       
+	            return compiler(quote_list(v), vt);
+			}
 			// symbol/string
+			else if(v[0]!='"') 
+			{
+				v = '"'+v+'"'
+				return [CONSTANT, STRING, v];
+			}
+		}
+		else if (tag == "quasiquote") // add quasiquote
+		{
 			var v = cadr(l);
-			if(v[0]!='"') v = '"'+v+'"'
-			return [CONSTANT, STRING, v];
+			// check integer
+			if(isInteger(v))
+				return [CONSTANT, INTEGER, l];
+			else if (isFloat(v))
+				return [CONSTANT, FLOAT, l];
+			// check null
+			else if(v == null)
+				return [CONSTANT, NULL, 0];
+			else if (v instanceof Cons) // pair
+			{
+				var quasiquote = function(l)
+	            {
+	                if(l == null) return null;
+	                var v = car(l);   
+	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
+	                if(v instanceof Cons) 
+	                {
+	                	if(car(v) == "unquote")
+	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
+	                	return cons("cons", cons(cons(quasiquote(v), null), cons(quasiquote(cdr(l)), null)));
+	                }
+	                else if (v === ".") return cons("quote", cons(cadr(l), null));
+	                return cons("cons", cons( cons("quote", cons(v, "null")), cons(quasiquote(cdr(l), null))));
+	            }	       
+	            return compiler(quasiquote(v), vt);
+			}
+			// symbol/string
+			else if(v[0]!='"') 
+			{
+				v = '"'+v+'"'
+				return [CONSTANT, STRING, v];
+			}
 		}
 		// def 
 		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
@@ -486,6 +538,10 @@ var compiler = function(l,   // list
 			var c_body = compiler_begin(cddr(l), new_vt);
 			return [CREATE_LAMBDA, counter, variadic_place, c_body];
 
+		}
+		else if (tag == "begin") // this function has error... don't use now
+		{
+			return compiler_begin(cdr(l), vt);
 		}
 		// call lambda
 		else
@@ -666,7 +722,7 @@ var vm = function(insts, env, accumulator)
 }
 
 
-var l = lexer("(def f (lambda (n) (if (= n 0) 1 (* n (f (- n 1)))))) (f 10)");
+var l = lexer("(def a 12)(def x `(~a . b))  (car x)");
 console.log(l);
 var o = parser(l);
 console.log(o)
