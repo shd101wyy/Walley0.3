@@ -183,8 +183,82 @@ var Variable_Table = [
 {
 	"cons" : [0, 0],
 	"car" : [0, 1],
-	"cdr" : [0, 2]
+	"cdr" : [0, 2],
+	"vector" : [0, 3],
+	"vector-ref" : [0, 4],
+	"vector-set!" : [0, 5],
+	"vector-length" : [0, 6],
+	"+" : [0, 7],
+	"-" : [0, 8],
+	"*" : [0, 9],
+	"/" : [0, 10]
 }]; 
+
+var Environment = [
+	[
+
+	bpp(function(stack_param)
+		{ // cons
+			return new Cons(stack_param[0], stack_param[1]);
+		}),
+	bpp(function(stack_param)
+		{ // car
+			return car(stack_param[0]);
+		}),
+	bpp(function(stack_param)
+		{ // cdr
+			return cdr(stack_param[0]);
+		}),
+	bpp(function(stack_param)
+		{ // vector
+		var output = [];
+		var v = statement[0];
+		while(v!=null)
+		{
+			output.push(car(v));
+			v = cdr(v);
+		}
+		return output;
+		}),
+	bpp(function(stack_param)
+		{ // vector-ref
+		return stack_param[0][stack_param[1].num];
+		}),
+	bpp(function(stack_param)
+		{ // vector-set!
+		stack_param[0][stack_param[1].num] = stack_param[2];   return stack_param[2];  
+		}),
+	bpp(function(stack_param)
+		{ // vector-length
+			return new Integer(stack_param[0].length)
+		}),
+	bpp(function(stack_param)
+		{ // +
+		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
+			return new Float(stack_param[0].num + stack_param[1].num);
+		return new Integer(stack_param[0].num + stack_param[1].num);
+		}),
+	bpp(function(stack_param)
+		{ // -
+		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
+			return new Float(stack_param[0].num - stack_param[1].num);
+		return new Integer(stack_param[0].num - stack_param[1].num);
+		}),
+	bpp(function(stack_param)
+		{ // *
+		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
+			return new Float(stack_param[0].num * stack_param[1].num);
+		return new Integer(stack_param[0].num * stack_param[1].num);
+		}),
+	bpp(function(stack_param)
+		{ // /
+		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
+			return new Float(stack_param[0].num / stack_param[1].num);
+		return new Integer(stack_param[0].num / stack_param[1].num);
+		})
+	]
+];
+
 // get variable index
 var vt_getVariableIndex = function(vt, variable_name)
 {
@@ -519,25 +593,9 @@ var vm = function(insts, env, accumulator)
 }
 
 
-var Environment = [
-	[
 
-	bpp(function(stack_param)
-		{ // cons
-			return new Cons(stack_param[0], stack_param[1]);
-		}),
-	bpp(function(stack_param)
-		{ // car
-			return car(stack_param[0]);
-		}),
-	bpp(function(stack_param)
-		{ // cdr
-			return cdr(stack_param[0]);
-		})
-	]
-];
 
-var l = lexer("(def x 'anc");
+var l = lexer("(def x 12) (+ x 14)");
 console.log(l);
 var o = parser(l);
 console.log(o)
