@@ -562,10 +562,6 @@ var compiler = function(l,   // list
 			return [CREATE_LAMBDA, counter, variadic_place, c_body];
 
 		}
-		else if (tag == "begin") // this function has error... don't use now
-		{
-			return compiler_begin(cdr(l), vt);
-		}
 		// call lambda
 		else
 		{
@@ -595,6 +591,15 @@ var compiler = function(l,   // list
 var compiler_begin_iter = function(o, vt, out)
 {
 	if(o == null) return out;
+	var v = car(o);
+	if (v instanceof Cons && car(v) === "begin")
+	{
+		v = compiler_begin_iter(cdr(v), vt, []);
+		for(var i = 0; i < v.length; i++)
+		{
+			out.push(v[i]);
+		} return compiler_begin_iter(cdr(o), vt, out);
+	}
 	var c = compiler(car(o), vt);
 	out.push(c);
 	return compiler_begin_iter(cdr(o), vt, out);
