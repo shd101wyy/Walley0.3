@@ -46,6 +46,22 @@ var Float = function(num)
 {
 	this.num = num;
 }
+var Environment = function(env)
+{
+	this.env = env;
+	this.esp = env.length - 1; // point to toppest element
+	this.push = function(v)
+	{
+		this.env[this.esp + 1] = v;
+		this.esp += 1;
+	}
+	this.pop = function()
+	{
+		var v = this.env[this.esp];
+		this.esp -= 1;
+		return v;
+	}
+}
 var car = function(o)
 {
 	return o.car;
@@ -689,7 +705,7 @@ var compiler = function(l, vt)
 			// push parameter from right to left 
 			params = list_to_array(params); // convert list to array
 			param_num = params.length;  // get param num
-			for(var i = param_num - 1; i >=0; i--) // compile parameter from right to left
+			for(/*var i = param_num - 1; i >=0; i--*/ var i = 0; i < param_num; i++) // compile parameter from ---right to left---, now from left to right
 			{
 				compiler(params[i], vt);
 				INSTRUCTIONS.push(PUSH << 12); // push parameter to env
@@ -722,8 +738,9 @@ var compiler_begin = function(l, vt)
 }
 
 
-var VM = function()
+var VM = function(env)
 {
+	var vm_env = new Environment(env); // init environment
 	var pc = 0;
 	var accumulator = null;
 	var length_of_insts = INSTRUCTIONS.length;
@@ -791,7 +808,7 @@ var VM = function()
 		else if ( opcode === PUSH) // push to environment
 		{
 			console.log("PUSH");
-			ENVIRONMENT.push(accumulator);
+			vm_env.push(accumulator);
 			pc = pc + 1;
 			continue;
 		}
@@ -818,7 +835,7 @@ var VM = function()
 		{
 			console.log("SET");
 			var index = 0x0FFF & inst;
-			ENVIRONMENT[index] = accumulator;
+			vm_env.env[index] = accumulator; // set to env
 			pc = pc + 1;
 			continue;
 		}
@@ -826,7 +843,7 @@ var VM = function()
 		{
 			console.log("GET");
 			var index = 0x0FFF & inst;
-			accumulator = ENVIRONMENT[index];
+			accumulator = vm_env.env[index];
 			pc = pc + 1;
 			continue;
 		}
@@ -838,7 +855,7 @@ var VM = function()
 			var start_pc = pc + 2;
 			var jump_steps = INSTRUCTIONS[pc + 1];
 
-			accumulator = new Lambda(param_num, variadic_place, start_pc, ENVIRONMENT.slice(0)); // set lambda
+			accumulator = new Lambda(param_num, variadic_place, start_pc, vm_env.env.slice(0)); // set lambda
 			
 			pc = pc + jump_steps + 1;
 			console.log(pc);
@@ -853,15 +870,15 @@ var VM = function()
 			if(lambda instanceof Builtin_Primitive_Procedure) // builtin lambda
 			{
 				var stack_frame = [];
+				var reset_esp = vm_env.esp - param_num;
 				for(var i = 0; i < param_num - 1; i++)
 				{
-					stack_frame.push(ENVIRONMENT.pop());
+					stack_frame.push(vm_env.env[reset_esp + 2 + i]);
 				}
-				ENVIRONMENT.pop(); // pop return address
+				vm_env.esp = reset_esp; // vm_env.pop(); // pop return address
+				console.log(vm_env.esp);
 				pc = pc + 1;
 				accumulator = lambda.func(stack_frame);
-				console.log("BUILTIN PRIMITIVE PROCEDURE: ");
-				console.log(accumulator);
 				continue;
 			}
 
@@ -875,32 +892,37 @@ var VM = function()
 			console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
 			console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
 			console.log("START_PC " + lambda.start_pc);
-			console.log("OLD_PC   " + ENVIRONMENT[ENVIRONMENT.length - param_num]);
+			console.log("OLD_PC   " + vm_env.env[vm_env.esp - param_num + 1]);
 
 			// push current-env to new-env to save it
-			new_env.push(ENVIRONMENT);
+			new_env.push(vm_env);
 			// push return_address
-			new_env.push(ENVIRONMENT[ENVIRONMENT.length - param_num]); // save space for return_address
+			new_env.push(vm_env.env[vm_env.esp - param_num + 1]); 
+			// reset esp; set esp to this value after pushed all parameters
+			var reset_esp = vm_env.esp - param_num;
 
 			for(var i = 0; i < param_num - 1; i++)
 			{
-				var p = ENVIRONMENT.pop(); // pop parameters;
 				if( i === required_variadic_num) // reach variadic param place.
 				{
 					var v = null;
 					while(i < param_num - 1)
 					{
-						v = cons(ENVIRONMENT.pop(), v); // set variadic variable
+						v = cons(vm_env.pop(), v); // set variadic variable
 						i++;
 					}
+					console.log("VARIADIC PARAMETERS: ");
+					console.log(v);
 					new_env.push(v); // push variadic variable
 					break;
 				}
 				else // push parameter to new env
 				{
-					new_env.push(p); 
+					new_env.push(vm_env.env[reset_esp + i + 2]);  // pop parameters;
 				}
 			}
+			// set esp
+			vm_env.esp = reset_esp;
 			
 			if(param_num - 1 < required_param_num) // not enough parameters
 			{
@@ -909,10 +931,11 @@ var VM = function()
 					new_env.push(null); // default value is null
 				}
 			}
+			console.log(new_env);
 			// pop return_address;
-			ENVIRONMENT.pop();
+			// vm_env.pop();
 
-			ENVIRONMENT = new_env; // reset ENVIRONMENT pointer
+			vm_env = new Environment(new_env); // reset ENVIRONMENT pointer
 			pc = start_pc;         // begin to call function
 			continue;
 		}
@@ -921,25 +944,27 @@ var VM = function()
 			// save return address to stack
 			// return address is 32 bits
 			var return_address = (INSTRUCTIONS[pc + 1] << 16) + INSTRUCTIONS[pc + 2]; // get return address
-			ENVIRONMENT.push(return_address); // push to stack
+			vm_env.push(return_address); // push to stack
 			pc = pc + 3; // update pc
 			continue;
 		}
 		else if ( opcode === RETURN ) // return
 		{
 			var index = 0x0FFF & inst; // get index for saved env and return_address(pc)
-			var old_env = ENVIRONMENT[index];
-			var old_pc = ENVIRONMENT[index + 1];
+			var old_env = vm_env.env[index];
+			var old_pc = vm_env.env[index + 1];
 			// clear env if necessary for C language, not here for javascript
 			console.log("RETURN:")
-			ENVIRONMENT = old_env;
+			vm_env = old_env;
 			pc = old_pc;
 			continue;
 		}
 	}
+	console.log("Finishing running VM");
+	return accumulator;
 }
 
-var l = lexer('(def (test a) 1) (cons 2 (vector 2 3))');
+var l = lexer('(def (test a . b ) b) (test 3 4 5)');
 console.log(l);
 var o = parser(l);
 console.log(o)
@@ -947,7 +972,7 @@ var p = compiler_begin(o, VARIABLE_TABLE);
 
 console.log(VARIABLE_TABLE);
 printInstructions(INSTRUCTIONS);
-VM()
+console.log(VM(ENVIRONMENT))
 console.log(ENVIRONMENT);
 
 // var p = compiler_begin(o, Variable_Table);
