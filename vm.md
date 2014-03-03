@@ -71,7 +71,7 @@ eg:
 0x1 postion of a  ;; save a to accumulator
 0x100
 # NEWFRAME 0101 000000000000    ;; create new frame to store arguments 
-  	   inst  value-location ;; get parameters num
+  	   inst  nothing        ;; get parameters num
 	   	 		;; push parameters to current-env
 				;; when calling, pop those parameters and push them
 				;; to new env

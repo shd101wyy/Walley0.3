@@ -667,7 +667,7 @@ var compiler = function(l, vt)
 			// compile_body
 			var c_body = compiler_begin(cddr(l), vt_);
 			// return 
-			INSTRUCTIONS.push(RETURN << 12 & (0x0FFFF | index_of_return_address)); // return and set pc to return address
+			INSTRUCTIONS.push(RETURN << 12 | (0x0FFF & index_of_return_address)); // return and set pc to return address
 
 			var index2 = INSTRUCTIONS.length;
 			INSTRUCTIONS[index1] = index2 - index1; // set jump steps
@@ -681,30 +681,31 @@ var compiler = function(l, vt)
 			var param_num = 0;
 			var func = car(l);
 			var params = cdr(l);
-			var return_address_ = INSTRUCTIONS.length; // save space for return_address
+			var return_address_index = INSTRUCTIONS.length; // save space for return_address
 			INSTRUCTIONS.push(null);				   // return address is 32 bits
 			INSTRUCTIONS.push(null); 
+
 
 			// push parameter from right to left 
 			params = list_to_array(params); // convert list to array
 			param_num = params.length;  // get param num
 			for(var i = param_num - 1; i >=0; i--) // compile parameter from right to left
 			{
-				compiler(params[i]);
+				compiler(params[i], vt);
+				INSTRUCTIONS.push(PUSH << 12); // push parameter to env
 			}
 
 			compiler(func, vt); // compile function, save to accumulator
-			INSTRUCTIONS.push(CALL << 12 & (0x0FFF & (param_num + 1))); // including return address
+			INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num + 1))); // call function. parameter num including return address
 			var return_address = INSTRUCTIONS.length; // get return address
-
 			if(return_address > 4294967296) // pc too big
 			{ 
 				console.log("ERROR 3: PC TOO BIG. This is a bug caused by author");
 				return;
 			}
 
-			INSTRUCTIONS[return_address    ] = return_address >>> 16; // set return address
-			INSTRUCTIONS[return_address + 1] = 0x0000FFFF & return_address;
+			INSTRUCTIONS[return_address_index    ] = return_address >>> 16; // set return address
+			INSTRUCTIONS[return_address_index + 1] = 0x0000FFFF & return_address;
 			return;
 		}
 	}
@@ -737,6 +738,7 @@ var VM = function()
 						  (INSTRUCTIONS[pc + 2] * /*Math.pow(2, 32)*/ 4294967296)+
 						  (INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/ 65536) +
 						   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 64);
+			accumulator = new Integer(accumulator);
 			pc = pc + 5;
 			console.log("INT accumulator=> " + accumulator);
 			continue;
@@ -748,6 +750,7 @@ var VM = function()
 						  - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 32);
 			console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
 			accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
+			accumulator = new Float(accumulator);
 			pc = pc + 5;
 			console.log("FLOAT accumulator=> " + accumulator);
 			continue;		
@@ -843,13 +846,36 @@ var VM = function()
 		}
 		else if ( opcode === CALL) // call function
 		{
+			console.log("CALL FUNCTION");
 			var param_num = 0x0FFF & inst; // get param num, including return_address.
 
 			var lambda = accumulator; // get lambda
-			var required_param_num = func.param_num;
-			var required_variadic_num = func.variadic_place;
-			var start_pc = func.start_pc;
-			var new_env = func.env.slice(0);
+			if(lambda instanceof Builtin_Primitive_Procedure) // builtin lambda
+			{
+				var stack_frame = [];
+				for(var i = 0; i < param_num - 1; i++)
+				{
+					stack_frame.push(ENVIRONMENT.pop());
+				}
+				ENVIRONMENT.pop(); // pop return address
+				pc = pc + 1;
+				accumulator = lambda.func(stack_frame);
+				console.log("BUILTIN PRIMITIVE PROCEDURE: ");
+				console.log(accumulator);
+				continue;
+			}
+
+			// user defined lambda
+			var required_param_num = lambda.param_num;
+			var required_variadic_num = lambda.variadic_place;
+			var start_pc = lambda.start_pc;
+			var new_env = lambda.env.slice(0);
+
+
+			console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
+			console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
+			console.log("START_PC " + lambda.start_pc);
+			console.log("OLD_PC   " + ENVIRONMENT[ENVIRONMENT.length - param_num]);
 
 			// push current-env to new-env to save it
 			new_env.push(ENVIRONMENT);
@@ -875,6 +901,7 @@ var VM = function()
 					new_env.push(p); 
 				}
 			}
+			
 			if(param_num - 1 < required_param_num) // not enough parameters
 			{
 				for(var i = param_num - 1; i < required_param_num; i++)
@@ -904,14 +931,15 @@ var VM = function()
 			var old_env = ENVIRONMENT[index];
 			var old_pc = ENVIRONMENT[index + 1];
 			// clear env if necessary for C language, not here for javascript
-
+			console.log("RETURN:")
 			ENVIRONMENT = old_env;
 			pc = old_pc;
+			continue;
 		}
 	}
 }
 
-var l = lexer('(def (test a b c d e f . t) 1)');
+var l = lexer('(def (test a) 1) (cons 2 (vector 2 3))');
 console.log(l);
 var o = parser(l);
 console.log(o)
