@@ -415,7 +415,7 @@ var compiler = function(l, vt)
 {
 	if(l === null)
 	{
-		INSTRUCTIONS.push(0x2400); // push null
+		INSTRUCTIONS.push(CONST_NULL); // push null
 		return;
 	}
 	if(typeof(l) === "string")
@@ -432,8 +432,8 @@ var compiler = function(l, vt)
 			INSTRUCTIONS.push( CONST_INTEGER );
 			INSTRUCTIONS.push( /*(0xFFFF000000000000 & i) >> 48*/ (i / Math.pow(2, 48) & 0xFFFF) );
 			INSTRUCTIONS.push( /*(0x0000FFFF00000000 & i) >> 32*/ (i / Math.pow(2, 32) & 0xFFFF) );
-			INSTRUCTIONS.push( (0x00000000FFFF0000 & i) >> 16 );
-			INSTRUCTIONS.push(  0x000000000000FFFF & i );
+			INSTRUCTIONS.push( (0xFFFF0000 & i) >> 16 );
+			INSTRUCTIONS.push(  0xFFFF & i );
 			return;
 		}
 		/*
@@ -459,17 +459,19 @@ var compiler = function(l, vt)
 		// string
 		else if (l[0] === '"')
 		{
+			console.log("IT IS STRING");
 			var s = eval(l);
 			var length = s.length;
 			INSTRUCTIONS.push(CONST_STRING); // create string
 			INSTRUCTIONS.push(length);       // push string length
 			var find_end = false;
-			for(var i = 0; i < length; i = i++)
+			for(var i = 0; i < length; i = i + 2)
 			{
 				if( i + 1 === length)
 				{
 					INSTRUCTIONS.push(s.charCodeAt(i) << 8 & 0xFF00);
 					find_end = true;
+					break;
 				}
 				else
 				{
@@ -503,8 +505,70 @@ var compiler = function(l, vt)
 	else if (l instanceof Cons)
 	{
 		var tag = car(l);
+		// quote
+		if (tag == "quote")
+		{
+			var v = cadr(l);
+			// check integer float string null
+			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
+				return compiler(v, vt);
+			else if (v instanceof Cons) // pair
+			{
+				var quote_list = function(l)
+	            {
+	                if(l == null) return null;
+	                var v = car(l);   
+	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
+	                if(v instanceof Cons) return cons("cons", cons(cons(quote_list(v), null), cons(quote_list(cdr(l)), null)));
+	                else if (v === ".") return cons("quote", cons(cadr(l), null));
+	                return cons("cons", cons( cons("quote", cons(v, "null")), cons(quote_list(cdr(l), null))));
+	            }	       
+	            return compiler(quote_list(v), vt);
+			}
+			// symbol/string
+			else if(v[0]!='"') 
+			{
+				v = '"'+v+'"'
+				return compiler(v, vt);
+			}
+		}
+		else if (tag == "quasiquote") // add quasiquote
+		{
+			var v = cadr(l);
+			// check integer
+			// check integer float string null
+			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
+				return compiler(v, vt);
+			else if (v instanceof Cons) // pair
+			{
+				var quasiquote = function(l)
+	            {
+	                if(l == null) return null;
+	                var v = car(l);   
+	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
+	                if(v instanceof Cons) 
+	                {
+	                	if(car(v) === "unquote")
+	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
+	                	else if (car(v) === "unquote-splice")
+	                		return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
+	                	return cons("cons", cons(cons(quasiquote(v), null), cons(quasiquote(cdr(l)), null)));
+	                }
+	                else if (v === ".") return cons("quote", cons(cadr(l), null));
+	                return cons("cons", cons( cons("quote", cons(v, "null")), cons(quasiquote(cdr(l), null))));
+	            }	       
+	            return compiler(quasiquote(v), vt);
+			}
+			// symbol/string
+			else if(v[0]!='"') 
+			{
+				v = '"'+v+'"'
+				return compiler(v, vt);
+			}
+		} 
+
 		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
-		if(tag == "def")
+		else if(tag == "def")
 		{
 			var variable_name = cadr(l);
 			if(variable_name instanceof Cons) // it is lambda format like (def (add a b) (+ a b))
@@ -558,6 +622,30 @@ var compiler = function(l, vt)
 			console.log("SET! ERROR");
 			return;
 		}
+		// (if test conseq alter)
+		else if (tag === "if")
+		{
+			var test = cadr(l);
+			var conseq = caddr(l);
+			var alter = cadddr(l);
+			compiler(test, vt); // compile test
+			var index1 = INSTRUCTIONS.length;
+			// push test, but now we don't know jump steps
+			INSTRUCTIONS.push(0x0000); // jump over consequence
+
+			compiler(conseq, vt); // compiler consequence; 
+			var index2 = INSTRUCTIONS.length;
+			INSTRUCTIONS.push(0x0000); // jump over alternative
+
+			var jump_steps = index2 - index1 + 1;
+			INSTRUCTIONS[index1] = (TEST << 12) | jump_steps;
+
+			compiler(alter, vt); // compiler alternative;
+			var index3 = INSTRUCTIONS.length;
+			jump_steps = index3 - index2;
+			INSTRUCTIONS[index2] = (JMP << 12) | jump_steps;
+			return;
+		}
 	}
 }
 
@@ -590,7 +678,7 @@ var VM = function()
 						  (INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/ 65536) +
 						   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 64);
 			pc = pc + 5;
-			console.log("int accumulator=> " + accumulator);
+			console.log("INT accumulator=> " + accumulator);
 			continue;
 		} 
 		else if (inst === CONST_FLOAT) // float
@@ -601,7 +689,7 @@ var VM = function()
 			console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
 			accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
 			pc = pc + 5;
-			console.log("float accumulator=> " + accumulator);
+			console.log("FLOAT accumulator=> " + accumulator);
 			continue;		
 		}
 		else if (inst === CONST_STRING) // string
@@ -627,12 +715,14 @@ var VM = function()
 			}
 			accumulator = created_string;
 			pc = pc + 1;
+			console.log("STRING: " + accumulator);
 			continue;
 		}
 		else if (inst === CONST_NULL) // null
 		{
 			accumulator = null;
 			pc = pc + 1;
+			console.log("NULL: ");
 			continue;
 		}
 		else if ( opcode === PUSH) // push to environment
@@ -641,6 +731,25 @@ var VM = function()
 			ENVIRONMENT.push(accumulator);
 			pc = pc + 1;
 			continue;
+		}
+		else if ( opcode === TEST) // test
+		{
+			if(accumulator === null) // false, jump
+			{
+				pc = pc + (0x0FFF & inst);
+				continue;
+			}
+			// run next
+			pc = pc + 1;
+			continue;
+		}
+		else if ( opcode === JMP) // jump
+		{
+			var jump_steps = 0x0FFF & inst;
+			if(jump_steps >> 11 === 1)
+				jump_steps -= Math.pow(2, 16);
+			pc = pc + jump_steps;
+			continue; 
 		}
 		else if ( opcode === SET) // set 
 		{
@@ -1045,7 +1154,7 @@ var vm = function(insts, env, accumulator)
 }*/
 
 
-var l = lexer("(def x 12) (set! x 15.7) x");
+var l = lexer('(if 1 2 3)');
 console.log(l);
 var o = parser(l);
 console.log(o)
