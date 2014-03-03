@@ -31,11 +31,11 @@ var Builtin_Primitive_Procedure = function(func)
 }
 var bpp = function(func){return new Builtin_Primitive_Procedure(func)}; // create Builtin_Primitive_Procedure
 
-var Lambda = function(param_num, variadic_place, body, env)
+var Lambda = function(param_num, variadic_place, start_pc, env)
 {
 	this.param_num = param_num;
 	this.variadic_place = variadic_place;
-	this.body = body;
+	this.start_pc = start_pc;
 	this.env = env;
 }
 var Integer = function(num)
@@ -461,7 +461,7 @@ var compiler = function(l, vt)
 		{
 			console.log("IT IS STRING");
 			var s = eval(l);
-			var length = s.length;
+			var length = s.length + 1;
 			INSTRUCTIONS.push(CONST_STRING); // create string
 			INSTRUCTIONS.push(length);       // push string length
 			var find_end = false;
@@ -580,7 +580,6 @@ var compiler = function(l, vt)
 								vt);
 			}
 
-			var variable_value = caddr(l);
 			for(var i = vt.length - 1; i >= 0; i--)
 			{
 				if (variable_name === vt[i])
@@ -589,8 +588,9 @@ var compiler = function(l, vt)
 					return;
 				}
 			}
+			var variable_value = caddr(l);
 			// compile value
-			compiler(variable_value);
+			compiler(variable_value, vt);
 			
 			var v_index = vt.length;
 			if(v_index >= Math.pow(2, 12))
@@ -644,6 +644,40 @@ var compiler = function(l, vt)
 			var index3 = INSTRUCTIONS.length;
 			jump_steps = index3 - index2;
 			INSTRUCTIONS[index2] = (JMP << 12) | jump_steps;
+			return;
+		}
+		// (lambda (a b) ...)
+		// (lambda (a . b) ...)
+		else if (tag === "lambda")
+		{
+			var params = cadr(l); // get parameters
+			var variadic_place = -1; // variadic place
+			var counter = 0; // count of parameter num
+			var vt_ = vt.slice(0); // new variable table
+			while(true)
+			{
+				if(params == null) break;
+				if(car(params) === ".") // variadic
+				{
+					variadic_place = counter;
+					vt_.push(cadr(params));
+					counter += 1; // means no parameters requirement
+					break;
+				}
+				vt_.push(car(params));
+				counter+=1;
+				params = cdr(params);
+			}
+			// make lambda
+			INSTRUCTIONS.push(MAKELAMBDA << 12 | (counter << 6) | (variadic_place === -1? 0x0000 : (variadic_place << 1)) | (variadic_place === -1? 0x0000 : 0x0001));
+			var index1 = INSTRUCTIONS.length;
+			INSTRUCTIONS.push(0x0000); // steps that needed to jump over lambda
+			// compile_body
+			var c_body = compiler_begin(cddr(l), vt_);
+			// return 
+			INSTRUCTIONS.push(RETURN << 12);
+			var index2 = INSTRUCTIONS.length;
+			INSTRUCTIONS[index1] = index2 - index1;
 			return;
 		}
 	}
@@ -766,6 +800,25 @@ var VM = function()
 			accumulator = ENVIRONMENT[index];
 			pc = pc + 1;
 			continue;
+		}
+		else if ( opcode === MAKELAMBDA)
+		{
+			console.log("MAKELAMBDA");
+			var param_num= (0x0FC0 & inst) >> 6;
+			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : 0;
+			var start_pc = pc + 2;
+			var jump_steps = INSTRUCTIONS[pc + 1];
+
+			accumulator = new Lambda(param_num, variadic_place, start_pc, ENVIRONMENT.slice(0)); // set lambda
+			
+			pc = pc + jump_steps + 1;
+			console.log(pc);
+			continue;
+
+		}
+		else if ( opcode === RETURN ) // return
+		{
+			// ...
 		}
 	}
 }
@@ -1154,7 +1207,7 @@ var vm = function(insts, env, accumulator)
 }*/
 
 
-var l = lexer('(if 1 2 3)');
+var l = lexer('(def (test a b c d e f . t) 1)');
 console.log(l);
 var o = parser(l);
 console.log(o)

@@ -57,8 +57,9 @@ eg:
        H e  l l  o end
 
 
-# MAKELAMBDA 0011 000000    000000     ;; make lambda
-  	     inst  variadic  param num
+# MAKELAMBDA 0011 000000      00000            0     ;; make lambda
+  	     inst param-num  variadic-place   has-variadic
+next-pc: 0xFFFF ;; jump over lambda to run next pc  
 # RETURN 0100 000000000000 ;; return accumulator
   	      		   ;; get 1 => last-env 
 			   ;; get 2 => last-inst
@@ -66,8 +67,9 @@ eg:
 (def (test a) a)
 
 0x3001 ;; make lambda with one parameter and no variadic value
+0x0003 ;; jump 3 steps to finish lambda
 0x1 postion of a  ;; save a to accumulator
-
+0x100
 # NEWFRAME 0101 000000000000    ;; create new frame to store arguments 
   	   inst  value-location ;; get parameters num
 	   	 		;; push parameters to current-env
