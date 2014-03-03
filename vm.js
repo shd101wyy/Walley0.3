@@ -464,9 +464,9 @@ var compiler = function(l, vt)
 		{
 			console.log("IT IS STRING");
 			var s = eval(l);
-			var length = s.length + 1;
+			var length = s.length;
 			INSTRUCTIONS.push(CONST_STRING); // create string
-			INSTRUCTIONS.push(length);       // push string length
+			INSTRUCTIONS.push(length + 1);       // push string length
 			var find_end = false;
 			for(var i = 0; i < length; i = i + 2)
 			{
@@ -509,7 +509,7 @@ var compiler = function(l, vt)
 	{
 		var tag = car(l);
 		// quote
-		if (tag == "quote")
+		if (tag === "quote")
 		{
 			var v = cadr(l);
 			// check integer float string null
@@ -524,8 +524,9 @@ var compiler = function(l, vt)
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
 	                if(v instanceof Cons) return cons("cons", cons(cons(quote_list(v), null), cons(quote_list(cdr(l)), null)));
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
-	                return cons("cons", cons( cons("quote", cons(v, "null")), cons(quote_list(cdr(l), null))));
+	                return cons("cons", cons(cons("quote", cons(v, null)),  cons(quote_list(cdr(l)), null)));
 	            }	       
+	            console.log((quote_list(v)));
 	            return compiler(quote_list(v), vt);
 			}
 			// symbol/string
@@ -534,6 +535,7 @@ var compiler = function(l, vt)
 				v = '"'+v+'"'
 				return compiler(v, vt);
 			}
+			return;
 		}
 		else if (tag == "quasiquote") // add quasiquote
 		{
@@ -558,7 +560,7 @@ var compiler = function(l, vt)
 	                	return cons("cons", cons(cons(quasiquote(v), null), cons(quasiquote(cdr(l)), null)));
 	                }
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
-	                return cons("cons", cons( cons("quote", cons(v, "null")), cons(quasiquote(cdr(l), null))));
+	                return cons("cons", cons( cons("quote", cons(v, null)), cons(quasiquote(cdr(l)), null)));
 	            }	       
 	            return compiler(quasiquote(v), vt);
 			}
@@ -568,6 +570,7 @@ var compiler = function(l, vt)
 				v = '"'+v+'"'
 				return compiler(v, vt);
 			}
+			return ;
 		} 
 
 		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
@@ -795,7 +798,6 @@ var VM = function(env)
 			}
 			accumulator = created_string;
 			pc = pc + 1;
-			console.log("STRING: " + accumulator);
 			continue;
 		}
 		else if (inst === CONST_NULL) // null
@@ -888,6 +890,12 @@ var VM = function(env)
 			var start_pc = lambda.start_pc;
 			var new_env = lambda.env.slice(0);
 
+			if(required_variadic_num === -1 && param_num - 1 > required_param_num)
+			{
+				console.log("ERROR: Too many parameters provided");
+				return;
+			}
+
 
 			console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
 			console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
@@ -962,7 +970,7 @@ var VM = function(env)
 	return accumulator;
 }
 
-var l = lexer('(def (test a . b ) (+ a (car (cdr b)))) (test 3 4 5)');
+var l = lexer('(def x 12)(quasiquote (~x . x))');
 console.log(l);
 var o = parser(l);
 console.log(o)
