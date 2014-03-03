@@ -911,8 +911,6 @@ var VM = function(env)
 						v = cons(vm_env.pop(), v); // set variadic variable
 						i++;
 					}
-					console.log("VARIADIC PARAMETERS: ");
-					console.log(v);
 					new_env.push(v); // push variadic variable
 					break;
 				}
@@ -964,7 +962,7 @@ var VM = function(env)
 	return accumulator;
 }
 
-var l = lexer('(def (test a . b ) b) (test 3 4 5)');
+var l = lexer('(def (test a . b ) (+ a (car (cdr b)))) (test 3 4 5)');
 console.log(l);
 var o = parser(l);
 console.log(o)
