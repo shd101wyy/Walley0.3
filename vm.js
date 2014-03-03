@@ -410,6 +410,16 @@ var vt_find = function(vt, var_name) // find variable
 	}
 	return -1;
 }
+var list_to_array = function(l) // convert list to array
+{
+	var return_array = [];
+	while(l !== null)
+	{
+		return_array.push(car(l));
+		l = cdr(l);
+	}
+	return return_array;
+}
 
 var compiler = function(l, vt)
 {
@@ -654,6 +664,11 @@ var compiler = function(l, vt)
 			var variadic_place = -1; // variadic place
 			var counter = 0; // count of parameter num
 			var vt_ = vt.slice(0); // new variable table
+
+			var index_of_return_address = vt_.length;
+			vt_.push(null); // save space for parent-env
+			vt_.push(null); // save space for return address
+
 			while(true)
 			{
 				if(params == null) break;
@@ -675,9 +690,44 @@ var compiler = function(l, vt)
 			// compile_body
 			var c_body = compiler_begin(cddr(l), vt_);
 			// return 
-			INSTRUCTIONS.push(RETURN << 12);
+			INSTRUCTIONS.push(RETURN << 12 & (0x0FFFF | index_of_return_address)); // return and set pc to return address
+
 			var index2 = INSTRUCTIONS.length;
-			INSTRUCTIONS[index1] = index2 - index1;
+			INSTRUCTIONS[index1] = index2 - index1; // set jump steps
+			return;
+		}
+		// call function
+		else
+		{
+			INSTRUCTIONS.push(NEWFRAME << 12); // create new frame
+			// compile parameters
+			var param_num = 0;
+			var func = car(l);
+			var params = cdr(l);
+			var return_address_ = INSTRUCTIONS.length; // save space for return_address
+			INSTRUCTIONS.push(null);				   // return address is 32 bits
+			INSTRUCTIONS.push(null); 
+
+			// push parameter from right to left 
+			params = list_to_array(params); // convert list to array
+			param_num = params.length;  // get param num
+			for(var i = param_num - 1; i >=0; i--) // compile parameter from right to left
+			{
+				compiler(params[i]);
+			}
+
+			compiler(func, vt); // compile function, save to accumulator
+			INSTRUCTIONS.push(CALL << 12 & (0x0FFF & (param_num + 1))); // including return address
+			var return_address = INSTRUCTIONS.length; // get return address
+
+			if(return_address > 4294967296) // pc too big
+			{ 
+				console.log("ERROR 3: PC TOO BIG. This is a bug caused by author");
+				return;
+			}
+
+			INSTRUCTIONS[return_address    ] = return_address >>> 16; // set return address
+			INSTRUCTIONS[return_address + 1] = 0x0000FFFF & return_address;
 			return;
 		}
 	}
@@ -801,11 +851,11 @@ var VM = function()
 			pc = pc + 1;
 			continue;
 		}
-		else if ( opcode === MAKELAMBDA)
+		else if ( opcode === MAKELAMBDA) // make lambda
 		{
 			console.log("MAKELAMBDA");
 			var param_num= (0x0FC0 & inst) >> 6;
-			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : 0;
+			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
 			var start_pc = pc + 2;
 			var jump_steps = INSTRUCTIONS[pc + 1];
 
@@ -814,11 +864,66 @@ var VM = function()
 			pc = pc + jump_steps + 1;
 			console.log(pc);
 			continue;
+		}
+		else if ( opcode === CALL) // call function
+		{
+			var param_num = 0x0FFF & inst; // get param num, including return_address.
 
+			var lambda = accumulator; // get lambda
+			var required_param_num = func.param_num;
+			var required_variadic_num = func.variadic_place;
+			var start_pc = func.start_pc;
+			var new_env = func.env.slice(0);
+
+			// push current-env to new-env to save it
+			new_env.push(ENVIRONMENT);
+			// push return_address
+			new_env.push(ENVIRONMENT[ENVIRONMENT.length - param_num]); // save space for return_address
+
+			for(var i = 0; i < param_num - 1; i++)
+			{
+				var p = ENVIRONMENT.pop(); // pop parameters;
+				if( i === required_variadic_num) // reach variadic param place.
+				{
+					var v = null;
+					while(i < param_num - 1)
+					{
+						v = cons(ENVIRONMENT.pop(), v); // set variadic variable
+						i++;
+					}
+					new_env.push(v); // push variadic variable
+					break;
+				}
+				else // push parameter to new env
+				{
+					new_env.push(p); 
+				}
+			}
+			// pop return_address;
+			ENVIRONMENT.pop();
+
+			ENVIRONMENT = new_env; // reset ENVIRONMENT pointer
+			pc = start_pc;         // begin to call function
+			continue;
+		}
+		else if ( opcode === NEWFRAME) // create new frame
+		{
+			// save return address to stack
+			// return address is 32 bits
+			var return_address = (INSTRUCTIONS[pc + 1] << 16) + INSTRUCTIONS[pc + 2]; // get return address
+			ENVIRONMENT.push(return_address); // push to stack
+			pc = pc + 3; // update pc
+			continue;
 		}
 		else if ( opcode === RETURN ) // return
 		{
-			// ...
+			var index = 0x0FFF & inst; // get index for saved env and return_address(pc)
+			var old_env = ENVIRONMENT[index];
+			var old_pc = ENVIRONMENT[index + 1];
+			// clear env if necessary for C language, not here for javascript
+
+			ENVIRONMENT = old_env;
+			pc = old_pc;
 		}
 	}
 }

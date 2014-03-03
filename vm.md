@@ -60,9 +60,9 @@ eg:
 # MAKELAMBDA 0011 000000      00000            0     ;; make lambda
   	     inst param-num  variadic-place   has-variadic
 next-pc: 0xFFFF ;; jump over lambda to run next pc  
-# RETURN 0100 000000000000 ;; return accumulator
-  	      		   ;; get 1 => last-env 
-			   ;; get 2 => last-inst
+# RETURN 0100 000000000000				      ;; return accumulator
+  	 inst   return-address-index-and-env-index            ;; get 1 => last-env 
+			                        	      ;; get 2 => last-inst according to return-address-index => return-address
 eg:	     
 (def (test a) a)
 
@@ -75,21 +75,27 @@ eg:
 	   	 		;; push parameters to current-env
 				;; when calling, pop those parameters and push them
 				;; to new env
-	   
+	then: save return_address to stack. set that to pc after finish calling function
+	   return_adress is 32 bits
 
 # PUSH     0110 000000000000    ;; push accumulator to current-env
 # CALL     0111 000000000000    ;; pop parameters from current-env
-  	   inst	 value-location	;; and append to new-env, run insts in lambda
+  	   inst	 param-num 	;; and append to new-env, run insts in lambda
   	   			;; store 1=> push current-env to new-env
 				;; store 2=> push next inst index to new-env
 
 eg:
 	(test a)
-	0x50000 ;; make frame
-	0x2---- ;; get a
-	0x60000 ;; push to new frame
-	0x7---- ;; call function at location
-
+	0x5000 ;; make frame
+	0x0000 ;; return address
+	0x0000 
+	0x2--- ;; get a
+	0x6000 ;; push to new frame
+	0x7--- ;; call function with param-num
+		;; push current-env to new-env ; save env
+		;; push return-address to new-env; save return-address
+		;; push parameters
+	
 
 
 # JMP 1000 000000000000 ;; jmp forward or backwards
