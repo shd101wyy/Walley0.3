@@ -454,7 +454,6 @@ var compiler = function(l, vt)
 			// decimals 10 digits
 			// 10 ^ 10
 			var d = parseInt((f - i) * /*Math.pow(10, 9)*/1000000000);
-			console.log(d)
 			INSTRUCTIONS.push((d >> 16) & 0x0000FFFF);
 			INSTRUCTIONS.push(d & 0x0000FFFF);
 			return;
@@ -462,7 +461,6 @@ var compiler = function(l, vt)
 		// string
 		else if (l[0] === '"')
 		{
-			console.log("IT IS STRING");
 			var s = eval(l);
 			var length = s.length;
 			INSTRUCTIONS.push(CONST_STRING); // create string
@@ -526,7 +524,6 @@ var compiler = function(l, vt)
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
 	                return cons("cons", cons(cons("quote", cons(v, null)),  cons(quote_list(cdr(l)), null)));
 	            }	       
-	            console.log((quote_list(v)));
 	            return compiler(quote_list(v), vt);
 			}
 			// symbol/string
@@ -594,6 +591,9 @@ var compiler = function(l, vt)
 					return;
 				}
 			}
+			// add to variable table
+			vt.push(variable_name);
+
 			var variable_value = caddr(l);
 			// compile value
 			compiler(variable_value, vt);
@@ -606,8 +606,7 @@ var compiler = function(l, vt)
 			}
 			// add instruction
 			INSTRUCTIONS.push( PUSH << 12 );
-			// add to variable table
-			vt.push(variable_name);
+			
 			return;
 		}
 		// set!
@@ -700,10 +699,6 @@ var compiler = function(l, vt)
 			var param_num = 0;
 			var func = car(l);
 			var params = cdr(l);
-			var return_address_index = INSTRUCTIONS.length; // save space for return_address
-			INSTRUCTIONS.push(null);				   // return address is 32 bits
-			INSTRUCTIONS.push(null); 
-
 
 			// push parameter from right to left 
 			params = list_to_array(params); // convert list to array
@@ -715,16 +710,7 @@ var compiler = function(l, vt)
 			}
 
 			compiler(func, vt); // compile function, save to accumulator
-			INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num + 1))); // call function. parameter num including return address
-			var return_address = INSTRUCTIONS.length; // get return address
-			if(return_address > 4294967296) // pc too big
-			{ 
-				console.log("ERROR 3: PC TOO BIG. This is a bug caused by author");
-				return;
-			}
-
-			INSTRUCTIONS[return_address_index    ] = return_address >>> 16; // set return address
-			INSTRUCTIONS[return_address_index + 1] = 0x0000FFFF & return_address;
+			INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num))); // call function. 
 			return;
 		}
 	}
@@ -749,7 +735,6 @@ var VM = function(env)
 	var length_of_insts = INSTRUCTIONS.length;
 	while(pc !== length_of_insts)
 	{
-
 		var inst = INSTRUCTIONS[pc];
 		var opcode = (inst & 0xF000) >> 12;
 		if(inst === CONST_INTEGER) // integer
@@ -856,11 +841,10 @@ var VM = function(env)
 			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
 			var start_pc = pc + 2;
 			var jump_steps = INSTRUCTIONS[pc + 1];
-
-			accumulator = new Lambda(param_num, variadic_place, start_pc, vm_env.env.slice(0)); // set lambda
-			
+			var env = vm_env.env.slice(0);
+			accumulator = new Lambda(param_num, variadic_place, start_pc, env); // set lambda
+			env.push(accumulator); // 把自己也给加上
 			pc = pc + jump_steps + 1;
-			// console.log(pc);
 			continue;
 		}
 		else if ( opcode === CALL) // call function
@@ -873,12 +857,11 @@ var VM = function(env)
 			{
 				var stack_frame = [];
 				var reset_esp = vm_env.esp - param_num;
-				for(var i = 0; i < param_num - 1; i++)
+				for(var i = 0; i < param_num; i++)
 				{
-					stack_frame.push(vm_env.env[reset_esp + 2 + i]);
+					stack_frame.push(vm_env.env[reset_esp + 1 + i]);
 				}
 				vm_env.esp = reset_esp; // vm_env.pop(); // pop return address
-				//console.log(vm_env.esp);
 				pc = pc + 1;
 				accumulator = lambda.func(stack_frame);
 				continue;
@@ -896,25 +879,24 @@ var VM = function(env)
 				return;
 			}
 
-
 			// console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
 			// console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
 			// console.log("START_PC " + lambda.start_pc);
-			// console.log("OLD_PC   " + vm_env.env[vm_env.esp - param_num + 1]);
+			// console.log("OLD_PC   " + (pc + 1));
 
 			// push current-env to new-env to save it
 			new_env.push(vm_env);
 			// push return_address
-			new_env.push(vm_env.env[vm_env.esp - param_num + 1]); 
+			new_env.push(pc + 1); 
 			// reset esp; set esp to this value after pushed all parameters
 			var reset_esp = vm_env.esp - param_num;
 
-			for(var i = 0; i < param_num - 1; i++)
+			for(var i = 0; i < param_num ; i++)
 			{
 				if( i === required_variadic_num) // reach variadic param place.
 				{
 					var v = null;
-					while(i < param_num - 1)
+					while(i < param_num )
 					{
 						v = cons(vm_env.pop(), v); // set variadic variable
 						i++;
@@ -923,35 +905,25 @@ var VM = function(env)
 					break;
 				}
 				else // push parameter to new env
-				{
-					new_env.push(vm_env.env[reset_esp + i + 2]);  // pop parameters;
-				}
+					new_env.push(vm_env.env[reset_esp + i + 1]);  // pop parameters;
 			}
 			// set esp
 			vm_env.esp = reset_esp;
 			
-			if(param_num - 1 < required_param_num) // not enough parameters
+			if(param_num < required_param_num) // not enough parameters
 			{
-				for(var i = param_num - 1; i < required_param_num; i++)
+				for(var i = param_num; i < required_param_num; i++)
 				{
 					new_env.push(null); // default value is null
 				}
 			}
-			// console.log(new_env);
-			// pop return_address;
-			// vm_env.pop();
-
 			vm_env = new Environment(new_env); // reset ENVIRONMENT pointer
 			pc = start_pc;         // begin to call function
 			continue;
 		}
 		else if ( opcode === NEWFRAME) // create new frame
 		{
-			// save return address to stack
-			// return address is 32 bits
-			var return_address = (INSTRUCTIONS[pc + 1] << 16) + INSTRUCTIONS[pc + 2]; // get return address
-			vm_env.push(return_address); // push to stack
-			pc = pc + 3; // update pc
+			pc = pc + 1;
 			continue;
 		}
 		else if ( opcode === RETURN ) // return
@@ -961,6 +933,11 @@ var VM = function(env)
 			var old_pc = vm_env.env[index + 1];
 			// clear env if necessary for C language, not here for javascript
 			// console.log("RETURN:")
+			// console.log(old_env);
+			// console.log(vm_env);
+			// console.log(index);
+			// console.log(old_env);
+
 			vm_env = old_env;
 			pc = old_pc;
 			continue;
@@ -970,7 +947,7 @@ var VM = function(env)
 	return accumulator;
 }
 
-var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 1)');
+var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 12)');
 console.log(l);
 var o = parser(l);
 console.log(o)

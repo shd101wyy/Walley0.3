@@ -60,9 +60,9 @@ eg:
 # MAKELAMBDA 0011 000000      00000            0     ;; make lambda
   	     inst param-num  variadic-place   has-variadic
 next-pc: 0xFFFF ;; jump over lambda to run next pc  
-# RETURN 0100 000000000000				      ;; return accumulator
-  	 inst   return-address-index-and-env-index            ;; get 1 => last-env 
-			                        	      ;; get 2 => last-inst according to return-address-index => return-address
+# RETURN 0100 000000000000				       ;; return accumulator
+  	 inst   return-address-index-and-env-index ;; get 1 => last-env 
+			                        	       ;; get 2 => last-inst according to return-address-index => return-address
 eg:	     
 (def (test a) a)
 
@@ -75,14 +75,15 @@ eg:
 	   	 		;; push parameters to current-env
 				;; when calling, pop those parameters and push them
 				;; to new env
-	then: save return_address to stack. set that to pc after finish calling function
-	   return_adress is 32 bits
+	
 
 # PUSH     0110 000000000000    ;; push accumulator to current-env
 # CALL     0111 000000000000    ;; pop parameters from current-env
   	   inst	 param-num 	;; and append to new-env, run insts in lambda
   	   			;; store 1=> push current-env to new-env
 				;; store 2=> push next inst index to new-env
+	   before calling: save return_address to stack. set that to pc after finish calling function
+	   return_adress is 32 bits
 
 eg:
 	(test a)
