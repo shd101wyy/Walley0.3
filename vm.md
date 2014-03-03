@@ -9,7 +9,7 @@ GET        0x1
 CONST      0x2
 MAKELAMBDA 0x3
 RETURN 	   0x4
-NEWFRAME   0x5
+removed: NEWFRAME   0x5
 PUSH 	   0x6
 CALL 	   0x7
 JMP 	   0x8
@@ -70,16 +70,19 @@ eg:
 0x0003 ;; jump 3 steps to finish lambda
 0x1 postion of a  ;; save a to accumulator
 0x100
+
+# REMOVED => 
+===============================
 # NEWFRAME 0101 000000000000    ;; create new frame to store arguments 
   	   inst  nothing        ;; get parameters num
 	   	 		;; push parameters to current-env
 				;; when calling, pop those parameters and push them
 				;; to new env
-	
+===============================
 
-# PUSH     0110 000000000000    ;; push accumulator to current-env
-# CALL     0111 000000000000    ;; pop parameters from current-env
-  	   inst	 param-num 	;; and append to new-env, run insts in lambda
+# PUSH     0110 000000000000    		       ;; push accumulator to current-env
+# CALL     0111 00000000000 0  				   ;; pop parameters from current-env
+  	   inst	 param-num 	    tail-call-flag     ;; and append to new-env, run insts in lambda
   	   			;; store 1=> push current-env to new-env
 				;; store 2=> push next inst index to new-env
 	   before calling: save return_address to stack. set that to pc after finish calling function

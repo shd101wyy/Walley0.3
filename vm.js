@@ -40,7 +40,7 @@ var Lambda = function(param_num, variadic_place, start_pc, env)
 }
 var Integer = function(num)
 {
-	this.num = num | 0;
+	this.num = num /*| 0 别用这个，这个还想只是16bits整数*/;
 }
 var Float = function(num)
 {
@@ -224,7 +224,8 @@ var CONST_NULL    = 0x2400;
 
 var MAKELAMBDA = 0x3;
 var RETURN = 0x4;
-var NEWFRAME = 0x5;
+//var NEWFRAME = 0x5;
+//var TAILCALL = 0x5;
 var PUSH = 0x6;
 var CALL = 0x7;
 var JMP = 0x8;
@@ -694,7 +695,7 @@ var compiler = function(l, vt)
 		// call function
 		else
 		{
-			INSTRUCTIONS.push(NEWFRAME << 12); // create new frame
+			// INSTRUCTIONS.push(NEWFRAME << 12); // create new frame
 			// compile parameters
 			var param_num = 0;
 			var func = car(l);
@@ -710,7 +711,7 @@ var compiler = function(l, vt)
 			}
 
 			compiler(func, vt); // compile function, save to accumulator
-			INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num))); // call function. 
+			INSTRUCTIONS.push(CALL << 12 | ((0x0FFF & (param_num)) << 1)); // call function. 
 			return;
 		}
 	}
@@ -722,6 +723,13 @@ var compiler_begin = function(l, vt)
 	{
 		compiler(car(l), vt);
 		l = cdr(l);
+	}
+
+	var opcode = (INSTRUCTIONS[INSTRUCTIONS.length - 1] & 0xF000) >> 12;
+	if(opcode === CALL)
+	{
+		console.log("TAIL CALL");
+		INSTRUCTIONS[INSTRUCTIONS.length - 1] = INSTRUCTIONS[INSTRUCTIONS.length - 1] | 0x0001; // add tail call flag
 	}
 	return;
 }
@@ -742,17 +750,17 @@ var VM = function(env)
 			accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 48)*/ 281474976710656)+  // couldn't shift left 48
 						  (INSTRUCTIONS[pc + 2] * /*Math.pow(2, 32)*/ 4294967296)+
 						  (INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/ 65536) +
-						   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 64);
+						   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 64);
 			accumulator = new Integer(accumulator);
 			pc = pc + 5;
-			// console.log("INT accumulator=> " + accumulator);
+			// console.log("INT accumulator=> " + accumulator.num);
 			continue;
 		} 
 		else if (inst === CONST_FLOAT) // float
 		{
 			accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 16)*/65536)+ 
 						  (INSTRUCTIONS[pc + 2])
-						  - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 32);
+						  - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 32);
 			// console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
 			accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
 			accumulator = new Float(accumulator);
@@ -850,8 +858,13 @@ var VM = function(env)
 		else if ( opcode === CALL) // call function
 		{
 			// console.log("CALL FUNCTION");
-			var param_num = 0x0FFF & inst; // get param num, including return_address.
+			var param_num = (0x0FFE & inst) >> 1; // get param num, including return_address.
+			var tail_call_flag = (0x0001 & inst); // get tail call flag
 
+			if(tail_call_flag)
+			{
+				console.log("TAIL CALL");
+			}
 			var lambda = accumulator; // get lambda
 			if(lambda instanceof Builtin_Primitive_Procedure) // builtin lambda
 			{
@@ -921,11 +934,11 @@ var VM = function(env)
 			pc = start_pc;         // begin to call function
 			continue;
 		}
-		else if ( opcode === NEWFRAME) // create new frame
-		{
-			pc = pc + 1;
-			continue;
-		}
+		//else if ( opcode === NEWFRAME) // create new frame
+		//{
+		//	pc = pc + 1;
+		//	continue;
+		//}
 		else if ( opcode === RETURN ) // return
 		{
 			var index = 0x0FFF & inst; // get index for saved env and return_address(pc)
@@ -947,8 +960,8 @@ var VM = function(env)
 	return accumulator;
 }
 
-// var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 30)');
-var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
+var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
+// var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
 
 console.log(l);
 var o = parser(l);
