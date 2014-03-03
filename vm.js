@@ -760,7 +760,7 @@ var VM = function(env)
 						   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 64);
 			accumulator = new Integer(accumulator);
 			pc = pc + 5;
-			console.log("INT accumulator=> " + accumulator);
+			// console.log("INT accumulator=> " + accumulator);
 			continue;
 		} 
 		else if (inst === CONST_FLOAT) // float
@@ -768,11 +768,11 @@ var VM = function(env)
 			accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 16)*/65536)+ 
 						  (INSTRUCTIONS[pc + 2])
 						  - (INSTRUCTIONS[pc + 1] >> 15) * Math.pow(2, 32);
-			console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
+			// console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
 			accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
 			accumulator = new Float(accumulator);
 			pc = pc + 5;
-			console.log("FLOAT accumulator=> " + accumulator);
+			// console.log("FLOAT accumulator=> " + accumulator);
 			continue;		
 		}
 		else if (inst === CONST_STRING) // string
@@ -804,12 +804,12 @@ var VM = function(env)
 		{
 			accumulator = null;
 			pc = pc + 1;
-			console.log("NULL: ");
+			// console.log("NULL: ");
 			continue;
 		}
 		else if ( opcode === PUSH) // push to environment
 		{
-			console.log("PUSH");
+			// console.log("PUSH");
 			vm_env.push(accumulator);
 			pc = pc + 1;
 			continue;
@@ -835,7 +835,7 @@ var VM = function(env)
 		}
 		else if ( opcode === SET) // set 
 		{
-			console.log("SET");
+			// console.log("SET");
 			var index = 0x0FFF & inst;
 			vm_env.env[index] = accumulator; // set to env
 			pc = pc + 1;
@@ -843,7 +843,7 @@ var VM = function(env)
 		}
 		else if ( opcode === GET ) // get
 		{
-			console.log("GET");
+			// console.log("GET");
 			var index = 0x0FFF & inst;
 			accumulator = vm_env.env[index];
 			pc = pc + 1;
@@ -851,7 +851,7 @@ var VM = function(env)
 		}
 		else if ( opcode === MAKELAMBDA) // make lambda
 		{
-			console.log("MAKELAMBDA");
+			// console.log("MAKELAMBDA");
 			var param_num= (0x0FC0 & inst) >> 6;
 			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
 			var start_pc = pc + 2;
@@ -860,12 +860,12 @@ var VM = function(env)
 			accumulator = new Lambda(param_num, variadic_place, start_pc, vm_env.env.slice(0)); // set lambda
 			
 			pc = pc + jump_steps + 1;
-			console.log(pc);
+			// console.log(pc);
 			continue;
 		}
 		else if ( opcode === CALL) // call function
 		{
-			console.log("CALL FUNCTION");
+			// console.log("CALL FUNCTION");
 			var param_num = 0x0FFF & inst; // get param num, including return_address.
 
 			var lambda = accumulator; // get lambda
@@ -878,7 +878,7 @@ var VM = function(env)
 					stack_frame.push(vm_env.env[reset_esp + 2 + i]);
 				}
 				vm_env.esp = reset_esp; // vm_env.pop(); // pop return address
-				console.log(vm_env.esp);
+				//console.log(vm_env.esp);
 				pc = pc + 1;
 				accumulator = lambda.func(stack_frame);
 				continue;
@@ -897,10 +897,10 @@ var VM = function(env)
 			}
 
 
-			console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
-			console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
-			console.log("START_PC " + lambda.start_pc);
-			console.log("OLD_PC   " + vm_env.env[vm_env.esp - param_num + 1]);
+			// console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
+			// console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
+			// console.log("START_PC " + lambda.start_pc);
+			// console.log("OLD_PC   " + vm_env.env[vm_env.esp - param_num + 1]);
 
 			// push current-env to new-env to save it
 			new_env.push(vm_env);
@@ -937,7 +937,7 @@ var VM = function(env)
 					new_env.push(null); // default value is null
 				}
 			}
-			console.log(new_env);
+			// console.log(new_env);
 			// pop return_address;
 			// vm_env.pop();
 
@@ -960,7 +960,7 @@ var VM = function(env)
 			var old_env = vm_env.env[index];
 			var old_pc = vm_env.env[index + 1];
 			// clear env if necessary for C language, not here for javascript
-			console.log("RETURN:")
+			// console.log("RETURN:")
 			vm_env = old_env;
 			pc = old_pc;
 			continue;
@@ -970,7 +970,7 @@ var VM = function(env)
 	return accumulator;
 }
 
-var l = lexer('(def x 12)(quasiquote (~x . x))');
+var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 1)');
 console.log(l);
 var o = parser(l);
 console.log(o)
