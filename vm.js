@@ -947,7 +947,9 @@ var VM = function(env)
 	return accumulator;
 }
 
-var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 12)');
+// var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 30)');
+var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
+
 console.log(l);
 var o = parser(l);
 console.log(o)
