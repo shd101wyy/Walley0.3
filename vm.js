@@ -46,18 +46,23 @@ var Float = function(num)
 {
 	this.num = num;
 }
+/*
+	注意。这里的environmen以
+	[[1], ["hello"]...] 的形式储存数据
+	C语言可用dereference
+*/
 var Environment = function(env)
 {
 	this.env = env;
 	this.esp = env.length - 1; // point to toppest element
 	this.push = function(v)
 	{
-		this.env[this.esp + 1] = v;
+		this.env[this.esp + 1] = [v];
 		this.esp += 1;
 	}
 	this.pop = function()
 	{
-		var v = this.env[this.esp];
+		var v = this.env[this.esp][0];
 		this.esp -= 1;
 		return v;
 	}
@@ -270,95 +275,97 @@ var VARIABLE_TABLE = ["cons", "car", "cdr", "vector", "vector-ref", "vector-set!
 var ENVIRONMENT = 
 [
 
-	bpp(function(stack_param)
+	[bpp(function(stack_param)
 		{ // 0 cons
 			return new Cons(stack_param[0], stack_param[1]);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 1 car
 			return car(stack_param[0]);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 2 cdr
 			return cdr(stack_param[0]);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 3 vector
 			return stack_param;
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 4 vector-ref
 		return stack_param[0][stack_param[1].num];
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 5 vector-set!
 		stack_param[0][stack_param[1].num] = stack_param[2];   return stack_param[2];  
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 6 vector-length
 			return new Integer(stack_param[0].length)
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 7 vector?
 			if(stack_param[0] instanceof Array) return "true";
 			return null;
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 8 +
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num + stack_param[1].num);
 		return new Integer(stack_param[0].num + stack_param[1].num);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 9 -
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num - stack_param[1].num);
 		return new Integer(stack_param[0].num - stack_param[1].num);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 10 *
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num * stack_param[1].num);
 		return new Integer(stack_param[0].num * stack_param[1].num);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 		{ // 11 /
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
 			return new Float(stack_param[0].num / stack_param[1].num);
 		return new Integer(stack_param[0].num / stack_param[1].num);
-		}),
-	bpp(function(stack_param)
+		})],
+	[bpp(function(stack_param)
 	{ // 12 = only for number
 		if (stack_param[0].num == stack_param[1].num)
 			return "true"
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 13 < only for number
 		if (stack_param[0].num < stack_param[1].num)
 			return "true"
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 14 > only for number
 		if (stack_param[0].num > stack_param[1].num)
 			return "true"
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 15 <= only for number
 		if (stack_param[0].num <= stack_param[1].num)
 			return "true"
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 16 >= only for number
 		if (stack_param[0].num >= stack_param[1].num)
 			return "true"
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 17 eq? 
+		console.log("EQ: ");
+		console.log(stack_param);
 		if ((stack_param[0] instanceof Integer || stack_param[0] instanceof Float) // check number
 			&& (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
 		{
@@ -368,31 +375,31 @@ var ENVIRONMENT =
 		if (stack_param[0] === stack_param[1])
 			return "true"
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 18 string?
 		if(typeof(stack_param[0]) === "string")
 			return "true";
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 19 integer?
 		if(stack_param[0] instanceof Integer)
 			return "true";
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 20 float?
 		if(stack_param[0] instanceof Float)
 			return "true";
 		return null;
-	}),
-	bpp(function(stack_param)
+	})],
+	[bpp(function(stack_param)
 	{ // 21 pair?
 		if(stack_param[0] instanceof Cons)
 			return "true";
 		return null;
-	})
+	})]
 ];
 
 var vt_find = function(vt, var_name) // find variable
@@ -592,12 +599,36 @@ var compiler = function(l, vt)
 					return;
 				}
 			}
-			// add to variable table
-			vt.push(variable_name);
 
 			var variable_value = caddr(l);
+
+			if(variable_value === null) // no value
+			{
+				INSTRUCTIONS.push(CONST_NULL);
+				INSTRUCTIONS.push(PUSH << 12);
+				return;
+			}
+
+			// lambda
+			if(variable_value instanceof Cons && variable_value !== null && car(variable_value) === "lambda") // lambda
+			{
+				console.log("COMPILE LAMBDA VALUE");
+				// save space for lambda
+				var index = vt.length;
+				vt.push(variable_name);           // in variable table
+				INSTRUCTIONS.push(CONST_NULL);
+				INSTRUCTIONS.push( PUSH << 12 );  // in stack
+
+				compiler(variable_value, vt); // compile lambda value
+
+				INSTRUCTIONS.push( SET << 12 | (index)); // set to saved space
+				return;
+			}
 			// compile value
 			compiler(variable_value, vt);
+
+			// add to variable table
+			vt.push(variable_name);
 			
 			var v_index = vt.length;
 			if(v_index >= Math.pow(2, 12))
@@ -661,9 +692,11 @@ var compiler = function(l, vt)
 			var counter = 0; // count of parameter num
 			var vt_ = vt.slice(0); // new variable table
 
+
+			// vt_.push("self"); // push space for itself. save it self (lambda [n] (if (= n 0) 1 (* n (self (- n 1)))))
 			var index_of_return_address = vt_.length;
-			vt_.push(null); // save space for parent-env
-			vt_.push(null); // save space for return address
+			vt_.push(null); // save space for parent-env.
+			vt_.push(null); // save space for return address.
 
 			while(true)
 			{
@@ -679,6 +712,7 @@ var compiler = function(l, vt)
 				counter+=1;
 				params = cdr(params);
 			}
+
 			// make lambda
 			INSTRUCTIONS.push(MAKELAMBDA << 12 | (counter << 6) | (variadic_place === -1? 0x0000 : (variadic_place << 1)) | (variadic_place === -1? 0x0000 : 0x0001));
 			var index1 = INSTRUCTIONS.length;
@@ -701,6 +735,10 @@ var compiler = function(l, vt)
 			var func = car(l);
 			var params = cdr(l);
 
+
+			compiler(func, vt); // compile lambda, save to accumulator
+			INSTRUCTIONS.push(PUSH << 12); // push lambda to stack
+
 			// push parameter from right to left 
 			params = list_to_array(params); // convert list to array
 			param_num = params.length;  // get param num
@@ -710,7 +748,6 @@ var compiler = function(l, vt)
 				INSTRUCTIONS.push(PUSH << 12); // push parameter to env
 			}
 
-			compiler(func, vt); // compile function, save to accumulator
 			INSTRUCTIONS.push(CALL << 12 | ((0x0FFF & (param_num)) << 1)); // call function. 
 			return;
 		}
@@ -743,6 +780,7 @@ var VM = function(env)
 	var length_of_insts = INSTRUCTIONS.length;
 	while(pc !== length_of_insts)
 	{
+		// console.log(pc);
 		var inst = INSTRUCTIONS[pc];
 		var opcode = (inst & 0xF000) >> 12;
 		if(inst === CONST_INTEGER) // integer
@@ -790,6 +828,7 @@ var VM = function(env)
 				pc = pc + 1;
 			}
 			accumulator = created_string;
+			// console.log("CREATED_STRING: |"+created_string+"|");
 			pc = pc + 1;
 			continue;
 		}
@@ -830,15 +869,14 @@ var VM = function(env)
 		{
 			// console.log("SET");
 			var index = 0x0FFF & inst;
-			vm_env.env[index] = accumulator; // set to env
+			vm_env.env[index][0] = accumulator; // set to env
 			pc = pc + 1;
 			continue;
 		}
 		else if ( opcode === GET ) // get
 		{
-			// console.log("GET");
 			var index = 0x0FFF & inst;
-			accumulator = vm_env.env[index];
+			accumulator = vm_env.env[index][0];
 			pc = pc + 1;
 			continue;
 		}
@@ -849,9 +887,10 @@ var VM = function(env)
 			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
 			var start_pc = pc + 2;
 			var jump_steps = INSTRUCTIONS[pc + 1];
-			var env = vm_env.env.slice(0);
+			var env = vm_env.env.slice(0); // save current env
+
 			accumulator = new Lambda(param_num, variadic_place, start_pc, env); // set lambda
-			env.push(accumulator); // 把自己也给加上
+			// env.push(accumulator); // 把自己也给加上. 这个地方有问题
 			pc = pc + jump_steps + 1;
 			continue;
 		}
@@ -865,14 +904,22 @@ var VM = function(env)
 			{
 				console.log("TAIL CALL");
 			}
-			var lambda = accumulator; // get lambda
+
+			var lambda = vm_env.env[vm_env.esp - param_num][0]; // get lambda
+
+			// console.log("LAMBDA:");
+			// console.log(vm_env)
+			// console.log(lambda);
+			// console.log("PARAM NUM: " + param_num);
+			// a();
+
 			if(lambda instanceof Builtin_Primitive_Procedure) // builtin lambda
 			{
 				var stack_frame = [];
-				var reset_esp = vm_env.esp - param_num;
+				var reset_esp = vm_env.esp - param_num - 1;
 				for(var i = 0; i < param_num; i++)
 				{
-					stack_frame.push(vm_env.env[reset_esp + 1 + i]);
+					stack_frame.push(vm_env.env[reset_esp + 2 + i][0]);
 				}
 				vm_env.esp = reset_esp; // vm_env.pop(); // pop return address
 				pc = pc + 1;
@@ -898,11 +945,12 @@ var VM = function(env)
 			// console.log("OLD_PC   " + (pc + 1));
 
 			// push current-env to new-env to save it
-			new_env.push(vm_env);
+			new_env.push([vm_env]);
 			// push return_address
-			new_env.push(pc + 1); 
+			new_env.push([pc + 1]); 
+
 			// reset esp; set esp to this value after pushed all parameters
-			var reset_esp = vm_env.esp - param_num;
+			var reset_esp = vm_env.esp - param_num - 1;
 
 			for(var i = 0; i < param_num ; i++)
 			{
@@ -914,11 +962,11 @@ var VM = function(env)
 						v = cons(vm_env.pop(), v); // set variadic variable
 						i++;
 					}
-					new_env.push(v); // push variadic variable
+					new_env.push([v]); // push variadic variable
 					break;
 				}
 				else // push parameter to new env
-					new_env.push(vm_env.env[reset_esp + i + 1]);  // pop parameters;
+					new_env.push(vm_env.env[reset_esp + i + 2]);  // pop parameters;
 			}
 			// set esp
 			vm_env.esp = reset_esp;
@@ -940,17 +988,17 @@ var VM = function(env)
 		//	continue;
 		//}
 		else if ( opcode === RETURN ) // return
-		{
+		{			
 			var index = 0x0FFF & inst; // get index for saved env and return_address(pc)
-			var old_env = vm_env.env[index];
-			var old_pc = vm_env.env[index + 1];
+			var old_env = vm_env.env[index][0];
+			var old_pc = vm_env.env[index + 1][0];
 			// clear env if necessary for C language, not here for javascript
 			// console.log("RETURN:")
 			// console.log(old_env);
 			// console.log(vm_env);
 			// console.log(index);
 			// console.log(old_env);
-
+			// console.log("OLD_PC: " + old_pc);
 			vm_env = old_env;
 			pc = old_pc;
 			continue;
@@ -960,8 +1008,14 @@ var VM = function(env)
 	return accumulator;
 }
 
-var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
+// var l = lexer("((lambda [x] (+ x 1)) 12)")
+// var l = lexer("(def (test x) (def a 12) (+ x a)) (test 14)")
+// var l = lexer("(def (x a b . c) (+ a (+ b (car (cdr c))))) (x 3 4 5 6)")
+// var l = lexer("(def (test a) (cons 'b a)) (test 'c)")
+var l = lexer("(def (x) (def a 12) (lambda (msg) (if (eq? msg 'a) a (set! a 10) ))) (def b (x)) (b 'b) (b 'a)")
+// var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
+// var l = lexer("(+ 3 4)")
 
 console.log(l);
 var o = parser(l);

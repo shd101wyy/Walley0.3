@@ -90,12 +90,11 @@ eg:
 
 eg:
 	(test a)
-	0x5000 ;; make frame
-	0x0000 ;; return address
-	0x0000 
+	0x2--- ;; get test
+	0x6000 ;; push to new frame
 	0x2--- ;; get a
 	0x6000 ;; push to new frame
-	0x7--- ;; call function with param-num
+	0x7--- ;; call function with param-num. get pushed lambda
 		;; push current-env to new-env ; save env
 		;; push return-address to new-env; save return-address
 		;; push parameters
@@ -108,6 +107,39 @@ eg:
        	inst   jmp-steps
 
 # CONS 1010 000000000000 ;; pop two value from stacks and cons them, return to accumulator
+
+
+==============================
+
+self in lambda
+
+(lambda [n] (if (= n 0) 1 (* n (self (- n 1))))) ;; factorial
+
+
+==============================
+ 
+(def (a))                         (lambda)
+
+return-address
+-----------------            --------------------
+save-env                       return-address
+-----------------            --------------------
+a                                   save-env
+-----------------            --------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
