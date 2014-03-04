@@ -204,17 +204,6 @@ var parser = function(l)
 		return cons(car(l), parser(cdr(l)));
 }
 
-
-// get variable index
-var vt_getVariableIndex = function(vt, variable_name)
-{
-	for(var i = vt.length - 1; i >= 0; i--)
-	{
-		if(variable_name in vt[i])
-			return vt[i][variable_name];
-	}
-	return -1; // didn't find
-}
 /*
 	Opcode
 */
@@ -364,8 +353,6 @@ var ENVIRONMENT =
 	})],
 	[bpp(function(stack_param)
 	{ // 17 eq? 
-		console.log("EQ: ");
-		console.log(stack_param);
 		if ((stack_param[0] instanceof Integer || stack_param[0] instanceof Float) // check number
 			&& (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
 		{
@@ -404,12 +391,26 @@ var ENVIRONMENT =
 
 var vt_find = function(vt, var_name) // find variable
 {
-	for(var i = 0; i < vt.length; i++)
+	var index = vt_length(vt) - 1;
+	for(var i = vt.length - 1; i>=0; i--)
 	{
 		if(vt[i] === var_name)
-			return i;
+			return index;
+		if(vt[i] !== ",") // not frame
+			index --;
 	}
 	return -1;
+}
+
+var vt_length = function(vt)
+{
+	var count = 0;
+	for(var i = 0; i < vt.length; i++)
+	{
+		if(vt[i] !== ",")
+			count++;
+	}
+	return count;
 }
 var list_to_array = function(l) // convert list to array
 {
@@ -593,6 +594,7 @@ var compiler = function(l, vt)
 
 			for(var i = vt.length - 1; i >= 0; i--)
 			{
+				if(vt[i] === ",") break; // finish this frame
 				if (variable_name === vt[i])
 				{
 					console.log("ERROR: variable already defined");
@@ -612,9 +614,9 @@ var compiler = function(l, vt)
 			// lambda
 			if(variable_value instanceof Cons && variable_value !== null && car(variable_value) === "lambda") // lambda
 			{
-				console.log("COMPILE LAMBDA VALUE");
+				// console.log("COMPILE LAMBDA VALUE");
 				// save space for lambda
-				var index = vt.length;
+				var index = vt_length(vt);
 				vt.push(variable_name);           // in variable table
 				INSTRUCTIONS.push(CONST_NULL);
 				INSTRUCTIONS.push( PUSH << 12 );  // in stack
@@ -630,7 +632,7 @@ var compiler = function(l, vt)
 			// add to variable table
 			vt.push(variable_name);
 			
-			var v_index = vt.length;
+			var v_index = vt_length(vt);
 			if(v_index >= Math.pow(2, 12))
 			{
 				console.log("ERROR 1: Stack Overflow");
@@ -646,18 +648,19 @@ var compiler = function(l, vt)
 		{
 			var variable_name = cadr(l);
 			var variable_value = caddr(l);
-			for(var i = vt.length - 1; i >= 0; i--)
+			var index = vt_find(vt, variable_name);
+			if(index === -1)
 			{
-				if (variable_name === vt[i]) // find variable
-				{
-				 	compiler(variable_value, vt)// compile value
-				 	INSTRUCTIONS.push( SET << 12 | (0x0FFF & i));
-				 	return;
-				}
+				// set! error
+				console.log("SET! ERROR");
+				return;
 			}
-			// set! error
-			console.log("SET! ERROR");
-			return;
+			else
+			{
+				compiler(variable_value, vt)// compile value
+			 	INSTRUCTIONS.push( SET << 12 | (0x0FFF & index));
+			 	return;
+			}
 		}
 		// (if test conseq alter)
 		else if (tag === "if")
@@ -691,10 +694,10 @@ var compiler = function(l, vt)
 			var variadic_place = -1; // variadic place
 			var counter = 0; // count of parameter num
 			var vt_ = vt.slice(0); // new variable table
-
+			vt_.push(",") // means we add a new frame
 
 			// vt_.push("self"); // push space for itself. save it self (lambda [n] (if (= n 0) 1 (* n (self (- n 1)))))
-			var index_of_return_address = vt_.length;
+			var index_of_return_address = vt_length(vt_);
 			vt_.push(null); // save space for parent-env.
 			vt_.push(null); // save space for return address.
 
@@ -1012,10 +1015,11 @@ var VM = function(env)
 // var l = lexer("(def (test x) (def a 12) (+ x a)) (test 14)")
 // var l = lexer("(def (x a b . c) (+ a (+ b (car (cdr c))))) (x 3 4 5 6)")
 // var l = lexer("(def (test a) (cons 'b a)) (test 'c)")
-var l = lexer("(def (x) (def a 12) (lambda (msg) (if (eq? msg 'a) a (set! a 10) ))) (def b (x)) (b 'b) (b 'a)")
-// var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
+// var l = lexer("(def (x) (def a 12) (lambda (msg) (if (eq? msg 'a) a (set! a 10) ))) (def b (x)) (b 'b) (b 'a)")
+var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
-// var l = lexer("(+ 3 4)")
+// var l = lexer("(def (test a) a) (test 12)")
+
 
 console.log(l);
 var o = parser(l);
