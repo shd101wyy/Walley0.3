@@ -10,6 +10,7 @@ CONST      0x2
 MAKELAMBDA 0x3
 RETURN 	   0x4
 removed: NEWFRAME   0x5
+POP        0x5 
 PUSH 	   0x6
 CALL 	   0x7
 JMP 	   0x8
@@ -108,7 +109,11 @@ eg:
 
 # CONS 1010 000000000000 ;; pop two value from stacks and cons them, return to accumulator
 
-
+==============================
+# pop several values
+ 0x5---
+ 	0101 		   000000000000
+ 	 pop   pop-num-of-variables-from-stack 
 ==============================
 
 self in lambda

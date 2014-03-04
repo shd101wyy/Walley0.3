@@ -259,7 +259,7 @@ var printInstructions = function()
 var VARIABLE_TABLE = ["cons", "car", "cdr", "vector", "vector-ref", "vector-set!",
 					  "vector-length", "vector?", "+", "-", "*", "/", "=",
 					  "<", ">", "<=", ">=", "eq?", "string?", "integer?", 
-					  "float?", "pair?"];
+					  "float?", "pair?", "null?"];
 // global variable environment
 var ENVIRONMENT = 
 [
@@ -384,6 +384,12 @@ var ENVIRONMENT =
 	[bpp(function(stack_param)
 	{ // 21 pair?
 		if(stack_param[0] instanceof Cons)
+			return "true";
+		return null;
+	})],
+	[bpp(function(stack_param)
+	{ // 22 null?
+		if(stack_param[0] === null)
 			return "true";
 		return null;
 	})]
@@ -685,6 +691,54 @@ var compiler = function(l, vt)
 			jump_steps = index3 - index2;
 			INSTRUCTIONS[index2] = (JMP << 12) | jump_steps;
 			return;
+		}
+		else if (tag === "begin") // begin
+		{
+			compiler_begin(cdr(l), vt);
+			return;
+		}
+		// (let [a 1 b 2] body)
+		else if (tag === "let")
+		{
+			var vt_ = vt.length;
+			var start_index = vt_.length;
+			vt_.push(","); // create new frame
+			var index_of_return_address = vt_length(vt_);
+			var body = cddr(l);
+			var vs = cadr(l);
+
+			// compile values
+			while(vs!==null)
+			{
+				var var_name = car(vs);
+				var var_val = cadr(vs);
+				var already_defined = false;
+				for(var i = start_index; i < vt_.length; i++)
+				{
+					if(vt_[i] === var_name) // already defined
+					{
+						already_defined = true;
+						break;
+					}
+				}
+				if(!already_defined)
+				{
+					compiler(var_val, vt_);
+					vt_.push(var_name);
+				}
+				else
+				{
+					compiler(var_val, vt_);
+				}
+				vs = cdr(cdr(vs));
+			}
+
+			// compile body
+			compiler_begin(body, vt_);
+
+			// restore stack
+			
+
 		}
 		// (lambda (a b) ...)
 		// (lambda (a . b) ...)
@@ -1016,11 +1070,10 @@ var VM = function(env)
 // var l = lexer("(def (x a b . c) (+ a (+ b (car (cdr c))))) (x 3 4 5 6)")
 // var l = lexer("(def (test a) (cons 'b a)) (test 'c)")
 // var l = lexer("(def (x) (def a 12) (lambda (msg) (if (eq? msg 'a) a (set! a 10) ))) (def b (x)) (b 'b) (b 'a)")
-var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
+// var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
 // var l = lexer("(def (test a) a) (test 12)")
-
-
+var l = lexer("(begin (def x 12) (def y 15) x)")
 console.log(l);
 var o = parser(l);
 console.log(o)
