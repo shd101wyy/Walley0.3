@@ -133,9 +133,59 @@ a                                   save-env
 -----------------            --------------------
 
 
+==============================
+POP 0x5      ---
+    inst  reg_target 
 
+reg: 0 nothing
+     1 ESP
+     2 PC
+     3 ENV
+     4 ACCUMULATOR
+==============================
+ESP 0x5      ---
+    inst     move inst up #n (esp = esp + #n)
+         
+==============================
+When calling function
+(add 3 4)
+     GET ADD      ;; add add
+     PUSH         ;; push accumulator to stack
+     CONST_INT 3  ;; create integer 3
+     PUSH         ;; push accumulator to stack
+     CONST_INT 4  ;; create integer 4
+     PUSH         ;; push accumulator to stack
+     CALL 2       ;; call function, 2 parameters provided
+     		  ;; get ADD, get new-env
+     		  ;; push PC, push ENV to new-env
+		  ;; push parameters to new-env
+		  ;; call function
+     ;; after calling, the frame is restored before get add
+     
+(let [x 1 y 2] (+ x y))
+     CONST_INT 1  ;; create integer 1
+     PUSH         ;; push to stack
+     CONST_INT 2  ;; create integer 2
+     PUSH         ;; push to stack
+     GET +
+     PUSH
+     GET X
+     PUSH
+     GET Y
+     PUSH
+     CALL      3  ;; when calling, 3 values are poped from stack 
+     ESP 2        ;; move esp up 2 
 
-
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
 
 
 
