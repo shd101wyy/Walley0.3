@@ -140,6 +140,25 @@ var lexer = function(input_string)
 	simple parser
 */
 var parser_rest = null;
+var formatQuickAccess = function(ns, keys)
+{
+    var formatQuickAccess_iter = function(keys, output, count)
+    {
+        if(count === keys.length)
+            return output;
+        return formatQuickAccess_iter(keys, cons(output, cons(cons("quote", cons(keys[count], null)), null)), count + 1);
+    }
+    return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0], null)), null)), 1);
+}
+var parser_symbol_or_number = function(v){
+	var splitted_ = v.split(":");
+	if(v === ":"  || splitted_.length == 1 || v[0] === ":" || v[v.length-1] === ":") //  : :abc abc: 
+		return v
+	var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
+    var keys = splitted_.slice(1);
+    var formatted_ = formatQuickAccess(ns, keys); // eg x:a => (x :a)
+    return formatted_;
+}
 var parser_special = function(l)
 {
 	var tag ;
@@ -162,7 +181,7 @@ var parser_special = function(l)
     else  // symbol or number
     {
         parser_rest = cdr(l);
-        return cons(tag, cons(car(l), null));
+        return cons(tag, cons(parser_symbol_or_number(car(l)), null));
     }
 }
 var parser_list = function(l)
@@ -189,7 +208,7 @@ var parser_list = function(l)
     }
 	else // symbol number
 	{
-		return cons(car(l),
+		return cons(parser_symbol_or_number(car(l)),
 					parser_list(cdr(l)));
 	}
 }
@@ -203,7 +222,7 @@ var parser = function(l)
     else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@")
         return cons(parser_special(l), parser(parser_rest));
 	else // symbol number
-		return cons(car(l), parser(cdr(l)));
+		return cons(parser_symbol_or_number(car(l)), parser(cdr(l)));
 }
 
 /*
@@ -1031,10 +1050,13 @@ var VM = function(env)
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
 // var l = lexer("(def (test a) a) (test 12)")
 // var l = lexer("(begin (def x 12) (def y 15) x)")
-var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
+// var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
+var l = lexer("(def x 12) `(~x ~x x x)")
 console.log(l);
 var o = parser(l);
 console.log(o)
+
+console.log(cdr(car(car(cdr(o)))))
 var p = compiler_begin(o, VARIABLE_TABLE);
 
 console.log(VARIABLE_TABLE);
