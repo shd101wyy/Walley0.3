@@ -118,15 +118,23 @@ var lexer_iter = function(input_string, index)
 		return cons("~@", lexer_iter(input_string, index + 2));
 	if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~")
 		return cons(input_string[index], lexer_iter(input_string, index+1));
+	if (input_string[index] == ";"){ // comment
+		var i = index;
+		while(i != input_string.length){
+			if(input_string[i] == "\n") break;
+			i++;
+		}
+		return lexer_iter(input_string, i);
+	}
 	// get number symbol
 	var end = index;
 	while(true)
 	{
 		if (end == input_string.length
-			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" || input_string[index] == ","
+			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" || input_string[end] == ","
 			|| input_string[end] == ")" || input_string[end] == "("
 			|| input_string[end] == "]" || input_string[end] == "[" || input_string[end] == "{" || input_string[end] == "}"
-			|| input_string[end] == "'" || input_string[end] == "`" || input_string[end] == "~")
+			|| input_string[end] == "'" || input_string[end] == "`" || input_string[end] == "~" || input_string[end] == ";")
 			break;
 		end+=1;
 	}
@@ -277,7 +285,10 @@ var VARIABLE_TABLE = [
 	["cons", "car", "cdr", "vector", "vector-ref", "vector-set!",
 	 "vector-length", "vector?", "+", "-", "*", "/", "=",
      "<", ">", "<=", ">=", "eq?", "string?", "integer?",
-     "float?", "pair?", "null?"]
+     "float?", "pair?", "null?", 
+     "string<?", "string=?", "string-ref", "string-slice", "string-length",
+     "vector-slice"
+     ]
 					  ];
 var BUILTIN_PRIMITIVE_PROCEDURE_NUM = VARIABLE_TABLE[0].length;
 
@@ -414,6 +425,31 @@ var ENVIRONMENT =
 		if(stack_param[0] === null)
 			return "true";
 		return null;
+	}), 
+	bpp(function(stack_param){
+		// 23 string<?
+		if(stack_param[0] < stack_param[1]) return "true"; 
+		return null;
+	}),
+	bpp(function(stack_param){
+		// 24 string=?
+		if(stack_param[0] === stack_param[1]) return "true"; return null;
+	}),
+	bpp(function(stack_param){
+		// 25 string-ref
+		return stack_param[0][stack_param[1].num];
+	}),
+	bpp(function(stack_param){
+		// 26 string-slice
+		return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
+	}),
+	bpp(function(stack_param){
+		// 27 string-length
+		return new Integer(stack_param[0].length);
+	}),
+	bpp(function(stack_param){
+		// 28 vector-slice
+		return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
 	})
 	]
 ];
@@ -961,9 +997,9 @@ var VM = function(env)
 			var param_num = (0x0FFE & inst) >> 1; // get param num, including return_address.
 			var tail_call_flag = (0x0001 & inst); // get tail call flag
 
-			if(tail_call_flag){
-				console.log("TAIL CALL");
-			}
+			//if(tail_call_flag){
+			//	console.log("TAIL CALL");
+			//}
 
 			var lambda = accumulator;
 
@@ -1038,6 +1074,7 @@ var VM = function(env)
 		}
 	}
 	console.log("Finishing running VM");
+	console.log(accumulator);
 	return accumulator;
 }
 
@@ -1051,22 +1088,31 @@ var VM = function(env)
 // var l = lexer("(def (test a) a) (test 12)")
 // var l = lexer("(begin (def x 12) (def y 15) x)")
 // var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
-var l = lexer("(def x 12) `(~x ~x x x)")
-console.log(l);
-var o = parser(l);
-console.log(o)
+// var l = lexer("(def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))")
+//var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
+//console.log(l);
+//var o = parser(l);
+//console.log(o)
+//var p = compiler_begin(o, VARIABLE_TABLE);
 
-console.log(cdr(car(car(cdr(o)))))
-var p = compiler_begin(o, VARIABLE_TABLE);
-
-console.log(VARIABLE_TABLE);
-printInstructions(INSTRUCTIONS);
-console.log(VM(ENVIRONMENT))
-console.log(ENVIRONMENT);
+//console.log(VARIABLE_TABLE);
+//printInstructions(INSTRUCTIONS);
+//console.log(VM(ENVIRONMENT))
+//console.log(ENVIRONMENT);
 
 // var p = compiler_begin(o, Variable_Table);
 // console.log(p);
 // console.log(vm(p, Environment, null));
+
+// exports to Nodejs 
+if (typeof(module)!="undefined"){
+    module.exports.vm_lexer = lexer;
+    module.exports.vm_parser = parser ;
+    module.exports.vm_compiler_begin = compiler_begin;
+    module.exports.vm = VM;
+    module.exports.vm_env = ENVIRONMENT;
+    module.exports.vm_vt = VARIABLE_TABLE;
+}
 
 
 

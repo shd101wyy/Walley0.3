@@ -6,6 +6,7 @@ var vm=require("vm")
 var util=require("util")
 var readline = require('readline')
 var argv = process.argv
+var toy_vm = require("./vm.js")
 console.log(argv)
 
 // REPL
@@ -40,6 +41,36 @@ if (argv.length==2){
 	});
 	
 }
+else if (argv.length === 3 && argv[2] === "vm"){ // test vm
+	console.log("Interactive mode for VM");
+	console.log("Press Ctrl + C to quit\n");
+
+	var input_str=""
+
+	var rl = readline.createInterface({
+	  input: process.stdin,
+	  output: process.stdout
+	})
+
+	rl.setPrompt('toy> ')
+	rl.prompt()
+	rl.on('line', function(line) {
+		var l = toy_vm.vm_lexer(line);
+		var p = toy_vm.vm_parser(l);
+		var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt);
+		var e = toy_vm.vm(toy_vm.vm_env );
+		// console.log("compile to ==> "+o);
+		//toy.display(o);
+		// toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )
+		rl.setPrompt('toy> ')
+		rl.prompt()
+	})
+
+	rl.on('close', function() {
+	  console.log('Quit walley')
+	  process.exit(0)
+	});
+}
 // run file
 else if (argv.length==3){
 	var file_name = argv[2]
@@ -55,7 +86,21 @@ else if (argv.length==3){
 	toy.resolveDirectory(file_name);
 	var o =  toy.eval_begin(p, toy.env);
 }
+// vm run file
+else if (argv.length === 4  && argv[2] === "vm"){
+	var file_name = argv[3]
+	if (typeof(file_name)=="undefined"){
+		console.log("No input file..")
+		process.exit(0)
+	}
+	// get content of file
+	var content_in_file=fs.readFileSync(file_name,"utf8")
 
+	var l = toy_vm.vm_lexer(content_in_file);
+	var p = toy_vm.vm_parser(l);
+	var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt);
+	var e = toy_vm.vm(toy_vm.vm_env );
+}
 
 // COMPRESS
 else if (argv.length == 4 && argv[2] == "compress"){
