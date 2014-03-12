@@ -70,10 +70,10 @@ MAKELAMBDA 0011 000000      00000            0     ;; make lambda
   	    1- op param-num variadic-place has-variadic : 4 6 5 1
 				2- next-pc. jump over the lambda body 跳过内容
 ----------------------------------------------------------------
-RETURN 0100 00000000000 0				       ;; return accumulator
-  	     op             flag            ;; get 1 => last-env
+RETURN 0100 000000000000				       ;; return accumulator
+  	     op             		               ;; get 1 => last-env
 			                        	        ;; get 2 => last-inst according to return-address-index => return-address
-				1- op restore-env-and-pc-flag : 4 + 1
+				1- op : 4 
 eg:
 (def (test a) a)
 ----------------------------------------------------------------
@@ -83,8 +83,8 @@ eg:
 0x100
 ----------------------------------------------------------------
 NEWFRAME 0101 00000000000 0    ;; create new frame to store arguments
-          op              flag
-				1- op save-env-and-pc-flag : 4 + 1
+          op              
+				1- op : 4 
 ----------------------------------------------------------------
 PUSH_ARG 0110 000000000000  ;; push accumulator to current-frame
 				1- op index
