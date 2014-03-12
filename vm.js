@@ -1031,7 +1031,7 @@ var VM = function(env)
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
 // var l = lexer("(def (test a) a) (test 12)")
 // var l = lexer("(begin (def x 12) (def y 15) x)")
-var l = lexer("(def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 100)")
+var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
 console.log(l);
 var o = parser(l);
 console.log(o)
