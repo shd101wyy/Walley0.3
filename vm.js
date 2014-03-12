@@ -741,46 +741,43 @@ var compiler = function(l, vt)
 		// (let [a 1 b 2] body)
 		else if (tag === "let")
 		{
-			var vt_ = vt.length;
-			var start_index = vt_.length;
-			vt_.push(","); // create new frame
-			var index_of_return_address = vt_length(vt_);
+			var vt_ = vt.slice(0);
+			vt_[vt_.length - 1] = vt_[vt_.length - 1].slice(0);
 			var body = cddr(l);
 			var vs = cadr(l);
+			var start_index = vt_[vt_.length - 1].length;
 
-			/*
 			// compile values
 			while(vs!==null)
 			{
 				var var_name = car(vs);
 				var var_val = cadr(vs);
 				var already_defined = false;
-				for(var i = start_index; i < vt_.length; i++)
-				{
-					if(vt_[i] === var_name) // already defined
-					{
+				var var_index = -1;
+				for(var i = start_index; i < vt_[vt_.length - 1].length; i++){
+					if(vt_[vt_.length - 1][i] === var_name){ // already defined
 						already_defined = true;
+						var_index = i;
 						break;
 					}
 				}
-				if(!already_defined)
-				{
+				if(!already_defined){
+					var_index = vt_[vt_.length - 1].length;
+					vt_[vt_.length - 1].push(var_name);
 					compiler(var_val, vt_);
-					vt_.push(var_name);
+					INSTRUCTIONS.push( SET << 12 | (0x0FFF & vt_.length - 1)); // frame index
+			 		INSTRUCTIONS.push(0x0000FFFF & var_index); // value index
 				}
-				else
-				{
+				else{ // var already defined
 					compiler(var_val, vt_);
+					INSTRUCTIONS.push( SET << 12 | (0x0FFF & vt_.length - 1)); // frame index
+			 		INSTRUCTIONS.push(0x0000FFFF & var_index); // value index
 				}
 				vs = cdr(cdr(vs));
 			}
 
 			// compile body
 			compiler_begin(body, vt_);
-
-			// restore stack
-			*/
-
 		}
 		// (lambda (a b) ...)
 		// (lambda (a . b) ...)
@@ -1089,16 +1086,17 @@ var VM = function(env)
 // var l = lexer("(begin (def x 12) (def y 15) x)")
 // var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
 // var l = lexer("(def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))")
-//var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
+// var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
+var l = lexer("(let [x 0 y 2 x (+ y 1)] (+ x y)) ")
 //console.log(l);
-//var o = parser(l);
+var o = parser(l);
 //console.log(o)
-//var p = compiler_begin(o, VARIABLE_TABLE);
+var p = compiler_begin(o, VARIABLE_TABLE);
 
 //console.log(VARIABLE_TABLE);
-//printInstructions(INSTRUCTIONS);
-//console.log(VM(ENVIRONMENT))
-//console.log(ENVIRONMENT);
+printInstructions(INSTRUCTIONS);
+console.log(VM(ENVIRONMENT))
+console.log(ENVIRONMENT);
 
 // var p = compiler_begin(o, Variable_Table);
 // console.log(p);
