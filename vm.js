@@ -714,7 +714,12 @@ var compiler = function(l, vt)
 		{
 			var test = cadr(l);
 			var conseq = caddr(l);
-			var alter = cadddr(l);
+			var alter;
+			if(cdddr(l) === l)
+				alter = null;
+			else
+			    alter = cadddr(l);
+
 			compiler(test, vt); // compile test
 			var index1 = INSTRUCTIONS.length;
 			// push test, but now we don't know jump steps
@@ -778,6 +783,33 @@ var compiler = function(l, vt)
 
 			// compile body
 			compiler_begin(body, vt_);
+		}
+		// cond
+		// (cond (t0 body0) (t1 body1) ... (else ))
+		else if (tag === "cond"){
+			var cond_clauses = cdr(l);
+			var expand_clauses = function(clauses){
+				if(clauses === null)
+					return null;
+				var first = car(clauses);
+				var rest = cdr(clauses);
+				if(car(first) === "else"){
+					if(rest === null){
+						return cons("begin", cdr(first));
+					}
+					else{
+						console.log("ERROR: else clause isn't the last\n");
+						INSTRUCTIONS = [];
+						return;
+					}
+				}
+				else{
+					var body = cons("begin", cdr(first));
+					return cons("if", cons(car(first), cons(body, cons(expand_clauses(rest), null))));
+				}
+			}
+			console.log(cdr(expand_clauses(cond_clauses)))
+			return compiler(expand_clauses(cond_clauses), vt);
 		}
 		// (lambda (a b) ...)
 		// (lambda (a . b) ...)
@@ -1087,7 +1119,9 @@ var VM = function(env)
 // var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
 // var l = lexer("(def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))")
 // var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
-var l = lexer("(let [x 0 y 2 x (+ y 1)] (+ x y)) ")
+// var l = lexer("(let [x 0 y 2 x (+ y 1)] (+ x y)) ")
+var l = lexer("(cond (() 2) (() 4) (else 5) )")
+// var l = lexer("(if () 2 (if 3 4 5))")
 //console.log(l);
 var o = parser(l);
 //console.log(o)
