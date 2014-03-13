@@ -3,9 +3,12 @@
 ;; defm
 ;; for defining single macro
 (defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))
-(append '(1 2) '(3 4))
-(defm key [node] [vector-ref ~node 0])
-(key #[1,2,3])
+;; list
+(def (list . arg) arg)
+;; and
+(defm and [a b] (if ~a (if ~b ~b '()) '()))
+;; or
+(defm or [a b] (if ~a ~a (if ~b ~b '())))
 (def (make-avl-tree)
      ;; getter
      (defm key [node] [vector-ref ~node 0])
@@ -23,6 +26,9 @@
      (defm set-value [node v] [vector-set! ~node 1 ~v])
      (defm set-height [node v] [vector-set! ~node 4 ~v])
      
+     ;; true false
+     (def #t 1)
+     (def #f ())
      ;; get max
      (def (max a0 a1) (if >= a0 a1) a0 a1)
      ;; make node
@@ -31,7 +37,245 @@
      ;; make root
      (def (make-root key value) (vector key value '() '() 0 '()))
      
-     (def x (make-root "Hi" 4))
-     (value x)
+     ;; create root
+     (def root '())
+     
+     ;; find value by key
+     (def (find_ node k)
+	  (if (null? node)
+	      '() ;; didn't find
+	      (let [node-key (key node)]
+		(if (string=? node-key k)
+		    (value node)
+		    (if (string<? k node-key)
+			(find_ (left node) ;; < so find left
+			       k)
+			(find_ (right node) ;; > so find right
+			       k))))))
+     ;; find according to key
+     (def (find k)
+          (find_ root k))
+     
+     ;; rotate left
+     (def (rotate-left node)
+	  (let [temp node
+		node2 (right node)]
+	    (if (null? (parent temp)) ;; try to rotate root
+		(begin (set! root node2) ;; update root
+		       (set-parent root '())
+		       (set-right temp (left node2))
+		       (set-left node2 temp)
+		       ) 
+		;; parent is not root
+		(begin (set-right (parent node) node2) 
+		       (set-right temp (left node2))
+		       (set-left node2 temp)))
+	    ;; parent set child
+	    ;;(set-right (parent temp) node2)
+	    ;; update height
+	    (set-height temp (+ 1 (max (height (left temp)) (height (right temp)))))
+	    (set-height node2 (+ 1 (max (height (left node2)) (height (right node2)))))
+	    ))
+     ;; rotate right
+     (def (rotate-right node)
+	  (let [temp node
+		node2 (left node)]
+	    (if (null? (parent temp)) ;; try to rotate root
+		(begin (set! root node2) ;; update root
+		       (set-parent root '())
+		       (set-left temp (right node2))
+		       (set-right node2 temp)
+		       ) 
+		;; parent is not root
+		(begin (set-left (parent node) node2) 
+		       (set-left temp (right node2))
+		       (set-right node2 temp)))
+	    ;; parent set child
+	    ;;(set-left (parent temp) node2)
+	    ;; update height
+	    (set-height temp (+ 1 (max (height (left temp)) (height (right temp)))))
+	    (set-height node2 (+ 1 (max (height (left node2)) (height (right node2)))))
+	    ))
+     ;; rotate rightLeft
+     (def (rotate-right-left node)
+       (rotate-right (right node))
+       (rotate-left node))
+     ;; rotate leftRight
+     (def (rotate-left-right node)
+       (rotate-left (left node))
+       (rotate-right node))
+     ;; balance node
+     (def (balance node)
+       (let [balance# (- (height (left node))
+			  (height (right node)))]
+	 (cond [(= balance# 2) ;; adjust left side
+		(if (= 1 
+		       (- (height (left (left node)))
+			  (height (right (left node)))))
+		    (rotate-right node)
+		    (rotate-left-right node)
+		    )]
+	       [(= balance# -2) ;; adjust right side
+		(if (= -1
+		       (- (height (left (right node)))
+			  (height (right (right node)))))
+		    (rotate-left node)
+		    (rotate-right-left node)
+		    )]
+	       [else ;; no need to adjust 
+		'()])
+	 ))
+     ;; insert
+
+     (def (insert_ node k value parent left?)
+	  (display-string 'Enter-Here)
+	  (display-string (null? root))
+	  (display-string k)
+	  (display-string value)
+	  (display-string (make-root k value))
+
+	  (if (null? root) ;; root doesn't exist
+	      (set! root (make-root k value)) ;; set root	
+	      (if (null? node) ;; node doesn't exist
+		  (if left? 
+		      (set-left  parent (make-node k value '() '() parent)) ;; set left
+		      (set-right parent (make-node k value '() '() parent))) ;; set right
+		  (if (string=? k (key node))
+		      ;; same
+		      (set-value node value)
+		      ;; not same
+		      (begin (if (string<? k (key node))
+				 (begin ;; left  
+				   (insert_ (left node)
+					    k
+					    value
+					    node
+					    #t)
+				   (balance node))
+				 (begin ;; right  
+				   (insert_ (right node)
+					    k
+					    value
+					    node
+					    #f)
+				   (balance node)))  
+			     ;; update height
+			     (set-height node (+ 1 (max (height (left node)) (height (right node)))))
+			     )
+		      )
+		  ))) 
+     (def (insert key value)
+	  (insert_ root key value '() #t))
+     
+     (def (find-biggest-on-left-side node)
+	  (if (null? (right node))
+	      node
+	      (find-biggest-on-left-side (right node))))
+     ;; remove     
+     (def (remove_ k node)
+	  (if (null? node)
+	      '() ;; didn't remove, key doesnt exist
+	      (if (eq? (key node) k)
+		  ;; find
+		  (let [null-left? (null? (left node))
+				   null-right? (null? (right node))]
+		    (cond [(and null-left? null-right?) ;; empty
+			(if (null? (parent node))
+			    (set! root '()) ;; reset root
+			    (if (eq? (left (parent node)) node)
+				(set-left (parent node) '()) ;; delete this node, left
+				(set-right (parent node) '())))] ;; right 
+			  ;; has one child on the left side
+			  [null-right? 
+			(if (null? (parent node))
+			    ;; update root
+			    (begin (set! root (left node))
+				   (set-parent root '()))
+			    (if (eq? (left (parent node)) node)
+				(set-left (parent node) (left node))
+				(set-right (parent node) (left node)))
+			    )
+			]
+		       ;; has one child on the right side
+			  [null-left? 
+			   (if (null? (parent node))
+			    ;; update root
+			       (begin (set! root (right node))
+				      (set-parent root '()))
+			       (if (eq? (left (parent node)) node)
+				   (set-left (parent node) (right node))
+				   (set-right (parent node) (right node)))
+			       )]
+			  [else ;; has two child.    this part unfinished
+			   (let [y (find-biggest-on-left-side (left node))]
+			     (set-left y (left node)) ;; set children
+			     (set-right y (right node)) ;; set children
+			     (set-parent y (parent node)) ;; set parent
+			     (if (null? (parent node))
+				 ;; reset root
+				 (set! root y)
+				 ;; it's not root
+				 (if (eq? node (left (parent node)))
+				     [begin  ;; node is left child of parent
+				       (set-left (parent node)
+						 y)
+				       (balance y)]
+				     [begin  ;; node is right child of parent
+				       (set-right (parent node)
+						  y)
+				       (balance y)]))
+			     )]))
+		  ;; unfound
+		  (if (string<? k (key node))
+		      (remove_ k (left node))  ;; search left
+		      (remove_ k (right node)));; search right
+		  ))
+	  )
+     (def (remove k) (remove_ k root))
+     
+     (lambda [msg] 
+       (cond [(string=? msg 'root) root]
+	     [(string=? msg 'set)
+	      (lambda [key value] (insert key value))]
+	     [(string=? msg 'get)
+	      (lambda [key] (find key))]
+	     [(string=? msg 'test)
+	      'test]
+	     [else 'ERROR]))
      )
-(make-avl-tree)
+;;(def x (make-avl-tree))
+;;(x 'a 5)
+;;(x 'a)
+
+
+(def (test)
+     (def node #(1 2 3))
+     (defm set [node index value]
+               [vector-set! ~node ~index ~value])
+     (defm get [node index]
+               [vector-ref ~node ~index])
+     (lambda [msg]
+       (cond [(string=? msg 'node)
+	      node]
+	     [(string=? msg 'get)
+	      (lambda [a] (get node a))]
+	     [(string=? msg 'set)
+	      (lambda [a b] (set node a b))]
+	     [else ()])))
+;;(def x (test))
+;;(x:set 0 12)
+;;(x:get 0)
+
+(def a (make-avl-tree))
+(a:set 'a 12)
+(a 'test)
+(a 'root)
+(a:get 'a)
+
+
+
+
+
+
+
+

@@ -294,7 +294,7 @@ var VARIABLE_TABLE = [
      "string<?", "string=?", "string-ref", "string-slice", "string-length",
      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
-     "tan", "tanh"
+     "tan", "tanh", "display-string"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -528,7 +528,12 @@ var ENVIRONMENT =
 	bpp(function(stack_param){
 	    // 45 tanh
 	    return new Float(Math.tanh(stack_param[0].num));
-	})  
+	}),
+	bpp(function(stack_param){
+	    // 46 display-string
+	    console.log(stack_param[0]);
+	    return null;
+	}) 
 	]
 ];
 
@@ -1314,7 +1319,9 @@ var VM = function(INSTRUCTIONS, env)
 			var required_variadic_place = lambda.variadic_place;
 			var start_pc = lambda.start_pc;
 			var new_env;
+			/*
 			if(tail_call_flag && env.length !== 1){ // is tail call, so use current env
+				console.log("ENTER HERE1");
 				new_env = env;
 				var top_frame = new_env[new_env.length - 1];
 				for(var i = 2; i < current_frame_pointer.length; i++){ // copy arguments
@@ -1322,12 +1329,12 @@ var VM = function(INSTRUCTIONS, env)
 				}
 				current_frame_pointer = top_frame; // reset pointer
 			}
-			else{
+			else{*/
 			 	new_env = lambda.env.slice(0);
 				new_env.push(current_frame_pointer);
 				current_frame_pointer[0] = env; // save current env to new-frame
 				current_frame_pointer[1] = pc + 1; // save pc
-			}
+			//}
 			if(required_variadic_place === -1 && param_num - 1 > required_param_num){
 				console.log("ERROR: Too many parameters provided");
 				return;
@@ -1348,9 +1355,10 @@ var VM = function(INSTRUCTIONS, env)
 			if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
 			{
 				for(var i = param_num; i < required_param_num; i++){
-					current_frame_pointer.push(null); // default value is null
+					current_frame_pointer[i + 2] = null; // default value is null
 				}
 			}
+			
 			env = new_env;         // change env pointer
 			pc = start_pc;         // begin to call function
 			frame_list = cdr(frame_list) // update frame list
