@@ -292,7 +292,9 @@ var VARIABLE_TABLE = [
      "<", ">", "<=", ">=", "eq?", "string?", "integer?",
      "float?", "pair?", "null?", 
      "string<?", "string=?", "string-ref", "string-slice", "string-length",
-     "vector-slice"
+     "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
+     "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
+     "tan", "tanh"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -302,161 +304,231 @@ var BUILTIN_PRIMITIVE_PROCEDURE_NUM = VARIABLE_TABLE[0].length;
 var ENVIRONMENT =
 [
 	// frame 0
-	[
+    [
 	bpp(function(stack_param)
-		{ // 0 cons
-			return new Cons(stack_param[0], stack_param[1]);
-		}),
+	    { // 0 cons
+		return new Cons(stack_param[0], stack_param[1]);
+	    }),
+	
 	bpp(function(stack_param)
-		{ // 1 car
-			return car(stack_param[0]);
-		}),
+	    { // 1 car
+		return car(stack_param[0]);
+	    }),
 	bpp(function(stack_param)
-		{ // 2 cdr
-			return cdr(stack_param[0]);
-		}),
+	    { // 2 cdr
+		return cdr(stack_param[0]);
+	    }),
+
 	bpp(function(stack_param)
-		{ // 3 vector
-			return stack_param;
-		}),
+	    { // 3 vector
+		return stack_param;
+	    }),
 	bpp(function(stack_param)
-		{ // 4 vector-ref
+	    { // 4 vector-ref
 		return stack_param[0][stack_param[1].num];
-		}),
+	    }),
 	bpp(function(stack_param)
-		{ // 5 vector-set!
+	    { // 5 vector-set!
 		stack_param[0][stack_param[1].num] = stack_param[2];   return stack_param[2];
-		}),
+	    }),
 	bpp(function(stack_param)
-		{ // 6 vector-length
-			return new Integer(stack_param[0].length)
-		}),
+	    { // 6 vector-length
+		return new Integer(stack_param[0].length)
+	    }),
 	bpp(function(stack_param)
-		{ // 7 vector?
-			if(stack_param[0] instanceof Array) return "true";
-			return null;
-		}),
+	    { // 7 vector?
+		if(stack_param[0] instanceof Array) return "true";
+		return null;
+	    }),
 	bpp(function(stack_param)
-		{ // 8 +
+	    { // 8 +
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-			return new Float(stack_param[0].num + stack_param[1].num);
+		    return new Float(stack_param[0].num + stack_param[1].num);
 		return new Integer(stack_param[0].num + stack_param[1].num);
-		}),
+	    }),
 	bpp(function(stack_param)
-		{ // 9 -
+	    { // 9 -
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-			return new Float(stack_param[0].num - stack_param[1].num);
+		    return new Float(stack_param[0].num - stack_param[1].num);
 		return new Integer(stack_param[0].num - stack_param[1].num);
-		}),
+	    }),
 	bpp(function(stack_param)
-		{ // 10 *
+	    { // 10 *
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-			return new Float(stack_param[0].num * stack_param[1].num);
+		    return new Float(stack_param[0].num * stack_param[1].num);
 		return new Integer(stack_param[0].num * stack_param[1].num);
-		}),
+	    }),
 	bpp(function(stack_param)
-		{ // 11 /
+	    { // 11 /
 		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-			return new Float(stack_param[0].num / stack_param[1].num);
+		    return new Float(stack_param[0].num / stack_param[1].num);
 		return new Integer(stack_param[0].num / stack_param[1].num);
-		}),
+	    }),
 	bpp(function(stack_param)
-	{ // 12 = only for number
+	    { // 12 = only for number
 		if (stack_param[0].num == stack_param[1].num)
-			return "true"
+		    return "true"
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 13 < only for number
+	    { // 13 < only for number
 		if (stack_param[0].num < stack_param[1].num)
-			return "true"
+		    return "true"
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 14 > only for number
+	    { // 14 > only for number
 		if (stack_param[0].num > stack_param[1].num)
-			return "true"
+		    return "true"
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 15 <= only for number
+	    { // 15 <= only for number
 		if (stack_param[0].num <= stack_param[1].num)
-			return "true"
+		    return "true"
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 16 >= only for number
+	    { // 16 >= only for number
 		if (stack_param[0].num >= stack_param[1].num)
-			return "true"
+		    return "true"
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 17 eq?
+	    { // 17 eq?
 		if ((stack_param[0] instanceof Integer || stack_param[0] instanceof Float) // check number
-			&& (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
+		    && (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
 		{
-			if(stack_param[0].num === stack_param[1].num) return "true";
-			return false;
+		    if(stack_param[0].num === stack_param[1].num) return "true";
+		    return false;
 		}
 		if (stack_param[0] === stack_param[1])
-			return "true"
+		    return "true"
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 18 string?
+	    { // 18 string?
 		if(typeof(stack_param[0]) === "string")
-			return "true";
+		    return "true";
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 19 integer?
+	    { // 19 integer?
 		if(stack_param[0] instanceof Integer)
-			return "true";
+		    return "true";
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 20 float?
+	    { // 20 float?
 		if(stack_param[0] instanceof Float)
-			return "true";
+		    return "true";
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 21 pair?
+	    { // 21 pair?
 		if(stack_param[0] instanceof Cons)
-			return "true";
+		    return "true";
 		return null;
-	}),
+	    }),
 	bpp(function(stack_param)
-	{ // 22 null?
+	    { // 22 null?
 		if(stack_param[0] === null)
-			return "true";
+		    return "true";
 		return null;
-	}), 
+	    }), 
 	bpp(function(stack_param){
-		// 23 string<?
-		if(stack_param[0] < stack_param[1]) return "true"; 
-		return null;
+	    // 23 string<?
+	    if(stack_param[0] < stack_param[1]) return "true"; 
+	    return null;
 	}),
 	bpp(function(stack_param){
-		// 24 string=?
-		if(stack_param[0] === stack_param[1]) return "true"; return null;
+	    // 24 string=?
+	    if(stack_param[0] === stack_param[1]) return "true"; return null;
 	}),
 	bpp(function(stack_param){
-		// 25 string-ref
-		return stack_param[0][stack_param[1].num];
+	    // 25 string-ref
+	    return stack_param[0][stack_param[1].num];
 	}),
 	bpp(function(stack_param){
-		// 26 string-slice
-		return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
+	    // 26 string-slice
+	    return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
 	}),
 	bpp(function(stack_param){
-		// 27 string-length
-		return new Integer(stack_param[0].length);
+	    // 27 string-length
+	    return new Integer(stack_param[0].length);
 	}),
 	bpp(function(stack_param){
-		// 28 vector-slice
-		return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
-	})
+	    // 28 vector-slice
+	    return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
+	}),
+	bpp(function(stack_param){
+	    // 29 acos
+	    return new Float(Math.acos(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 30 acosh
+	    return new Float(Math.acosh(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 31 asin
+	    return new Float(Math.asin(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 32 asinh
+	    return new Float(Math.asinh(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 33 atan
+	    return new Float(Math.atan(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 34 atanh
+	    return new Float(Math.atanh(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 35 ceil
+	    return new Float(Math.ceil(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 36 cos
+	    return new Float(Math.cos(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 37 cosh
+	    return new Float(Math.cosh(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 38 exp
+	    return new Float(Math.exp(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 39 floor
+	    return new Float(Math.floor(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 40 loge
+	    return new Float(Math.log(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 41 pow
+	    return new Float(Math.pow(stack_param[0].num, stack_param[1].num));
+	}),
+	bpp(function(stack_param){
+	    // 42 sin
+	    return new Float(Math.sin(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 43 sinh
+	    return new Float(Math.sinh(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 44 tan
+	    return new Float(Math.tan(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 45 tanh
+	    return new Float(Math.tanh(stack_param[0].num));
+	})  
 	]
 ];
 
@@ -1244,8 +1316,9 @@ var VM = function(env)
 // var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
 // var l = lexer("(let [x 0 y 2 x (+ y 1)] (+ x y)) ")
 // var l = lexer("(cond (() 2) (() 4) (else 5) )")
-var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12) (macroexpand-1 (square 15))");
+// var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12) (macroexpand-1 (square 15))");
 // var l = lexer("(if () 2 (if 3 4 5))")
+var l = lexer("(pow 2 3)");
 //console.log(l);
 var o = parser(l);
 //console.log(o)
