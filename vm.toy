@@ -1,33 +1,37 @@
 ;; this function is for ~@ 
 (def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))
+;; defm
+;; for defining single macro
+(defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))
 (append '(1 2) '(3 4))
-
+(defm key [node] [vector-ref ~node 0])
+(key #[1,2,3])
 (def (make-avl-tree)
      ;; getter
-     (def (key node) (vector-ref node 0))
-     (def (value node) (vector-ref node 1))
-     (def (left node) (vector-ref node 2))
-     (def (right node) (vector-ref node 3))
-     (def (height node) (if (null? node) -1 (vector-ref node 4)))
-     (def (parent node) (vector-ref node 5))
+     (defm key [node] [vector-ref ~node 0])
+     (defm value [node] [vector-ref ~node 1])
+     (defm left [node] [vector-ref ~node 2])
+     (defm right [node] [vector-ref ~node 3])
+     (defm height [node] [if (null? ~node) -1 (vector-ref ~node 4)])
+     (defm parent [node] [vector-ref ~node 5])
  
      ;; setter
-     (def (set-parent node v) (if (null? node) 'done (vector-set! node 5 v)))
-     (def (set-left node v) (vector-set! node 2 v) (set-parent v node))
-     (def (set-right node v) (vector-set! node 3 v) (set-parent v node))
-     (def (set-key node v) (vector-set! node 0 v))
-     (def (set-value node v) (vector-set! node 1 v))
-     (def (set-height node v) (vector-set! node 4 v))
+     (defm set-parent [node v] (if (null? ~node) 'done (vector-set! ~node 5 ~v)))
+     (defm set-left [node v] (begin (vector-set! ~node 2 ~v) (set-parent ~v ~node)))
+     (defm set-right [node v] (begin (vector-set! ~node 3 ~v) (set-parent ~v ~node)) )
+     (defm set-key [node v] [vector-set ~node 0 ~v])
+     (defm set-value [node v] [vector-set! ~node 1 ~v])
+     (defm set-height [node v] [vector-set! ~node 4 ~v])
      
      ;; get max
      (def (max a0 a1) (if >= a0 a1) a0 a1)
      ;; make node
      (def (make-node key value left right parent)
-	  (vector key value left right (+ 1 (max (height left) (height right)))  parent))
+     	  (vector key value left right (+ 1 (max (height left) (height right)))  parent))
      ;; make root
      (def (make-root key value) (vector key value '() '() 0 '()))
      
      (def x (make-root "Hi" 4))
-     x
+     (value x)
      )
 (make-avl-tree)

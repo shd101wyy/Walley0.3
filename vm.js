@@ -638,6 +638,62 @@ var macro_expand = function(macro, exps){
 	console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
 	return null;
 }
+/* 
+	macro_expand_for_compilation
+
+	this function is different from the function above,
+	it will replace also replace value which is not arg
+	eg:
+	(defm test [x] [list ~x]) will also replace "list" => (test 12) => ((0 frame_index value_index) 12) 
+																		here 0 is integer, different with string
+*/
+var macro_expand_with_arg_value_for_compilation = function(body, t, vt){
+	if(body === null) return null;
+	else if(car(body) === "unquote"){ // this place might have problem
+		if(cadr(body) in t){
+			return t[cadr(body)];
+		}
+		return body;
+	}
+	else if ((car(body) instanceof Cons) && (car(car(body)) === "unquote-splice")){
+		var n = cadr( car(body) );
+		if(n in t){
+			var v = t[n];
+			return list_append(v, 
+							   macro_expand_with_arg_value(cdr(body), t));
+		}
+		return cons(body,
+					macro_expand_with_arg_value(cdr(body), t));
+	}
+	else if(car(body) instanceof Cons){ // cons
+		return cons(macro_expand_with_arg_value(car(body), t), 
+				    macro_expand_with_arg_value(cdr(body), t));
+	}
+	var v = car(body);
+	var i = vt_find(vt, v);
+	if(i[0] === -1) // didnt find
+		return cons(car(body), 
+					macro_expand_with_arg_value(cdr(body), t))
+	else{
+		return cons(
+					cons(0, cons(i[0], cons(i[1], null))), // get that variable
+					macro_expand_with_arg_value(cdr(body), t))
+	}
+}
+var macro_expand_for_compilation = function(macro, exps){
+	var clauses = macro.clauses;
+	while(clauses !== null){
+		var match = macro_match(car(car(clauses)), exps);
+		if(match === false) {
+			clauses = cdr(clauses); continue;
+		}
+		else{ // match
+			return macro_expand_with_arg_value_for_compilation(cadr(car(clauses)), match, macro.vt);
+		}
+	}
+	console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
+	return null;
+}
 
 var compiler = function(l, vt, macros, tail_call_flag)
 {
@@ -728,6 +784,11 @@ var compiler = function(l, vt, macros, tail_call_flag)
 	else if (l instanceof Cons)
 	{
 		var tag = car(l);
+		if(typeof(tag) === "number" && tag === 0){ // get for macro
+				INSTRUCTIONS.push(GET << 12 | cadr(l));
+				INSTRUCTIONS.push(caddr(l));
+				return;
+		}
 		// quote
 		if (tag === "quote")
 		{
@@ -1046,8 +1107,8 @@ var compiler = function(l, vt, macros, tail_call_flag)
 					var frame = macros[i];
 					for(var j = frame.length - 1; j >= 0; j--){
 						if(frame[j].macro_name === func){
-							return compiler(macro_expand(frame[j], cdr(l)),
-											frame[j].vt,
+							return compiler(macro_expand_for_compilation(frame[j], cdr(l)),
+											/*frame[j].vt,*/ vt,
 											macros,
 											tail_call_flag)
 						}
@@ -1101,7 +1162,7 @@ var compiler_begin = function(l, vt, macros)
 }
 
 
-var VM = function(env)
+var VM = function(INSTRUCTIONS, env)
 {
 	var pc = 0;   // pc 
 	var accumulator = null; // accumulator
@@ -1110,7 +1171,6 @@ var VM = function(env)
 	var frame_list = cons(null, null); // stack used to save frames    head frame1 frame0 tail, queue
 	while(pc !== length_of_insts)
 	{
-		console.log(pc);
 		var inst = INSTRUCTIONS[pc];
 		var opcode = (inst & 0xF000) >> 12;
 		if(opcode === CONST){
@@ -1339,16 +1399,17 @@ var VM = function(env)
 // var l = lexer("(quote (a (b c) d))")
 // var l = lexer("(def (f n result) (if (= n 0) result (f (- n 1) (* n result)))) (f 100 1)")
 // var l = lexer("(if () 2 3)")
-var l = lexer("(defmacro defm ([macro_name p b] [defmacro ~macro_name (~p ~b)])) (defm square [x] [* ~x ~x]) (square 16)")
+// var l = lexer("(defmacro defm ([macro_name p b] [defmacro ~macro_name (~p ~b)])) (defm square [x] [* ~x ~x]) (square 16)")
+// var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12)")
 //console.log(l);
-var o = parser(l);
+// var o = parser(l);
 //console.log(o)
-var p = compiler_begin(o, VARIABLE_TABLE, MACROS);
+// var p = compiler_begin(o, VARIABLE_TABLE, MACROS);
 
-console.log(VARIABLE_TABLE);
-printInstructions(INSTRUCTIONS);
-console.log(VM(ENVIRONMENT))
-console.log(ENVIRONMENT);
+//console.log(VARIABLE_TABLE);
+//printInstructions(INSTRUCTIONS);
+// console.log(VM(INSTRUCTIONS, ENVIRONMENT))
+//console.log(ENVIRONMENT);
 
 // var p = compiler_begin(o, Variable_Table);
 // console.log(p);
@@ -1362,6 +1423,7 @@ if (typeof(module)!="undefined"){
     module.exports.vm = VM;
     module.exports.vm_env = ENVIRONMENT;
     module.exports.vm_vt = VARIABLE_TABLE;
+    module.exports.vm_insts = INSTRUCTIONS;
 }
 
 
