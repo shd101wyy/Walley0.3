@@ -575,7 +575,8 @@ var macro_match = function(a, b){
 		else if((a === null && b !== null) || ( a!==null && b === null)) // doesnt match
 			return false;
 		else if (car(a) instanceof Cons && car(b) instanceof Cons){
-			macro_match_iter(car(a), car(b), output);
+			var m = macro_match_iter(car(a), car(b), output);
+			if(m === false) return false; // doesnt match
 			return macro_match_iter(cdr(a), cdr(b), output);
 		}
 		else if (car(a) instanceof Cons && !(car(b) instanceof Cons)) return false;
@@ -638,7 +639,7 @@ var macro_expand = function(macro, exps){
 	return null;
 }
 
-var compiler = function(l, vt, macros)
+var compiler = function(l, vt, macros, tail_call_flag)
 {
 	if(l === null)
 	{
@@ -733,7 +734,7 @@ var compiler = function(l, vt, macros)
 			var v = cadr(l);
 			// check integer float string null
 			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
-				return compiler(v, vt, macros);
+				return compiler(v, vt, macros, tail_call_flag);
 			else if (v instanceof Cons) // pair
 			{
 				var quote_list = function(l)
@@ -745,13 +746,13 @@ var compiler = function(l, vt, macros)
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
 	                return cons("cons", cons(cons("quote", cons(v, null)),  cons(quote_list(cdr(l)), null)));
 	            }
-	            return compiler(quote_list(v), vt, macros);
+	            return compiler(quote_list(v), vt, macros, tail_call_flag);
 			}
 			// symbol/string
 			else if(v[0]!='"')
 			{
 				v = '"'+v+'"'
-				return compiler(v, vt, macros);
+				return compiler(v, vt, macros, tail_call_flag);
 			}
 			return;
 		}
@@ -761,7 +762,7 @@ var compiler = function(l, vt, macros)
 			// check integer
 			// check integer float string null
 			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
-				return compiler(v, vt, macros);
+				return compiler(v, vt, macros, tail_call_flag);
 			else if (v instanceof Cons) // pair
 			{
 				var quasiquote = function(l)
@@ -780,13 +781,13 @@ var compiler = function(l, vt, macros)
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
 	                return cons("cons", cons( cons("quote", cons(v, null)), cons(quasiquote(cdr(l)), null)));
 	            }
-	            return compiler(quasiquote(v), vt, macros);
+	            return compiler(quasiquote(v), vt, macros, tail_call_flag);
 			}
 			// symbol/string
 			else if(v[0]!='"')
 			{
 				v = '"'+v+'"'
-				return compiler(v, vt, macros);
+				return compiler(v, vt, macros, tail_call_flag);
 			}
 			return ;
 		}
@@ -802,7 +803,8 @@ var compiler = function(l, vt, macros)
 				var lambda = cons("lambda", cons(args, cddr(l)));
 				return compiler(cons("def", cons(var_name, cons(lambda, null))),
 								vt,
-								macros);
+								macros,
+								tail_call_flag);
 			}
  			// check whether variable already defined
 			for(var i = vt.length - 1; i >= 0; i--){
@@ -826,7 +828,7 @@ var compiler = function(l, vt, macros)
 			vt[vt.length - 1].push(variable_name);
 
 			// compile value
-			compiler(variable_value, vt, macros);
+			compiler(variable_value, vt, macros, tail_call_flag);
 
 			// add instruction
 			INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
@@ -847,7 +849,7 @@ var compiler = function(l, vt, macros)
 			}
 			else
 			{
-				compiler(variable_value, vt, macros)// compile value
+				compiler(variable_value, vt, macros, tail_call_flag)// compile value
 			 	INSTRUCTIONS.push( SET << 12 | (0x0FFF & index[0])); // frame index
 			 	INSTRUCTIONS.push(0x0000FFFF & index[1]); // value index
 			 	return;
@@ -864,19 +866,19 @@ var compiler = function(l, vt, macros)
 			else
 			    alter = cadddr(l);
 
-			compiler(test, vt, macros); // compile test
+			compiler(test, vt, macros, false); // compile test, the test is not tail call
 			var index1 = INSTRUCTIONS.length;
 			// push test, but now we don't know jump steps
 			INSTRUCTIONS.push(0x0000); // jump over consequence
 
-			compiler(conseq, vt, macros); // compiler consequence;
+			compiler(conseq, vt, macros, tail_call_flag); // compiler consequence;
 			var index2 = INSTRUCTIONS.length;
 			INSTRUCTIONS.push(0x0000); // jump over alternative
 
 			var jump_steps = index2 - index1 + 1;
 			INSTRUCTIONS[index1] = (TEST << 12) | jump_steps;
 
-			compiler(alter, vt, macros); // compiler alternative;
+			compiler(alter, vt, macros, tail_call_flag); // compiler alternative;
 			var index3 = INSTRUCTIONS.length;
 			jump_steps = index3 - index2;
 			INSTRUCTIONS[index2] = (JMP << 12) | jump_steps;
@@ -884,7 +886,7 @@ var compiler = function(l, vt, macros)
 		}
 		else if (tag === "begin") // begin
 		{
-			compiler_begin(cdr(l), vt, macros);
+			compiler_begin(cdr(l), vt, macros, tail_call_flag);
 			return;
 		}
 		// (let [a 1 b 2] body)
@@ -913,12 +915,12 @@ var compiler = function(l, vt, macros)
 				if(!already_defined){
 					var_index = vt_[vt_.length - 1].length;
 					vt_[vt_.length - 1].push(var_name);
-					compiler(var_val, vt_, macros);
+					compiler(var_val, vt_, macros, tail_call_flag);
 					INSTRUCTIONS.push( SET << 12 | (0x0FFF & vt_.length - 1)); // frame index
 			 		INSTRUCTIONS.push(0x0000FFFF & var_index); // value index
 				}
 				else{ // var already defined
-					compiler(var_val, vt_, macros);
+					compiler(var_val, vt_, macros, tail_call_flag);
 					INSTRUCTIONS.push( SET << 12 | (0x0FFF & vt_.length - 1)); // frame index
 			 		INSTRUCTIONS.push(0x0000FFFF & var_index); // value index
 				}
@@ -952,7 +954,7 @@ var compiler = function(l, vt, macros)
 					return cons("if", cons(car(first), cons(body, cons(expand_clauses(rest), null))));
 				}
 			}
-			return compiler(expand_clauses(cond_clauses), vt, macros);
+			return compiler(expand_clauses(cond_clauses), vt, macros, tail_call_flag);
 		}
 		// (lambda (a b) ...)
 		// (lambda (a . b) ...)
@@ -1019,12 +1021,14 @@ var compiler = function(l, vt, macros)
 			var macro_name = car(expand);
 			for(var i = macros.length - 1; i >= 0; i--){
 				var frame = macros[i];
-				for(var j = frame.length - 1; j >= 0; j--){
+				for(var j = frame.length - 1; j 
+					>= 0; j--){
 					if(frame[j].macro_name === macro_name){
 						var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), null));
 						return compiler(e, 
 										vt,
-										macros);
+										macros,
+										tail_call_flag);
 					}
 				}
 			}
@@ -1044,8 +1048,8 @@ var compiler = function(l, vt, macros)
 						if(frame[j].macro_name === func){
 							return compiler(macro_expand(frame[j], cdr(l)),
 											frame[j].vt,
-											macros
-											)
+											macros,
+											tail_call_flag)
 						}
 					}
 				}
@@ -1064,13 +1068,13 @@ var compiler = function(l, vt, macros)
 			param_num = params.length;  // get param num
 			for( var i = 0; i < param_num; i++) // compile parameter from ---right to left---, now from left to right
 			{
-				compiler(params[i], vt, macros);
+				compiler(params[i], vt, macros, false); // each argument is not tail call
 				INSTRUCTIONS.push(PUSH_ARG << 12 | (i+2)); // push parameter to new frame
 			}
 
-			compiler(func, vt, macros); // compile lambda, save to accumulator
+			compiler(func, vt, macros, false); // compile lambda, save to accumulator
 
-			INSTRUCTIONS.push(CALL << 12 | ((0x0FFF & (param_num)) << 1)); // call function.
+			INSTRUCTIONS.push(CALL << 12 | ((0x0FFF & (param_num)) << 1) | tail_call_flag); // call function.
 			return;
 		}
 	}
@@ -1080,16 +1084,19 @@ var compiler_begin = function(l, vt, macros)
 {
 	while(l !== null)
 	{
-		compiler(car(l), vt, macros);
+		if(cdr(l) === null)
+			compiler(car(l), vt, macros, 1) // tail call
+		else 
+			compiler(car(l), vt, macros, 0) // not tail call;
 		l = cdr(l);
 	}
-
+	/*
 	var opcode = (INSTRUCTIONS[INSTRUCTIONS.length - 1] & 0xF000) >> 12;
 	if(opcode === CALL)
 	{
 		console.log("TAIL CALL");
 		INSTRUCTIONS[INSTRUCTIONS.length - 1] = INSTRUCTIONS[INSTRUCTIONS.length - 1] | 0x0001; // add tail call flag
-	}
+	}*/
 	return;
 }
 
@@ -1221,10 +1228,6 @@ var VM = function(env)
 			var param_num = (0x0FFE & inst) >> 1; // get param num, including return_address.
 			var tail_call_flag = (0x0001 & inst); // get tail call flag
 
-			//if(tail_call_flag){
-			//	console.log("TAIL CALL");
-			//}
-
 			var lambda = accumulator;
 
 			// console.log("LAMBDA:");
@@ -1241,6 +1244,11 @@ var VM = function(env)
 				continue;
 			}
 
+
+			if(tail_call_flag){
+				console.log("TAIL CALL");
+			}
+			
 			// user defined lambda
 			var required_param_num = lambda.param_num;
 			var required_variadic_place = lambda.variadic_place;
@@ -1320,7 +1328,8 @@ var VM = function(env)
 // var l = lexer("(if () 2 (if 3 4 5))")
 // var l = lexer("(pow 2 3)");
 // var l = lexer("(defmacro test ([a . b] [quote ~b])) (macroexpand-1 (test 3 4 5))")
-var l = lexer("(quote (a (b c) d))")
+// var l = lexer("(quote (a (b c) d))")
+var l = lexer("(def (f n result) (if (= n 0) result (f (- n 1) (* n result)))) (f 10, 1)")
 //console.log(l);
 var o = parser(l);
 //console.log(o)
