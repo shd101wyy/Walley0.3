@@ -741,7 +741,7 @@ var compiler = function(l, vt, macros)
 	                if(l == null) return null;
 	                var v = car(l);
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
-	                if(v instanceof Cons) return cons("cons", cons(cons(quote_list(v), null), cons(quote_list(cdr(l)), null)));
+	                if(v instanceof Cons) return cons("cons", cons(/*cons(*/quote_list(v)/*, null)*/, cons(quote_list(cdr(l)), null)));
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
 	                return cons("cons", cons(cons("quote", cons(v, null)),  cons(quote_list(cdr(l)), null)));
 	            }
@@ -775,7 +775,7 @@ var compiler = function(l, vt, macros)
 	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
 	                	else if (car(v) === "unquote-splice")
 	                		return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
-	                	return cons("cons", cons(cons(quasiquote(v), null), cons(quasiquote(cdr(l)), null)));
+	                	return cons("cons", cons(/*cons(*/quasiquote(v)/*, null)*/, cons(quasiquote(cdr(l)), null)));
 	                }
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
 	                return cons("cons", cons( cons("quote", cons(v, null)), cons(quasiquote(cdr(l)), null)));
@@ -1310,7 +1310,7 @@ var VM = function(env)
 // var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
 // var l = lexer("(def (test a) a) (test 12)")
-// var l = lexer("(begin (def x 12) (def y 15) x)")
+// var l = lexer("(begin (def x 12) (def y 15) x)") 
 // var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
 // var l = lexer("(def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))")
 // var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
@@ -1318,7 +1318,9 @@ var VM = function(env)
 // var l = lexer("(cond (() 2) (() 4) (else 5) )")
 // var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12) (macroexpand-1 (square 15))");
 // var l = lexer("(if () 2 (if 3 4 5))")
-var l = lexer("(pow 2 3)");
+// var l = lexer("(pow 2 3)");
+// var l = lexer("(defmacro test ([a . b] [quote ~b])) (macroexpand-1 (test 3 4 5))")
+var l = lexer("(quote (a (b c) d))")
 //console.log(l);
 var o = parser(l);
 //console.log(o)
