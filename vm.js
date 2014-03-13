@@ -1337,9 +1337,9 @@ var VM = function(env)
 // var l = lexer("(pow 2 3)");
 // var l = lexer("(defmacro test ([a . b] [quote ~b])) (macroexpand-1 (test 3 4 5))")
 // var l = lexer("(quote (a (b c) d))")
-var l = lexer("(def (f n result) (if (= n 0) result (f (- n 1) (* n result)))) (f 100 1)")
+// var l = lexer("(def (f n result) (if (= n 0) result (f (- n 1) (* n result)))) (f 100 1)")
 // var l = lexer("(if () 2 3)")
-
+var l = lexer("(defmacro defm ([macro_name p b] [defmacro ~macro_name (~p ~b)])) (defm square [x] [* ~x ~x]) (square 16)")
 //console.log(l);
 var o = parser(l);
 //console.log(o)
