@@ -1110,7 +1110,7 @@ var VM = function(env)
 	var frame_list = cons(null, null); // stack used to save frames    head frame1 frame0 tail, queue
 	while(pc !== length_of_insts)
 	{
-		// console.log(pc);
+		console.log(pc);
 		var inst = INSTRUCTIONS[pc];
 		var opcode = (inst & 0xF000) >> 12;
 		if(opcode === CONST){
@@ -1248,14 +1248,26 @@ var VM = function(env)
 			if(tail_call_flag){
 				console.log("TAIL CALL");
 			}
-			
+
 			// user defined lambda
 			var required_param_num = lambda.param_num;
 			var required_variadic_place = lambda.variadic_place;
 			var start_pc = lambda.start_pc;
-			var new_env = lambda.env.slice(0);
-			new_env.push(current_frame_pointer);
-
+			var new_env;
+			if(tail_call_flag && env.length !== 1){ // is tail call, so use current env
+				new_env = env;
+				var top_frame = new_env[new_env.length - 1];
+				for(var i = 2; i < current_frame_pointer.length; i++){ // copy arguments
+					top_frame[i] = current_frame_pointer[i];
+				}
+				current_frame_pointer = top_frame; // reset pointer
+			}
+			else{
+			 	new_env = lambda.env.slice(0);
+				new_env.push(current_frame_pointer);
+				current_frame_pointer[0] = env; // save current env to new-frame
+				current_frame_pointer[1] = pc + 1; // save pc
+			}
 			if(required_variadic_place === -1 && param_num - 1 > required_param_num){
 				console.log("ERROR: Too many parameters provided");
 				return;
@@ -1272,10 +1284,6 @@ var VM = function(env)
 			// console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
 			// console.log("START_PC " + lambda.start_pc);
 			// console.log("OLD_PC   " + (pc + 1));
-
-			current_frame_pointer[0] = env; // save current env to new-frame
-			// push return_address
-			current_frame_pointer[1] = pc + 1; // save pc
 
 			if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
 			{
@@ -1329,7 +1337,9 @@ var VM = function(env)
 // var l = lexer("(pow 2 3)");
 // var l = lexer("(defmacro test ([a . b] [quote ~b])) (macroexpand-1 (test 3 4 5))")
 // var l = lexer("(quote (a (b c) d))")
-var l = lexer("(def (f n result) (if (= n 0) result (f (- n 1) (* n result)))) (f 10, 1)")
+var l = lexer("(def (f n result) (if (= n 0) result (f (- n 1) (* n result)))) (f 100 1)")
+// var l = lexer("(if () 2 3)")
+
 //console.log(l);
 var o = parser(l);
 //console.log(o)
