@@ -512,6 +512,10 @@ var macro_match = function(a, b){
 				if(car(a).slice(1) === car(b)) return macro_match_iter(cdr(a), cdr(b), output);
 				else return false;
 			}
+			if(car(a) === "."){
+				output[cadr(a)] = b;
+				return output;
+			}
 			output[car(a)] = car(b);
 			return macro_match_iter(cdr(a), cdr(b), output);
 		}
@@ -550,8 +554,6 @@ var macro_expand_with_arg_value = function(body, t){
 var macro_expand = function(macro, exps){
 	var clauses = macro.clauses;
 	while(clauses !== null){
-		console.log(car(car(clauses)));
-		console.log(exps);
 		var match = macro_match(car(car(clauses)), exps);
 		if(match === false) {
 			clauses = cdr(clauses); continue;
@@ -878,7 +880,6 @@ var compiler = function(l, vt, macros)
 					return cons("if", cons(car(first), cons(body, cons(expand_clauses(rest), null))));
 				}
 			}
-			console.log(cdr(expand_clauses(cond_clauses)))
 			return compiler(expand_clauses(cond_clauses), vt, macros);
 		}
 		// (lambda (a b) ...)
@@ -938,6 +939,25 @@ var compiler = function(l, vt, macros)
 			if(already_defined === false){ // not defined, save macro
 				macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)));
 			}
+			return;
+		}
+		// macroexpand-1
+		else if (tag === "macroexpand-1"){
+			var expand = cadr(l);
+			var macro_name = car(expand);
+			for(var i = macros.length - 1; i >= 0; i--){
+				var frame = macros[i];
+				for(var j = frame.length - 1; j >= 0; j--){
+					if(frame[j].macro_name === macro_name){
+						var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), null));
+						return compiler(e, 
+										vt,
+										macros);
+					}
+				}
+			}
+			console.log("ERROR: macroexpand-1 invalid macro: " + macro_name);
+			INSTRUCTIONS = [];
 			return;
 		}
 		// call function
@@ -1224,7 +1244,7 @@ var VM = function(env)
 // var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
 // var l = lexer("(let [x 0 y 2 x (+ y 1)] (+ x y)) ")
 // var l = lexer("(cond (() 2) (() 4) (else 5) )")
-var l = lexer("(defmacro test ([a [b c]] (+ ~a (+ ~b ~c)))) (test 3 [4 5])");
+var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12) (macroexpand-1 (square 15))");
 // var l = lexer("(if () 2 (if 3 4 5))")
 //console.log(l);
 var o = parser(l);

@@ -179,7 +179,8 @@ RETURN
 ;; (defmacro begin2
       [[. args]  [begin ~@args]])
 
-      
+;; macroexpand-1
+(macroexpand-1 (square 12)) => (quote (* 12 12))
  ```
 
 
