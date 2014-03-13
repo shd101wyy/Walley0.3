@@ -161,13 +161,55 @@ RETURN
 (yiyi:set-age 20)   ;; set age to 20
 (display (yiyi:get-age)) ;; print 20
 
-
-
-
-
-
-
-
-
-
 ```
+----------------------------------------------------------------
+```
+;; define macro
+(defmacro square 
+	[[x] [* ~x ~x]])
+(square 12) => (* x x)
+
+;; pattern match
+(defmacro test
+	[[#in x] [* ~x ~x]]  ;; # means match constant
+	[[x] [* ~x ~x ~x]])
+(test in 15) => (* 15 15)
+(test 15)    => (* 15 15 15)
+
+;; (defmacro begin2
+      [[. args]  [begin ~@args]])
+
+      
+ ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
