@@ -163,6 +163,7 @@ RETURN
 
 ```
 ----------------------------------------------------------------
+#### macro
 ```
 ;; define macro
 (defmacro square 
@@ -179,12 +180,21 @@ RETURN
 ;; (defmacro begin2
       [[. args]  [begin ~@args]])
 
+;; define one macro
+(defm square [x] [* ~x ~x]) 
+(square 15) => (* 15 15)
+
 ;; macroexpand-1
 (macroexpand-1 (square 12)) => (quote (* 12 12))
  ```
 
 
+------------------------------------------------------------------
+#### dictionary
+```
+Dictionary in toy language is implemented using AVL tree
 
+```
 
 
 

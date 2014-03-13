@@ -921,6 +921,9 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 			}
 			else
 			{
+				if(variable_value instanceof Cons && car(variable_value) === "lambda"){
+					parent_func_name = variable_name;  // set parent_func_name
+				}
 				compiler(variable_value, vt, macros, tail_call_flag, parent_func_name)// compile value
 			 	INSTRUCTIONS.push( SET << 12 | (0x0FFF & index[0])); // frame index
 			 	INSTRUCTIONS.push(0x0000FFFF & index[1]); // value index

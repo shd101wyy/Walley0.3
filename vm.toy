@@ -128,12 +128,6 @@
      ;; insert
 
      (def (insert_ node k value parent left?)
-	  (display-string 'Enter-Here)
-	  (display-string (null? root))
-	  (display-string k)
-	  (display-string value)
-	  (display-string (make-root k value))
-
 	  (if (null? root) ;; root doesn't exist
 	      (set! root (make-root k value)) ;; set root	
 	      (if (null? node) ;; node doesn't exist
@@ -233,15 +227,23 @@
 	  )
      (def (remove k) (remove_ k root))
      
-     (lambda [msg] 
-       (cond [(string=? msg 'root) root]
-	     [(string=? msg 'set)
-	      (lambda [key value] (insert key value))]
-	     [(string=? msg 'get)
-	      (lambda [key] (find key))]
-	     [(string=? msg 'test)
-	      'test]
-	     [else 'ERROR]))
+     (lambda [msg arg] 
+       (cond [(string=? msg 'remove)
+	      (lambda [arg] (remove arg))]
+	     [(string=? msg 'builtin-properties)
+	      '(remove builtin-properties)]
+	     [(null? arg)
+	      (find msg)]
+	     [else (insert msg arg)]
+	;;[(string=? msg 'root) root]
+	;;[(string=? msg 'get)      ;; get    
+	;; (lambda [key] (find key))]
+	;;[(string=? msg 'set)      ;; set
+	;; (lambda [key value] (insert key value))]
+	;;[(string=? msg 'remove)   ;; remove
+	;; (lambda [key] (remove key))]
+	;;[else 'ERROR])
+	))
      )
 ;;(def x (make-avl-tree))
 ;;(x 'a 5)
@@ -261,21 +263,20 @@
 	      (lambda [a] (get node a))]
 	     [(string=? msg 'set)
 	      (lambda [a b] (set node a b))]
-	     [else ()])))
-;;(def x (test))
-;;(x:set 0 12)
-;;(x:get 0)
+	     [else ()]))
+     )
 
-(def a (make-avl-tree))
-(a:set 'a 12)
-(a 'test)
-(a 'root)
-(a:get 'a)
-
-
-
-
+;; create dictionary
+(def (dictionary . arg)
+     (def output (make-avl-tree))
+     (def (dict-iter arg)
+	  (if (null? arg)
+	      output
+	      (begin (output (car arg) (car (cdr arg)))
+		     (dict-iter (cdr (cdr arg))))))
+     (dict-iter arg))
 
 
-
+(def (factorial n) (if (= n 0) 1 (* n (factorial (- n 1)))))
+(factorial 120)
 
