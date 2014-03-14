@@ -9,7 +9,19 @@
 (defm while [arg . body]
   (let [__t (lambda [] (if ~arg (begin ~@body (__t))  () ))]
     (__t)))
-
+;; check variable type
+(def (typeof n)
+     (cond [(int? n)
+	    'int]
+	   [(float? n)
+	    'float]
+	   [(string? n)
+	    'string]
+	   [(lambda? n)
+	    'lambda]
+	   [(vector? n)
+	    'vector]
+	   [else (n:type)]))
 ;;(def n 0)
 ;;(while (< n 10) (display-string n) (set! n (+ n 1)))
 
@@ -39,6 +51,30 @@
   [() ""]
   [(a) ~a]
   [(a . b) (string-append ~a (string-append ~@b))])
+;; >
+(defmacro > 
+  [(a b) (> ~a ~b)]
+  [(a . b) (> ~a (> ~@b))])
+;; <
+(defmacro <
+  [(a b) (< ~a ~b)]
+  [(a . b) (< ~a (< ~@b))])
+;; <=
+(defmacro <=
+  [(a b) (<= ~a ~b)]
+  [(a . b) (<= ~a (<= ~@b))])
+;; >=
+(defmacro <=
+  [(a b) (<= ~a ~b)]
+  [(a . b) (<= ~a (<= ~@b))])
+;; =
+(defmacro =
+  [(a b) (= ~a ~b)]
+  [(a . b) (= ~a (= ~@b))])
+;; eq?
+(defmacro eq?
+  [(a b) (eq? ~a ~b)]
+  [(a . b) (eq? ~a (eq? ~@b))])
 
 ;; macros used to extend + - * /
 (defmacro +
@@ -312,6 +348,12 @@
 	      (begin (output (car arg) (car (cdr arg)))
 		     (dict-iter (cdr (cdr arg))))))
      (dict-iter arg))
+
+;; lambda->string
+(def (lambda->string a)
+     "<lambda>")
+;; int->string   builtin
+;; float->string buitlin
 ;; vector to string
 (def (vector->string v)
      (def (vector-string-iter v count output-str)
@@ -319,16 +361,21 @@
 	      (string-append output-str "]")
 	      (let [a (vector-ref v count)]
 		(cond [(int? a) 
-		       (vector-string-iter v (+ count 1) (string-append output-str " " (int->string a)))]
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (int->string a)))]
 		      [(float? a)
-		       (vector-string-iter v (+ count 1) (string-append output-str " " (float->string a)))]
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (float->string a)))]
 		      [(vector? a)
-		       (vector-string-iter v (+ count 1) (string-append output-str " " (vector->string a)))]
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (vector->string a)))]
 		      [(string? a)
-		       (vector-string-iter v (+ count 1) (string-append output-str " " a))]
-		      [else 'ERROR-vector->string]
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") a))]
+		      [(lambda? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (lambda->string a)))]
+		      [else 
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (a:->string)))]
 		    ))))
      (vector-string-iter v 0 "#["))
+
+
 
 ;; library that add ratio support
 (def (install-ratio-library)
@@ -337,28 +384,51 @@
      (def o_- -)
      (def o_* *)
      (def o_/ /)
+     (def o_= =)
+     (def o_< <)
+     (def o_> >)
+     (def o_<= <=)
+     (def o_>= >=)
+     (def o_->float ->float)
      ;; %
-     (def (% n0 n1) (let [result (->int (o_/ n0 n1))]  (o_- n0 (o_* result n1))))
+     (def (% n0 n1) (if (let [result (->int (o_/ n0 n1))]  (o_- n0 (o_* result n1))))
      
      ;; ratio math library
      (def (gcd a b)
-	  (if (= b 0)
-	      a
-	      (gcd b (% a b))))
+	  (def (gcd-iter a b)
+	       (if (o_= b 0) a (gcd-iter b (% a b))))
+	  (if (o_= b 1) 1 (gcd-iter a b))
+	  ;;(if (o_= b 0)
+	  ;;    a
+	  ;;    (gcd b (% a b)))
+	  )
      ;; create ratio
      (def (make-ratio numer denom)
+	  (display-string 'numer)
+	  (display-string numer)
+	  (display-string 'denom)
+	  (display-string denom)
 	  (def g (gcd numer denom))
+	  (display-string g)
 	  (def n (o_/ numer g))
 	  (def d (o_/ denom g))
 	  (if (= d 1) 
 	      n ;; return int
-	      {'n n 'd d 'type 'ratio}))
+	      {'n n 
+	       'd d 
+	       'type 'ratio 
+	       '->string (lambda [] (string-append (int->string n) "/" (int->string d)))}
+	      ))
+     ;; ->float also support change ratio to string
+     (set! ->float (lambda [n] (if (string=? (typeof n) 'ratio)
+				   (o_->float (o_/ n:n n:d))
+				   (o_->float n))))
      ;; get denominator
      (def (denom n)
-	  (if (int? n) 1 n:d))
+	  (if (int? n) 1  (if (float? n) 1 n:d)))
      ;; get numerator
      (def (numer n)
-	  (if (int? n) n n:n))
+	  (if (int? n) n (if (float? n) n n:n)))
      ;; fraction arithematic
      (def (add-rat x y)
 	  (make-ratio (o_+ (o_* (numer x) (denom y))
@@ -368,16 +438,50 @@
 	  (make-ratio (o_- (o_* (numer x) (denom y))
 			   (o_* (numer y) (denom x)))
 		      (o_* (denom x) (denom y))))
-     (def (mul_rat x y)
+     (def (mul-rat x y)
 	  (make-ratio (o_* (numer x) (numer y))
 		      (o_* (denom x) (denom y))))
-     (def (div_rat x y)
+     (def (div-rat x y)
 	  (make-ratio (o_* (numer x) (denom y))
 		      (o_* (denom x) (numer y))))
-     
-     (def x (add-rat (make-ratio 3 4) (make-ratio 5 6)))
-     x:n
-     x:d
+     (set! + (lambda [a b]
+	       (if (or (float? a) (float? b)) ;; a or b is float
+		   (o_+ (o_/ (numer a) (denom a))
+			(o_/ (numer b) (denom b)))
+		   (add-rat a b))))
+     (set! - (lambda [a b]
+	       (if (or (float? a) (float? b)) ;; a or b is float
+		   (o_- (o_/ (numer a) (denom a))
+			(o_/ (numer b) (denom b)))
+		   (sub-rat a b))))
+     (set! * (lambda [a b]
+	       (display-string '*)
+	       (display-string a)
+	       (display-string b)
+	       (display-string (typeof a))
+	       (display-string (typeof b))
+	       (display-string (o_* (o_/ (numer a) (denom a)) (o_/ (numer b) (denom b))))
+	       (display-string (or (float? a) (float? b)))
+	       (display-string '===========)
+	       (if (or (float? a) (float? b)) ;; a or b is float
+		   (o_* (o_/ (numer a) (denom a))
+			(o_/ (numer b) (denom b)))
+		   (mul-rat a b))))
+     (set! / (lambda [a b]
+	       (if (or (float? a) (float? b)) ;; a or b is float
+		   (o_/ (o_/ (numer a) (denom a))
+			(o_/ (numer b) (denom b)))
+		   (div-rat a b))))
+     (set! = (lambda [a b]
+	       (o_= (->float a) (->float b))))
+     (set! > (lambda [a b]
+	       (o_> (->float a) (->float b))))
+     (set! < (lambda [a b]
+	       (o_< (->float a) (->float b))))
+     (set! >= (lambda [a b]
+	       (o_>= (->float a) (->float b))))
+     (set! <= (lambda [a b]
+	       (o_<= (->float a) (->float b))))
      )
 
 
@@ -385,4 +489,14 @@
 test:b
 (test:add test:a test:b)
 (install-ratio-library)
-(vector->string #(1 2 3))
+(vector->string #(1 2 3 3.4 (lambda [a b] a)))
+(def x (/ 3 12))
+(x:->string)
+;(def (factorial n) (display-string n) (if (= n 0) 1 (* n (factorial (- n 1)))))
+;(def (factorial n result) (display-string '@@) (display-string n) (display-string result) (display-string (* n result)) (display-string '@@@) (if (= n 0) result (factorial (- n 1) (* result n))))
+;(def x (factorial 22 1))
+;(= (/ 0 2) 0)
+
+
+
+

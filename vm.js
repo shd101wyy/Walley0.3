@@ -131,15 +131,24 @@ var lexer_iter = function(input_string, index)
 		}
 		return lexer_iter(input_string, i);
 	}
+	if(input_string[index] === '"'){
+		var i = index + 1;
+		while(i != input_string.length){
+			if(input_string[i] == '"') break;
+			i++
+		}
+	    return cons(input_string.slice(index, i + 1), 
+						  lexer_iter(input_string, i + 1));
+	}
 	// get number symbol
 	var end = index;
 	while(true)
 	{
-		if (end == input_string.length
-			|| input_string[end] == " " || input_string[end] == "\n" || input_string[end] == "\t" || input_string[end] == ","
-			|| input_string[end] == ")" || input_string[end] == "("
-			|| input_string[end] == "]" || input_string[end] == "[" || input_string[end] == "{" || input_string[end] == "}"
-			|| input_string[end] == "'" || input_string[end] == "`" || input_string[end] == "~" || input_string[end] == ";")
+		if (end === input_string.length
+			|| input_string[end] === " " || input_string[end] === "\n" || input_string[end] === "\t" || input_string[end] === ","
+			|| input_string[end] === ")" || input_string[end] === "("
+			|| input_string[end] === "]" || input_string[end] === "[" || input_string[end] === "{" || input_string[end] === "}"
+			|| input_string[end] === "'" || input_string[end] === "`" || input_string[end] === "~" || input_string[end] === ";")
 			break;
 		end+=1;
 	}
