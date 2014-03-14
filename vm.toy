@@ -378,7 +378,7 @@
 
 
 ;; library that add ratio support
-(def (install-ratio-library)
+ (def (install-ratio-library)
      ;; backup + - * /
      (def o_+ +)
      (def o_- -)
@@ -391,7 +391,7 @@
      (def o_>= >=)
      (def o_->float ->float)
      ;; %
-     (def (% n0 n1) (if (let [result (->int (o_/ n0 n1))]  (o_- n0 (o_* result n1))))
+     (def (% n0 n1) (let [result (->int (o_/ n0 n1))]  (o_- n0 (o_* result n1))))
      
      ;; ratio math library
      (def (gcd a b)
@@ -404,12 +404,7 @@
 	  )
      ;; create ratio
      (def (make-ratio numer denom)
-	  (display-string 'numer)
-	  (display-string numer)
-	  (display-string 'denom)
-	  (display-string denom)
 	  (def g (gcd numer denom))
-	  (display-string g)
 	  (def n (o_/ numer g))
 	  (def d (o_/ denom g))
 	  (if (= d 1) 
@@ -455,14 +450,6 @@
 			(o_/ (numer b) (denom b)))
 		   (sub-rat a b))))
      (set! * (lambda [a b]
-	       (display-string '*)
-	       (display-string a)
-	       (display-string b)
-	       (display-string (typeof a))
-	       (display-string (typeof b))
-	       (display-string (o_* (o_/ (numer a) (denom a)) (o_/ (numer b) (denom b))))
-	       (display-string (or (float? a) (float? b)))
-	       (display-string '===========)
 	       (if (or (float? a) (float? b)) ;; a or b is float
 		   (o_* (o_/ (numer a) (denom a))
 			(o_/ (numer b) (denom b)))
@@ -492,9 +479,9 @@ test:b
 (vector->string #(1 2 3 3.4 (lambda [a b] a)))
 (def x (/ 3 12))
 (x:->string)
-;(def (factorial n) (display-string n) (if (= n 0) 1 (* n (factorial (- n 1)))))
-;(def (factorial n result) (display-string '@@) (display-string n) (display-string result) (display-string (* n result)) (display-string '@@@) (if (= n 0) result (factorial (- n 1) (* result n))))
-;(def x (factorial 22 1))
+;(def (factorial n)  (if (= n 0) 1 (* n (factorial (- n 1)))))
+(def (factorial n result)  (if (= n 0) result (factorial (- n 1) (* result n))))
+(def x (factorial 120 1))
 ;(= (/ 0 2) 0)
 
 
