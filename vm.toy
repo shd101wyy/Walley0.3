@@ -5,10 +5,63 @@
 (defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))
 ;; list
 (def (list . arg) arg)
+;; while
+(defm while [arg . body]
+  (let [__t (lambda [] (if ~arg (begin ~@body (__t))  () ))]
+    (__t)))
+
+;;(def n 0)
+;;(while (< n 10) (display-string n) (set! n (+ n 1)))
+
+;; defs
+;; (defs a 12 b 15) => (begin (def a 12) (def b 15))
+(defmacro defs 
+  [() ()]
+  [(a b) (def ~a ~b)]
+  [(a b . arg) (begin (def ~a ~b) (defs ~@arg))]
+  )
+;; (let [a 12 b 15] (+ a b)) => ((lambda [] (def a 12) (def b 15) (+ a b)))
+(defm let [var_vals . body]
+  ((lambda [] (defs ~@var_vals) (begin ~@body))))
+
 ;; and
-(defm and [a b] (if ~a (if ~b ~b '()) '()))
+(defmacro and 
+  [() 'true]
+  [(a) (if  ~a  ~a ())]
+  [(a . b) (if ~a  (and ~@b) ())])
 ;; or
+(defmacro or
+  [() ()]
+  [(a) (if ~a ~a ())]
+  [(a . b) (if ~a ~a (or ~@b))])
+;; string-append
+(defmacro string-append
+  [() ""]
+  [(a) ~a]
+  [(a . b) (string-append ~a (string-append ~@b))])
+
+;; macros used to extend + - * /
+(defmacro +
+  [() 0]
+  [(a) ~a]
+  [(a . b) (+ ~a (+ ~@b))])
+
+(defmacro -
+  [(a) (- 0 ~a)]
+  [(a . b) (- ~a (+ ~@b))])
+
+(defmacro * 
+  [() 1]
+  [(a) ~a]
+  [(a . b) (* ~a (* ~@b))])
+
+(defmacro / 
+  [(a) (/ 1 a)]
+  [(a . b) (/ ~a (* ~@b))])
+
+
 (defm or [a b] (if ~a ~a (if ~b ~b '())))
+;; avl tree
 (def (make-avl-tree)
      ;; getter
      (defm key [node] [vector-ref ~node 0])
@@ -128,6 +181,7 @@
      ;; insert
 
      (def (insert_ node k value parent left?)
+	  ;;(display-string (null? node))
 	  (if (null? root) ;; root doesn't exist
 	      (set! root (make-root k value)) ;; set root	
 	      (if (null? node) ;; node doesn't exist
@@ -146,7 +200,8 @@
 					    node
 					    #t)
 				   (balance node))
-				 (begin ;; right  
+				 (begin ;; right 
+				   ;;(display-string 'RIGHT)
 				   (insert_ (right node)
 					    k
 					    value
@@ -227,14 +282,15 @@
 	  )
      (def (remove k) (remove_ k root))
      
+     ;; return value
      (lambda [msg arg] 
-       (cond [(string=? msg 'remove)
+       (cond [(string=? msg 'remove)            ;; remove key
 	      (lambda [arg] (remove arg))]
-	     [(string=? msg 'builtin-properties)
+	     [(string=? msg 'builtin-properties) ;; get builtin-properties
 	      '(remove builtin-properties)]
-	     [(null? arg)
+	     [(null? arg)                       ;; ref key
 	      (find msg)]
-	     [else (insert msg arg)]
+	     [else (insert msg arg)]            ;; set value
 	;;[(string=? msg 'root) root]
 	;;[(string=? msg 'get)      ;; get    
 	;; (lambda [key] (find key))]
@@ -245,28 +301,9 @@
 	;;[else 'ERROR])
 	))
      )
-;;(def x (make-avl-tree))
-;;(x 'a 5)
-;;(x 'a)
-
-
-(def (test)
-     (def node #(1 2 3))
-     (defm set [node index value]
-               [vector-set! ~node ~index ~value])
-     (defm get [node index]
-               [vector-ref ~node ~index])
-     (lambda [msg]
-       (cond [(string=? msg 'node)
-	      node]
-	     [(string=? msg 'get)
-	      (lambda [a] (get node a))]
-	     [(string=? msg 'set)
-	      (lambda [a b] (set node a b))]
-	     [else ()]))
-     )
 
 ;; create dictionary
+;; using avl tree
 (def (dictionary . arg)
      (def output (make-avl-tree))
      (def (dict-iter arg)
@@ -275,8 +312,77 @@
 	      (begin (output (car arg) (car (cdr arg)))
 		     (dict-iter (cdr (cdr arg))))))
      (dict-iter arg))
+;; vector to string
+(def (vector->string v)
+     (def (vector-string-iter v count output-str)
+	  (if (= count (vector-length v))
+	      (string-append output-str "]")
+	      (let [a (vector-ref v count)]
+		(cond [(int? a) 
+		       (vector-string-iter v (+ count 1) (string-append output-str " " (int->string a)))]
+		      [(float? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str " " (float->string a)))]
+		      [(vector? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str " " (vector->string a)))]
+		      [(string? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str " " a))]
+		      [else 'ERROR-vector->string]
+		    ))))
+     (vector-string-iter v 0 "#["))
+
+;; library that add ratio support
+(def (install-ratio-library)
+     ;; backup + - * /
+     (def o_+ +)
+     (def o_- -)
+     (def o_* *)
+     (def o_/ /)
+     ;; %
+     (def (% n0 n1) (let [result (->int (o_/ n0 n1))]  (o_- n0 (o_* result n1))))
+     
+     ;; ratio math library
+     (def (gcd a b)
+	  (if (= b 0)
+	      a
+	      (gcd b (% a b))))
+     ;; create ratio
+     (def (make-ratio numer denom)
+	  (def g (gcd numer denom))
+	  (def n (o_/ numer g))
+	  (def d (o_/ denom g))
+	  (if (= d 1) 
+	      n ;; return int
+	      {'n n 'd d 'type 'ratio}))
+     ;; get denominator
+     (def (denom n)
+	  (if (int? n) 1 n:d))
+     ;; get numerator
+     (def (numer n)
+	  (if (int? n) n n:n))
+     ;; fraction arithematic
+     (def (add-rat x y)
+	  (make-ratio (o_+ (o_* (numer x) (denom y))
+			   (o_* (numer y) (denom x)))
+		      (o_* (denom x) (denom y))))
+     (def (sub-rat x y)
+	  (make-ratio (o_- (o_* (numer x) (denom y))
+			   (o_* (numer y) (denom x)))
+		      (o_* (denom x) (denom y))))
+     (def (mul_rat x y)
+	  (make-ratio (o_* (numer x) (numer y))
+		      (o_* (denom x) (denom y))))
+     (def (div_rat x y)
+	  (make-ratio (o_* (numer x) (denom y))
+		      (o_* (denom x) (numer y))))
+     
+     (def x (add-rat (make-ratio 3 4) (make-ratio 5 6)))
+     x:n
+     x:d
+     )
 
 
-(def (factorial n) (if (= n 0) 1 (* n (factorial (- n 1)))))
-(factorial 120)
-
+(def test {'a 12 'b 15 'add (lambda [a b] (+ a b))})
+test:b
+(test:add test:a test:b)
+(install-ratio-library)
+(vector->string #(1 2 3))

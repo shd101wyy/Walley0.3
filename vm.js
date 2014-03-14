@@ -289,12 +289,13 @@ var VARIABLE_TABLE = [
 	// frame 0
 	["cons", "car", "cdr", "vector", "vector-ref", "vector-set!",
 	 "vector-length", "vector?", "+", "-", "*", "/", "=",
-     "<", ">", "<=", ">=", "eq?", "string?", "integer?",
+     "<", ">", "<=", ">=", "eq?", "string?", "int?",
      "float?", "pair?", "null?", 
      "string<?", "string=?", "string-ref", "string-slice", "string-length",
      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
-     "tan", "tanh", "display-string"
+     "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
+     "string-append", "lambda?"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -413,7 +414,7 @@ var ENVIRONMENT =
 		return null;
 	    }),
 	bpp(function(stack_param)
-	    { // 19 integer?
+	    { // 19 int?
 		if(stack_param[0] instanceof Integer)
 		    return "true";
 		return null;
@@ -533,7 +534,33 @@ var ENVIRONMENT =
 	    // 46 display-string
 	    console.log(stack_param[0]);
 	    return null;
-	}) 
+	}),
+	bpp(function(stack_param){
+	    // 47 ->int
+	   return new Integer(parseInt(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 48 ->float
+	    return new Float(parseFloat(stack_param[0].num));
+	}),
+	bpp(function(stack_param){
+	    // 49 int->string
+	   return "" + stack_param[0].num;
+	}),
+	bpp(function(stack_param){
+	    // 50 float->string
+	    return "" + stack_param[0].num;
+	}), 
+	bpp(function(stack_param){
+	    // 51 string-append
+	    return stack_param[0] + stack_param[1];
+	}),
+	bpp(function(stack_param){
+	    // 52 lambda?
+	    if(stack_param[0] instanceof Lambda || stack_param[0] instanceof Builtin_Primitive_Procedure)
+	    	return "true";
+	    return null;
+	})
 	]
 ];
 
@@ -567,7 +594,7 @@ var list_to_array = function(l) // convert list to array
 */
 var list_append = function(a, b){
 	if(a === null) return b;
-	return cons(car(a), append(cdr(a), b));
+	return cons(car(a), list_append(cdr(a), b));
 }
 /*
 	check whether macro_match
@@ -877,17 +904,6 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 								tail_call_flag,
 								parent_func_name);
 			}
- 			// check whether variable already defined
-			for(var i = vt.length - 1; i >= 0; i--){
-				var frame = vt[i];
-				for(var j = frame.length - 1; j >= 0; j--){
-					if(variable_name === frame[j]){
-						INSTRUCTIONS = []; // clear instructions
-						console.log("ERROR: variable already defined");
-						return;
-					}
-				}
-			}
 
 			var variable_value;
 			if(cddr(l) === null)
@@ -895,8 +911,23 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 			else
 			 	variable_value = caddr(l);
 
-			 // add var name to variable table
-			vt[vt.length - 1].push(variable_name);
+ 			// check whether variable already defined
+ 			var variable_existed = false;
+ 			var variable_index = -1;
+			var frame = vt[vt.length - 1];
+			for(var j = frame.length - 1; j >= 0; j--){
+				if(variable_name === frame[j]){
+					//INSTRUCTIONS = []; // clear instructions
+					//console.log("ERROR: variable: "+variable_name+" already defined");
+					//return;
+					variable_index = j 
+					variable_existed = true;
+					break;
+				}
+
+			}
+			if(variable_existed === false)
+				vt[vt.length - 1].push(variable_name); // add var name to variable table
 			if(variable_value instanceof Cons && car(variable_value) === "lambda"){
 				parent_func_name = variable_name;  // set parent_func_name
 			}
@@ -905,7 +936,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 
 			// add instruction
 			INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
-			INSTRUCTIONS.push( 0x0000FFFF & vt[vt.length - 1].length - 1); // value index
+			INSTRUCTIONS.push( 0x0000FFFF & ( variable_existed ? variable_index : vt[vt.length - 1].length - 1)); // value index
 			return;
 		}
 		// set!
@@ -970,6 +1001,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 			return;
 		}
 		// (let [a 1 b 2] body)
+		/*
 		else if (tag === "let")
 		{
 			var vt_ = vt.slice(0);
@@ -1009,7 +1041,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 
 			// compile body
 			compiler_begin(body, vt_, macros, parent_func_name);
-		}
+		}*/
 		// cond
 		// (cond (t0 body0) (t1 body1) ... (else ))
 		else if (tag === "cond"){
