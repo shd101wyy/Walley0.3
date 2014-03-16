@@ -5,6 +5,11 @@
 (defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))
 ;; list
 (def (list . arg) arg)
+;; true false
+(def true 'true)
+(def false '())
+;; def not
+(def (not arg0) (if arg0 () 'true))
 ;; while
 (defm while [arg . body]
   (let [__t (lambda [] (if ~arg (begin ~@body (__t))  () ))]
@@ -48,54 +53,107 @@
 	[() ()] 
 	[(a) (if ~a ~a ())] 
 	[(a . b) (if ~a ~a (or ~@b))])
-;; string-append
+;; extend string-append so that it support variadic parameters 
 (defmacro string-append
   [() ""]
   [(a) ~a]
-  [(a . b) (string-append ~a (string-append ~@b))])
-;; >
-(defmacro > 
-  [(a b) (> ~a ~b)]
-  [(a . b) (> ~a (> ~@b))])
-;; <
-(defmacro <
-  [(a b) (< ~a ~b)]
-  [(a . b) (< ~a (< ~@b))])
-;; <=
-(defmacro <=
-  [(a b) (<= ~a ~b)]
-  [(a . b) (<= ~a (<= ~@b))])
-;; >=
-(defmacro <=
-  [(a b) (<= ~a ~b)]
-  [(a . b) (<= ~a (<= ~@b))])
-;; =
-(defmacro =
-  [(a b) (= ~a ~b)]
-  [(a . b) (= ~a (= ~@b))])
-;; eq?
-(defmacro eq?
-  [(a b) (eq? ~a ~b)]
-  [(a . b) (eq? ~a (eq? ~@b))])
+  [(a . b) (~string-append ~a (string-append ~@b))])
+;; now make >= <= eq? = > < support vardic param
+(set! < 
+      (let [old-< <
+	    <-iter (lambda [args cur]
+		     (if (null? args) true
+			 (if (old-< cur (car args))
+			     (<-iter (cdr args) (car args))
+			     false)
+			 ))
+	    ]
+	(lambda [. args]
+	  (if (null? args)
+	      (display-string "Please provide arguments for <")
+	      (<-iter (cdr args) (car args))))))
+
+(set! > 
+	(let [old-> >
+	       >-iter (lambda [args cur]
+			(if (null? args) true
+			    (if (old-> cur (car args))
+				(>-iter (cdr args) (car args))
+				false)
+			    ))]
+	  (lambda [. args]
+	    (if (null? args)
+		(display-string "Please provide arguments for >")
+		(>-iter (cdr args) (car args))))))
+
+(set! eq? (let [old-eq? eq?
+		eq?-iter (lambda [args cur]
+			   (if (null? args) true
+			       (if (old-eq? cur (car args))
+				   (eq?-iter (cdr args) (car args))
+				   false)
+			       ))]	    
+	    (lambda [. args]
+	      (if (null? args)
+		  (display-string "Please provide arguments for eq?")
+		  (eq?-iter (cdr args) (car args))))))
+
+(set! = (let [old-= =
+		=-iter (lambda [args cur]
+			   (if (null? args) true
+			       (if (old-= cur (car args))
+				   (=-iter (cdr args) (car args))
+				   false)
+			       ))]	    
+	    (lambda [. args]
+	      (if (null? args)
+		  (display-string "Please provide arguments for =")
+		  (=-iter (cdr args) (car args))))))
+
+(set! <=
+	(let [old-<= <=
+	      <=-iter (lambda [args cur]
+			(if (null? args) true
+			    (if (old-<= cur (car args))
+				(<=-iter (cdr args) (car args))
+				false)
+			    ))]
+	  (lambda [. args]
+	    (if (null? args)
+		(display-string "Please provide arguments for <=")
+		(<=-iter (cdr args) (car args))))))
+
+(set! >= 
+	(let [old->= >=
+	      >=-iter (lambda [args cur]
+			(if (null? args) true
+			    (if (old->= cur (car args))
+				(>=-iter (cdr args) (car args))
+				false)
+			    ))]
+	  (lambda [. args]
+	    (if (null? args)
+		(display-string "Please provide arguments for >=")
+		(>=-iter (cdr args) (car args))))))
 
 ;; macros used to extend + - * /
 (defmacro +
   [() 0]
-  [(a) ~a]
-  [(a . b) (+ ~a (+ ~@b))])
+  [(a) ~a] 
+  [(a . b) (~+ ~a (+ ~@b))])
 
 (defmacro -
   [(a) (- 0 ~a)]
-  [(a . b) (- ~a (+ ~@b))])
+  [(a . b) (~- ~a (+ ~@b))])
 
 (defmacro * 
   [() 1]
   [(a) ~a]
-  [(a . b) (* ~a (* ~@b))])
+  [(a . b) (~* ~a (* ~@b))])
 
 (defmacro / 
   [(a) (/ 1 a)]
-  [(a . b) (/ ~a (* ~@b))])
+  [(a . b) (~/ ~a (* ~@b))])
 
 
 ;; avl tree

@@ -688,40 +688,60 @@ var macro_expand = function(macro, exps){
 	(defm test [x] [list ~x]) will also replace "list" => (test 12) => ((0 frame_index value_index) 12) 
 																		here 0 is integer, different with string
 */
-var macro_expand_with_arg_value_for_compilation = function(body, t, vt){
+var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, start_flag){
 	if(body === null) return null;
 	else if(car(body) === "unquote"){ // this place might have problem
 		if(cadr(body) in t){
 			return t[cadr(body)];
 		}
-		return body;
+		var i = vt_find(vt, cadr(body)); // search vt
+		if(i[0] === -1)
+			return body;
+		return cons(0, cons(i[0], cons(i[1], null))); // get that variable
+
 	}
 	else if ((car(body) instanceof Cons) && (car(car(body)) === "unquote-splice")){
 		var n = cadr( car(body) );
 		if(n in t){
 			var v = t[n];
 			return list_append(v, 
-							   macro_expand_with_arg_value(cdr(body), t));
+							   macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 		}
 		return cons(body,
-					macro_expand_with_arg_value(cdr(body), t));
+					macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
 	else if(car(body) instanceof Cons){ // cons
-		return cons(macro_expand_with_arg_value(car(body), t), 
-				    macro_expand_with_arg_value(cdr(body), t));
+		return cons(macro_expand_with_arg_value_for_compilation(car(body), t, vt, macros, true), 
+				    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
 	var v = car(body);
+	// check v in macro, if v in macro, then
+	if(/*&v[0] !== "#" &&*/ start_flag){
+		for(var i = macros.length - 1; i >= 0; i--){
+			var frame = macros[i];
+			for(var j = frame.length - 1; j >= 0; j--){
+				if(frame[j].macro_name === v){ // find macro
+					return cons(car(body),  // so dont replace
+								macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
+				}
+			}
+		}
+	}
+	//if(v[0] === "#" && start_flag){ // # means this is not macro.
+	//	v = v.slice(1);
+	//}
+
 	var i = vt_find(vt, v);
 	if(i[0] === -1) // didnt find
 		return cons(car(body), 
-					macro_expand_with_arg_value(cdr(body), t))
+					macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	else{
 		return cons(
 					cons(0, cons(i[0], cons(i[1], null))), // get that variable
-					macro_expand_with_arg_value(cdr(body), t))
+					macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
 }
-var macro_expand_for_compilation = function(macro, exps){
+var macro_expand_for_compilation = function(macro, exps, macros){
 	var clauses = macro.clauses;
 	while(clauses !== null){
 		var match = macro_match(car(car(clauses)), exps);
@@ -729,7 +749,7 @@ var macro_expand_for_compilation = function(macro, exps){
 			clauses = cdr(clauses); continue;
 		}
 		else{ // match
-			return macro_expand_with_arg_value_for_compilation(cadr(car(clauses)), match, macro.vt);
+			return macro_expand_with_arg_value_for_compilation(cadr(car(clauses)), match, macro.vt, macros, true);
 		}
 	}
 	console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
@@ -1142,8 +1162,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 			var macro_name = car(expand);
 			for(var i = macros.length - 1; i >= 0; i--){
 				var frame = macros[i];
-				for(var j = frame.length - 1; j 
-					>= 0; j--){
+				for(var j = frame.length - 1; j >= 0; j--){
 					if(frame[j].macro_name === macro_name){
 						var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), null));
 						return compiler(e, 
@@ -1168,7 +1187,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name)
 					var frame = macros[i];
 					for(var j = frame.length - 1; j >= 0; j--){
 						if(frame[j].macro_name === func){
-							return compiler(macro_expand_for_compilation(frame[j], cdr(l)),
+							return compiler(macro_expand_for_compilation(frame[j], cdr(l), macros),
 											/*frame[j].vt,*/ vt,
 											macros,
 											tail_call_flag,
