@@ -1220,11 +1220,8 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 			// tail call
 			if(tail_call_flag){
-				console.log("TAIL CALL");
-				console.log(vt);
-				console.log(functions_for_compilation);
-				// so no new frame
-				
+
+				// so no new frame				
 				var start_index = vt[vt.length - 1].length;
 				var track_index = start_index;
 				// compile parameters
@@ -1289,7 +1286,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 
 				compiler(func, vt, macros, false, parent_func_name, functions_for_compilation); // compile lambda, save to accumulator
 
-				INSTRUCTIONS.push(CALL << 12 | ((0x0FFF & (param_num)) << 1) | tail_call_flag); // call function.
+				INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num))); // call function.
 				return;
 			}
 		}
@@ -1447,9 +1444,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 		else if ( opcode === CALL) // call function
 		{
 			// console.log("CALL FUNCTION");
-			var param_num = (0x0FFE & inst) >> 1; // get param num, including return_address.
-			var tail_call_flag = (0x0001 & inst); // get tail call flag
-
+			var param_num = (0x0FFF & inst); // get param num, including return_address.
 			var lambda = accumulator;
 
 			// console.log("LAMBDA:");
@@ -1473,20 +1468,12 @@ var VM = function(INSTRUCTIONS, env, pc)
 			var start_pc = lambda.start_pc;
 			var new_env;
 			
-			if(tail_call_flag){ // is tail call, so use current env
-				new_env = env;
-				var top_frame = new_env[new_env.length - 1];
-				for(var i = 2; i < current_frame_pointer.length; i++){ // copy arguments
-					top_frame[i] = current_frame_pointer[i];
-				}
-				current_frame_pointer = top_frame; // reset pointer
-			}
-			else{
-			 	new_env = lambda.env.slice(0);
-				new_env.push(current_frame_pointer);
-				current_frame_pointer[0] = env; // save current env to new-frame
-				current_frame_pointer[1] = pc + 1; // save pc
-			}
+
+			new_env = lambda.env.slice(0);
+			new_env.push(current_frame_pointer);
+			current_frame_pointer[0] = env; // save current env to new-frame
+			current_frame_pointer[1] = pc + 1; // save pc
+
 			if(required_variadic_place === -1 && param_num - 1 > required_param_num){
 				console.log("ERROR: Too many parameters provided");
 				return;
@@ -1561,16 +1548,16 @@ var VM = function(INSTRUCTIONS, env, pc)
 // var l = lexer("(if () 2 3)")
 // var l = lexer("(defmacro defm ([macro_name p b] [defmacro ~macro_name (~p ~b)])) (defm square [x] [* ~x ~x]) (square 16)")
 // var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12)")
-//var l = lexer("(def (factorial n result) (if (= n 0) result (factorial (- n 1) (* n result)) )) (factorial 100 1)");
+var l = lexer("(def (factorial n result) (if (= n 0) result (factorial (- n 1) (* n result)) )) (factorial 150 1)");
 //var l = lexer("(def (test n) (test n)")
 //console.log(l);
-//var o = parser(l);
+var o = parser(l);
 //console.log(o)
-//var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
+var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
 
 //console.log(VARIABLE_TABLE);
 //printInstructions(INSTRUCTIONS);
-//console.log(VM(INSTRUCTIONS, ENVIRONMENT))
+console.log(VM(INSTRUCTIONS, ENVIRONMENT))
 //console.log(ENVIRONMENT);
 
 // var p = compiler_begin(o, Variable_Table);

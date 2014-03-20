@@ -89,8 +89,9 @@ NEWFRAME 0101 00000000000 0    ;; create new frame to store arguments
 PUSH_ARG 0110 000000000000  ;; push accumulator to current-frame
 				1- op index
 ----------------------------------------------------------------
-CALL     0111 00000000000 0  ;; change this later. no more need to store tail-call-flag
+CALL     0111 000000000000 
   	     1- op param-num 
+  	     ;; 在以后不需要再用到 param-num， 因为在compile的时候会做检查
   	     ;; store 1=> push current-env to new-frame index0
 				 ;; store 2=> push next inst index to new-frame index1
 	   before calling: save return_address to new frame. set that to pc after finish calling function
