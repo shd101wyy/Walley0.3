@@ -1,6 +1,16 @@
 ;; toy language
 ;; lexer and parser
-
+;; ==== macros ====
+;; and
+(defmacro and 
+  [() 'true]
+  [(a) (if  ~a  ~a ())]
+  [(a . b) (if ~a  (and ~@b) ())])
+;; or
+(defmacro or 
+	[() ()] 
+	[(a) (if ~a ~a ())] 
+	[(a . b) (if ~a ~a (or ~@b))])
 ;; Lexer
 (def (lexer-iter input-string index result)
   (def length-of-input-string (string-length input-string))
@@ -121,7 +131,7 @@
 (def lexer (lambda input-string) (lexer-iter input-string 0 '()))
 
 ;; parser
-(def parser-rest null)
+(def parser-rest '())
 (def (formatQuickAccess nc keys)
   (def (formatQuickAccess-iter keys output count)
     (if (= count (vector-length keys))
@@ -140,7 +150,70 @@
                                                   '()))
                                       '()))
                           1))
-(def (parser-special)
-  (def tag (car ))
+(def (parser-special l)
+  (def tag (car l))
+  (cond [(string=? tag "'")
+         (set! tag "quote")]
+        [(string=? tag "~")
+         (set! tag "unquote")]
+        [(string=? tag "~@")
+         (set! tag "unquote-splice")]
+        [else (set! tag "quasiquote")])
+  (set! l (cdr l))
+  (cond [(string=? (car l)  ;; list
+                   "(")
+         (cons tag
+               (cons (parser-list (cdr l) ;; list
+                                  '())))]
+        [(or (string=? (car l) "'")
+             (string=? (car l) "~")
+             (string=? (car l) "`")
+             )
+         (cons tag ;; this place might have errors
+               (cons (parser-special l)
+                     '()))]
+        [else  ;; symbol or number
+         (set! parser-rest (cdr l))
+         (cons tag 
+               (cons (parser-symbol-or-number (car l))
+                     '()))])
   )
 
+(def (parser-list l)
+  (cond [(null? l)
+         (display-string "ERROR: invalid statement; Missing )")
+         (set! parser-rest '())
+         '()]
+        [(string=? (car l)
+                   ")")
+         (set! parser-rest (cdr l))
+         '()]
+        [(string=? (car l)
+                   "(")
+         (cons (parser-list (cdr l))
+               (parser-list parser-rest))]
+        [(or (string=? (car l) "'") ;; quote, unquote, quasiquote, unquote-splice
+             (string=? (car l) "~")
+             (string=? (car l) "`")
+             (string=? (car l) "~@"))
+         (cons (parser-special l)
+               (parser-list parser-rest))]
+        [else (cons (parser-symbol-or-number (car l))
+                    (parser-list (cdr l)))]))
+;; ******* parser ****** ;; 
+(def (parser l)
+  (cond [(null? l)
+         '()]
+        [(string=? (car l)
+                   "(")
+         (cons (parser-list (cdr l))
+               (parser parser-rest))]
+        [(or (string=? (car l) "'")
+             (string=? (car l) "~")
+             (string=? (car l) "`")
+             (string=? (car l) "~@"))
+         (cons (parser-special l)
+               (parser parser-rest))]
+        [else 
+         (cons (parser-symbol-or-number (car l))
+               (parser (cdr l)))]))

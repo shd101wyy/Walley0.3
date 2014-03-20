@@ -1195,6 +1195,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		}
 		// return
 		else if (tag === "return"){
+			compiler(cdr(l) === null? null : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			INSTRUCTIONS.push(RETURN << 12);
 			return;
 		}
