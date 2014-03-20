@@ -89,8 +89,8 @@ NEWFRAME 0101 00000000000 0    ;; create new frame to store arguments
 PUSH_ARG 0110 000000000000  ;; push accumulator to current-frame
 				1- op index
 ----------------------------------------------------------------
-CALL     0111 00000000000 0
-  	     1- op param-num tail-call-flag  
+CALL     0111 00000000000 0  ;; change this later. no more need to store tail-call-flag
+  	     1- op param-num 
   	     ;; store 1=> push current-env to new-frame index0
 				 ;; store 2=> push next inst index to new-frame index1
 	   before calling: save return_address to new frame. set that to pc after finish calling function
@@ -109,8 +109,14 @@ eg:
 
 
 ----------------------------------------------------------------
-JMP 1000 000000000000 ;; jmp forward or backwards
-       inst  jmp-steps
+
+JMP 1000 0 00000000000 ;; jmp forward or backwards
+    inst neg-flag jmp-steps
+    neg-flag is ued to judge jmp-steps positive or negative
+    (because javascript 0x8<<12 | -52 still gives -52)...
+    (I wont use that in C)
+
+----------------------------------------------------------------
 TEST 1001 000000000000 ;; test value in accumulator if pass run next, otherwise jmp
        inst   jmp-steps
 
