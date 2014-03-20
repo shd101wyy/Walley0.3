@@ -1263,6 +1263,14 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 					INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
 					INSTRUCTIONS.push(i + 2) 						  // value index
 				}
+				if(functions_for_compilation.variadic_place === -1 && i < functions_for_compilation.param_num){
+					for(; i < functions_for_compilation.param_num; i++){
+						INSTRUCTIONS.push(CONST_NULL << 12);
+						// move to target index
+						INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
+						INSTRUCTIONS.push(i + 2);         	
+					}
+				}
 				// jump back
 				var start_pc = functions_for_compilation.start_pc; // start pc for that lambda
 				var jump_steps = -(INSTRUCTIONS.length - start_pc); // jump steps

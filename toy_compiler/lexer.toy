@@ -1,0 +1,146 @@
+;; toy language
+;; lexer and parser
+
+;; Lexer
+(def (lexer-iter input-string index result)
+  (def length-of-input-string (string-length input-string))
+  ;; comment ";;"
+  (def (lexer-comment input-string index)
+    (if (= index (string-length input-string))
+      index
+      (if (string=? (string-ref input-string index)
+                    "\n")
+        (+ index 1)
+        (lexer-comment input-string (+ index 1)))))
+  ;; string
+  (def (lexer-string input-string index)
+    (if (= index (string-length input-string))
+      index
+      (if (string=? (string-ref input-string index)
+                    "\"")
+        (+ index 1)
+        (lexer-string input-string (+ index 1)))))
+  ;; v
+  (def (lexer-v input-string index)
+    (def c (string-ref input-string index))
+    (if (or (= index length-of-input-string)
+            (string=? c " ")
+            (string=? c "\n")
+            (string=? c "\t")
+            (string=? c ",")
+            (string=? c ")")
+            (string=? c "(")
+            (string=? c "[")
+            (string=? c "]")
+            (string=? c "{")
+            (string=? c "}")
+            (string=? c "'")
+            (string=? c "`")
+            (string=? c "~")
+            (string=? c ";"))
+      index
+      (lexer-v input-string (+ index 1))))
+  ;; lexer 
+  (if (= index (string-length input-string))
+    '() ;; end
+    (begin (def c (string-ref input-string index))
+           (cond [(or (string=? c "(")
+                      (string=? c ")"))
+                  (lexer-iter input-string 
+                              (+ index 1)
+                              (cons c result))]
+                 [(or (string=? c " ")
+                      (string=? c "\n")
+                      (string=? c "\t")
+                      (string=? c ","))
+                  (lexer-iter input-string
+                              (+ index 1))]
+                 [(and (string=? c "#")
+                       (or (string=? (string-ref input-string (+ index 1)) "(")
+                           (string=? (string-ref input-string (+ index 1)) "[")))
+                  (cons "("
+                        (cons "vector" 
+                              (lexer-iter input-string
+                                          (+ index 2))
+                              ))
+                  ]
+                 [(string=? c "{")
+                  (cons "("
+                        (cons "dictionary"
+                              (lexer-iter input-string
+                                          (+ index 1))
+                              ))
+                  ]
+                 [(or (string=? c "[")
+                      (string=? c "("))
+                  (cons "("
+                        (lexer-iter input-string
+                                    (+ index 1)))]
+                 [(or (string=? c "]")
+                      (string=? c ")")
+                      (string=? c "}"))
+                  (cons ")" 
+                        (lexer-iter input-string
+                                    (+ index 1)))]
+                 [(and (string=? c "~")
+                       (string=? (string-ref input-string (+ index 1))
+                                 "@"))
+                  (cons "~@"
+                        (lexer-iter input-string
+                                    (+ index 2)))]                 
+                 [(or (string=? c "'")
+                      (string=? c "`")
+                      (string=? c "~"))
+                  (cons c 
+                        (lexer-iter input-string
+                                    (+ index 1)))]
+                 [(string=? c ";") ;; comment
+                  (lexer-iter input-string
+                              (lexer-comment input-string (+index 1))
+                              )
+                  ]
+                 [(string=? c "\"")
+                  (def i (lexer-string input-string 
+                                       (+ index 1)))
+                  
+                  (cons (string-slice input-string 
+                                      index
+                                      i)
+                        (lexer-iter input-string
+                                    i))]
+                 [else 
+                  (def i (lexer-v input-string
+                                  index))
+                  (cons (string-slice input-string
+                                      index
+                                      i)
+                        (lexer-iter input-string
+                                    i))]
+                 ))))
+;; lexer
+(def lexer (lambda input-string) (lexer-iter input-string 0 '()))
+
+;; parser
+(def parser-rest null)
+(def (formatQuickAccess nc keys)
+  (def (formatQuickAccess-iter keys output count)
+    (if (= count (vector-length keys))
+      output
+      (formatQuickAccess-iter keys
+                              (cons output 
+                                    (cons (cons 'quote 
+                                                (cons (vector-ref keys count)
+                                                      '()))
+                                          '()))
+                              (+ count 1))))
+  (formatQuickAccess-iter keys 
+                          (cons ns 
+                                (cons (cons 'quote
+                                            (cons (vector-ref keys 0)
+                                                  '()))
+                                      '()))
+                          1))
+(def (parser-special)
+  (def tag (car ))
+  )
+
