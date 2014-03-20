@@ -1238,7 +1238,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 						var p = null;
 						var j = param_num - 1;
 						for(; j >= i; j--){
-							p = cons(params[j], p);
+							p = cons("cons", cons(params[j], cons(p, null)));
 						}
 						compiler(p, vt, macros, false, parent_func_name, functions_for_compilation); // each argument is not tail call
 						// set to current frame
@@ -1548,16 +1548,17 @@ var VM = function(INSTRUCTIONS, env, pc)
 // var l = lexer("(if () 2 3)")
 // var l = lexer("(defmacro defm ([macro_name p b] [defmacro ~macro_name (~p ~b)])) (defm square [x] [* ~x ~x]) (square 16)")
 // var l = lexer("(defmacro square ([x] [* ~x ~x])) (square 12)")
-var l = lexer("(def (factorial n result) (if (= n 0) result (factorial (- n 1) (* n result)) )) (factorial 150 1)");
+//var l = lexer("(def (factorial n result) (if (= n 0) result (factorial (- n 1) (* n result)) )) (factorial 150 1)");
 //var l = lexer("(def (test n) (test n)")
+//var l = lexer("(cons 1 ())")
 //console.log(l);
-var o = parser(l);
+//var o = parser(l);
 //console.log(o)
-var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
+//var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
 
 //console.log(VARIABLE_TABLE);
 //printInstructions(INSTRUCTIONS);
-console.log(VM(INSTRUCTIONS, ENVIRONMENT))
+//console.log(VM(INSTRUCTIONS, ENVIRONMENT))
 //console.log(ENVIRONMENT);
 
 // var p = compiler_begin(o, Variable_Table);
