@@ -1,0 +1,79 @@
+;; toy language
+;; to_string.toy
+;; convert data type to string
+
+
+;; save space for ->string
+(def list->string ())
+(def vector->string ())
+(def lambda->string ())
+(def dictionary->string ())
+;; lambda->string
+(def (lambda->string a)
+     "<lambda>")
+;; int->string   builtin
+;; float->string buitlin
+;; vector to string
+(def (vector->string v)
+     (def (vector-string-iter v count output-str)
+	  (if (= count (vector-length v))
+	      (string-append output-str "]")
+	      (let [a (vector-ref v count)]
+		(cond [(int? a) 
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (int->string a)))]
+		      [(float? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (float->string a)))]
+		      [(vector? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (vector->string a)))]
+		      [(string? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") a))]
+		      [(pair? a)
+		      (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (list->string a)))]
+		      [(lambda? a)
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (lambda->string a)))]
+		      ;;[(? a)
+		      ;; (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (lambda->string a)))]		     
+		      [else 
+		       (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (a:->string)))]
+		    ))))
+     (vector-string-iter v 0 "#["))
+
+;; lexer has problem
+;; so here stackoverflow
+;; need to change vm.js
+;; list->string
+(def (list->string v)
+     (def (list->string-iter v output-str)
+	  (if (null? v) (string-append output-str ")")
+              (let [a (car v)]
+		 (cond [ (int? a)
+		         (list->string-iter (cdr v) (string-append output-str (int->string a) (if (null? (cdr v)) "" " ")))]
+		       [ (float? a)
+			 (list->string-iter (cdr v) (string-append output-str (float->string a) (if (null? (cdr v)) "" " ")))]
+		       [ (vector? a)
+			 (list->string-iter (cdr v) (string-append output-str (vector->string a) (if (null? (cdr v)) "" " ")))]
+		       [ (string? a)
+			 (list->string-iter (cdr v) (string-append output-str a (if (null? (cdr v)) "" " ")))]
+		       [ (pair? a)
+			 (list->string-iter (cdr v) (string-append output-str (list->string a) (if (null? (cdr v)) "" " ")))]
+		       [(lambda? a)
+			(list->string-iter (cdr v) (string-append output-str (lambda->string a) (if (null? (cdr v)) "" " ")))]
+		       [else 
+			(list->string-iter (cdr v) (string-append output-str (a:->string) (if (null? (cdr v)) "" " ")))]
+		       ))))
+    (list->string-iter v "("))
+;; (str 12 "Hello" " world") => "12Hello world"
+(def (->str arg)
+     (cond [(int? arg) (int->string arg)]
+	   [(float? arg) (float->string arg)]
+	   [(vector? arg) (vector->string arg)]
+	   [(string? arg) arg]
+	   [(pair? arg) (list->string arg)]
+	   [(lambda? arg) (lambda->string arg)]
+	   [else (arg:->string)]))
+
+(defmacro str 
+  [() ""]
+  [(a) (->str ~a)]
+  [(a . b) (~string-append (->str ~a) (str ~@b))])
+

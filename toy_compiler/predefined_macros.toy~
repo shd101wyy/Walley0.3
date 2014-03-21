@@ -1,0 +1,7 @@
+;; toy language
+;; predefined_macros.toy
+
+
+;; defm
+;; for defining single macro
+(defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))

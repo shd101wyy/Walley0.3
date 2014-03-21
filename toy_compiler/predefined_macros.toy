@@ -1,0 +1,57 @@
+;; toy language
+;; predefined_macros.toy
+
+
+;; defm
+;; for defining single macro
+;; eg (defm square [x] [* ~x ~x])
+;; (square 14) => (* 14 14)
+(defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))
+
+;; defs
+;; (defs a 12 b 15) => (begin (def a 12) (def b 15))
+(defmacro defs 
+  [() ()]
+  [(a b) (def ~a ~b)]
+  [(a b . arg) (begin (def ~a ~b) (defs ~@arg))]
+  )
+;; (let [a 12 b 15] (+ a b)) => ((lambda [] (def a 12) (def b 15) (+ a b)))
+;; create new frame
+(defm let [var_vals . body]
+  ((lambda [] (defs ~@var_vals) (begin ~@body))))
+
+;; (def a 0) (let! [a 12 b 15] '()) ; a changed to 12
+;; use current frame
+(defm let! [var_vals . body]
+  (begin (defs ~@var_vals)
+         (begin ~@body)))
+
+;; while
+(defm while [arg . body]
+  (let [__t (lambda [] (if ~arg (begin ~@body (__t))  () ))]
+    (__t)))
+
+;; extend string-append so that it support variadic parameters 
+(defmacro string-append
+  [() ""]
+  [(a) ~a]
+  [(a . b) (~string-append ~a (string-append ~@b))])
+
+;; macros used to extend + - * /
+(defmacro +
+  [() 0]
+  [(a) ~a] 
+  [(a . b) (~+ ~a (+ ~@b))])
+
+(defmacro -
+  [(a) (- 0 ~a)]
+  [(a . b) (~- ~a (+ ~@b))])
+
+(defmacro * 
+  [() 1]
+  [(a) ~a]
+  [(a . b) (~* ~a (* ~@b))])
+
+(defmacro / 
+  [(a) (/ 1 a)]
+  [(a . b) (~/ ~a (* ~@b))])

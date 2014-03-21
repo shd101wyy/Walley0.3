@@ -1,0 +1,154 @@
+;; toy language
+;; string.toy
+;; define string package
+
+
+;; string find string
+;; eg: (string-find "Hello" "H")   => 0
+;; eg: (string-find "Hello" "l" 3) => 3
+(def string-find (lambda [input-str find-string start-index end-index]
+                         (set! start-index (or start-index 0))
+                         (set! end-index (or end-index (string-length input-str)))
+                         (def input-str-length (string-length input-str))
+                         (def find-string-length (string-length find-string))
+                         (def string-find-helper
+                           (lambda [i]
+                                   ;; didn't find required string
+                                   (cond [(> (+ i find-string-length) end-index)
+                                          -1]
+                                         [(string=? (string-slice input-str i (+ i find-string-length))
+                                                    find-string)
+                                          i]
+                                         [else 
+                                          (string-find-helper (+ i 1))
+                                          ]
+                                         )
+                                   ))
+                         (string-find-helper start-index)))
+;; string replace string
+;; eg: (string-replace "Hello" "l" "a") => "Healo"
+;; eg: (string-replace "Hello" "l" "a" 3) => "Helao"
+(def string-replace (lambda [input-str replace-string with-string start-index]
+                            (def replace-string-length (string-length replace-string))
+                            (def input-str-length (string-length input-str))
+                            (set! start-index (or start-index 0))
+                            (def helper 
+                              (lambda [i output-str]
+                                      ;; didn't find so couldn't replace 
+                                      (cond [(> (+ i replace-string-length)
+                                                input-str-length)
+                                             input-str]
+                                            ;; find replace string
+                                            [(string=? (string-slice input-str 
+                                                                     i
+                                                                     (+ i 
+                                                                        replace-string-length))
+                                                       replace-string)
+                                             (string-append output-str
+                                                            with-string
+                                                            (string-slice input-str 
+                                                                          (+ i
+                                                                             replace-string-length)
+                                                                          input-str-length))]
+                                            [else (helper (+ i 1)
+                                                          (string-append output-str 
+                                                                         (string-ref input-str i)))]
+                                            )))
+                            (helper start-index "")))
+;; replace all
+;; eg: (str:replace-all "Hello" "l" "a") => "Heaao"
+;; eg: (str:replace-all "Hello" "l" "a" 3) => "Helao"
+;; eg: (str:replace-all "Hello" "l" "a" 0 3) => "Healo"
+(def string-replace-all
+  (lambda [input-str replace-string with-string start-index  end-index]
+          (set! start-index (or start-index 0))
+          (set! end-index (or end-index (string-length input-str)))
+          (def input-str-length (string-length input-str))
+          (def replace-string-length (string-length replace-string))
+          (def helper
+             (lambda [i output-str]
+                     ;; reach rend
+                     (cond [(> (+ i replace-string-length) end-index)
+                            (string-append output-str
+                                           (string-slice input-str i input-str-length))]
+                           ;; find replace string
+                           [(string=? (string-slice input-str 
+                                                    i 
+                                                    (+ i replace-string-length)) 
+                                      replace-string)
+                            (helper (+ i replace-string-length)
+                                    (string-append output-str with-string))]
+                           [else
+                            (helper (+ i 1)
+                                    (string-append output-str 
+                                                   (string-ref input-str i)))]
+                                                    )))
+          (helper start-index (string-slice input-str 0 start-index))))
+
+;; split string
+(def string-split
+  (lambda [input-string 
+           split-str
+           start-index
+           return-vector]
+          (set! start-index (or start-index 0))
+          (set! return-vector (or return-vector '()))
+          (def i start-index)
+          (def split-str-length (string-length split-str))
+          (def input-str-length (string-length input-string))
+          (def return-vector-func
+            (lambda [output i saved-string]
+                    (if (= i input-str-length) ;; end
+                      (vector-push! output saved-string)
+                      ;; not end yet
+                      (if (> (+ i split-str-length) input-str-length) 
+                        ;; couldn't split
+                        (vector-push! output
+                                      (string-append saved-string
+                                                     (string-slice input-string
+                                                                   i
+                                                                   input-str-length)))
+                        (if (string=? split-str
+                                      (string-slice input-string i (+ i split-str-length)))
+                          ;; could split
+                          (return-vector-func (vector-push! output saved-string)
+                                              (+ i (len split-str))
+                                              "")
+                          (return-vector-func output
+                                              (+ i 1)
+                                              (+ saved-string (string-ref input-string i))))))))
+          (def return-list-func 
+            (lambda [i saved-string]
+                    (if (eq? i input-str-length) ;; end
+                      `(~saved-string)
+                      ;; not end yet
+                      (if (> (+ i split-str-length) input-str-length) 
+                        ;; couldn't split
+                        `(~(string-append saved-string
+                                          (string-slice input-string
+                                                        i 
+                                                        input-str-length)))
+                        (if (string=? split-str 
+                                      (string-slice input-string
+                                                    i
+                                                    (+ i split-str-length)))
+                                               ;; could split
+                          (cons saved-string (return-list-func (+ i split-str-length)
+                                                               ""))
+                          (return-list-func (+ i 1)
+                                            (+ saved-string (string-ref input-string i))))))))
+          
+          (if return-vector
+            (return-vector-func #[] start-index "")
+            (return-list-func start-index ""))          
+          ))
+
+;; eg "Hello" => Hello
+;; eg "Hello abc" => #str{Hello abc}
+(def (format-string input-str)
+  (def i (string-find input-str " "))
+  (if (= i -1)
+    input-str
+    (string-append "#str{" input-str "}")))
+
+

@@ -1,0 +1,104 @@
+;; toy language
+;; logic.toy
+
+
+;; true false
+(def true 'true)
+(def false '())
+(def #t 'true)
+(def #f '())
+;; def not
+(def (not arg0) (if arg0 () 'true))
+
+
+;; and
+(defmacro and 
+  [() 'true]
+  [(a) (if  ~a  ~a ())]
+  [(a . b) (if ~a  (and ~@b) ())])
+
+;; or
+(defmacro or 
+	[() ()] 
+	[(a) (if ~a ~a ())] 
+	[(a . b) (if ~a ~a (or ~@b))])
+
+
+
+;; now make >= <= eq? = > < support vardic param
+(set! < 
+      (let [old-< <
+	    <-iter (lambda [args cur]
+		     (if (null? args) true
+			 (if (old-< cur (car args))
+			     (<-iter (cdr args) (car args))
+			     false)
+			 ))
+	    ]
+	(lambda [. args]
+	  (if (null? args)
+	      (display-string "Please provide arguments for <")
+	      (<-iter (cdr args) (car args))))))
+
+(set! > 
+	(let [old-> >
+	       >-iter (lambda [args cur]
+			(if (null? args) true
+			    (if (old-> cur (car args))
+				(>-iter (cdr args) (car args))
+				false)
+			    ))]
+	  (lambda [. args]
+	    (if (null? args)
+		(display-string "Please provide arguments for >")
+		(>-iter (cdr args) (car args))))))
+
+(set! eq? (let [old-eq? eq?
+		eq?-iter (lambda [args cur]
+			   (if (null? args) true
+			       (if (old-eq? cur (car args))
+				   (eq?-iter (cdr args) (car args))
+				   false)
+			       ))]	    
+	    (lambda [. args]
+	      (if (null? args)
+		  (display-string "Please provide arguments for eq?")
+		  (eq?-iter (cdr args) (car args))))))
+
+(set! = (let [old-= =
+		=-iter (lambda [args cur]
+			   (if (null? args) true
+			       (if (old-= cur (car args))
+				   (=-iter (cdr args) (car args))
+				   false)
+			       ))]	    
+	    (lambda [. args]
+	      (if (null? args)
+		  (display-string "Please provide arguments for =")
+		  (=-iter (cdr args) (car args))))))
+
+(set! <=
+	(let [old-<= <=
+	      <=-iter (lambda [args cur]
+			(if (null? args) true
+			    (if (old-<= cur (car args))
+				(<=-iter (cdr args) (car args))
+				false)
+			    ))]
+	  (lambda [. args]
+	    (if (null? args)
+		(display-string "Please provide arguments for <=")
+		(<=-iter (cdr args) (car args))))))
+
+(set! >= 
+	(let [old->= >=
+	      >=-iter (lambda [args cur]
+			(if (null? args) true
+			    (if (old->= cur (car args))
+				(>=-iter (cdr args) (car args))
+				false)
+			    ))]
+	  (lambda [. args]
+	    (if (null? args)
+		(display-string "Please provide arguments for >=")
+		(>=-iter (cdr args) (car args))))))

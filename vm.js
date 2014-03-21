@@ -313,7 +313,7 @@ var VARIABLE_TABLE = [
      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
-     "string-append", "lambda?"
+     "string-append", "lambda?", "vector-push!", "vector-pop!"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -578,6 +578,16 @@ var ENVIRONMENT =
 	    if(stack_param[0] instanceof Lambda || stack_param[0] instanceof Builtin_Primitive_Procedure)
 	    	return "true";
 	    return null;
+	}),
+	bpp(function(stack_param){
+	    // 53 vector-push!
+	    stack_param[0].push(stack_param[1]);
+	    return stack_param[0];
+	}),
+	bpp(function(stack_param){
+	    // 54 vector-pop!
+	    var c = stack_param[0].pop();
+	    return c;
 	})
 	]
 ];

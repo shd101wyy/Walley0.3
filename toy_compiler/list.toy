@@ -1,0 +1,69 @@
+;; toy language
+;; list library
+;;
+(def null '())
+(def nil '())
+(def (cadr x) (car (cdr x)))
+(def (cddr x) (cdr (cdr x)))
+(def (caddr x) (car (cdr (cdr x))))
+(def (cdddr x) (cdr (cdr (cdr x))))
+
+
+;; list
+(def (list . arg) arg)
+
+;; list length
+;; eg (list-length '(1 2)) => 2
+(def (list-length l)
+  (def (list-length-iter l count)
+    (if (null? l)
+      count
+      (list-length-iter (cdr l)
+                        (+ count 1))))
+  (list-length-iter l 0))
+
+;; list-reverse
+(def (list-reverse l)
+  (def (list-reverse-iter l output)
+    (if (null? l)
+      output
+      (list-reverse-iter (cdr l) (cons (car l) output))))
+  (list-reverse-iter l '()))
+
+;; list-ref
+;; eg (list-ref '(1 2 3) 2) => 3
+(def (list-ref l i)
+  (if (= i 0)
+    (car l)
+    (list-ref (cdr l)
+              (- i 1))))
+
+;; list-append
+;; eg (list-append '(1 2) '(4 5)) => '(1 2 4 5)
+;; eg (list-append '(1 2) 4) => '(1 2 4)
+(def (list-append l0 l1)
+  (def (list-append-iter0 l0)
+    (if (null? l0)
+      l1
+      (cons (car l0) 
+            (list-append-iter0 (cdr l0)))))
+  (if (pair? l1)
+    (list-append-iter0 l0)
+    (begin (set! l1 (cons l1 '()))
+           (list-append-iter0 l0))
+    ))
+
+;; list->vector
+(def (list->vector l)
+  (def (list->vector-iter l output count)
+    (if (null? l)
+      output
+      (list->vector-iter (cdr l) 
+                         (vector-set! output count (car l))
+                         (+ count 1))))
+  (list->vector-iter l #[] 0))
+
+;; this function is for ~@ 
+(def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))
+
+

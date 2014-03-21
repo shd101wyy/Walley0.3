@@ -1,0 +1,98 @@
+;; toy language
+;; ratio.toy
+;; support ratio number calculation
+
+
+;; library that add ratio support
+(def (install-ratio-library)
+  ;; backup + - * /
+  (def o_+ +)
+  (def o_- -)
+  (def o_* *)
+  (def o_/ /)
+  (def o_= =)
+  (def o_< <)
+  (def o_> >)
+  (def o_<= <=)
+  (def o_>= >=)
+  (def o_->float ->float)
+  ;; %
+  (def (% n0 n1) (let [result (->int (o_/ n0 n1))]  (o_- n0 (o_* result n1))))
+  
+  ;; ratio math library
+  (def (gcd a b)
+    (def (gcd-iter a b)
+      (if (o_= b 0) a (gcd-iter b (% a b))))
+    (if (o_= b 1) 1 (gcd-iter a b))
+    ;;(if (o_= b 0)
+    ;;    a
+    ;;    (gcd b (% a b)))
+    )
+  ;; create ratio
+  (def (make-ratio numer denom)
+    (def g (gcd numer denom))
+    (def n (o_/ numer g))
+    (def d (o_/ denom g))
+    (if (= d 1) 
+      n ;; return int
+      {'n n 
+       'd d 
+       'type 'ratio 
+       '->string (lambda [] (string-append (int->string n) "/" (int->string d)))}
+      ))
+  ;; ->float also support change ratio to string
+  (set! ->float (lambda [n] (if (or (int? n) (float? n))
+                              (o_->float n)
+                              (o_->float (o_/ n:n n:d)))))
+  ;; get denominator
+  (def (denom n)
+    (if (int? n) 1  (if (float? n) 1 n:d)))
+  ;; get numerator
+  (def (numer n)
+    (if (int? n) n (if (float? n) n n:n)))
+  ;; fraction arithematic
+  (def (add-rat x y)
+    (make-ratio (o_+ (o_* (numer x) (denom y))
+                     (o_* (numer y) (denom x)))
+                (o_* (denom x) (denom y))))
+  (def (sub-rat x y)
+    (make-ratio (o_- (o_* (numer x) (denom y))
+                     (o_* (numer y) (denom x)))
+                (o_* (denom x) (denom y))))
+  (def (mul-rat x y)
+    (make-ratio (o_* (numer x) (numer y))
+                (o_* (denom x) (denom y))))
+  (def (div-rat x y)
+    (make-ratio (o_* (numer x) (denom y))
+                (o_* (denom x) (numer y))))
+  (set! + (lambda [a b]
+                  (if (or (float? a) (float? b)) ;; a or b is float
+                    (o_+ (o_/ (numer a) (denom a))
+                         (o_/ (numer b) (denom b)))
+                    (add-rat a b))))
+  (set! - (lambda [a b]
+                  (if (or (float? a) (float? b)) ;; a or b is float
+                    (o_- (o_/ (numer a) (denom a))
+                         (o_/ (numer b) (denom b)))
+                    (sub-rat a b))))
+  (set! * (lambda [a b]
+                  (if (or (float? a) (float? b)) ;; a or b is float
+                    (o_* (o_/ (numer a) (denom a))
+                         (o_/ (numer b) (denom b)))
+                    (mul-rat a b))))
+  (set! / (lambda [a b]
+                  (if (or (float? a) (float? b)) ;; a or b is float
+                    (o_/ (o_/ (numer a) (denom a))
+                         (o_/ (numer b) (denom b)))
+                    (div-rat a b))))
+  (set! = (lambda [a b]
+                  (o_= (->float a) (->float b))))
+  (set! > (lambda [a b]
+                  (o_> (->float a) (->float b))))
+  (set! < (lambda [a b]
+                  (o_< (->float a) (->float b))))
+  (set! >= (lambda [a b]
+                   (o_>= (->float a) (->float b))))
+  (set! <= (lambda [a b]
+                   (o_<= (->float a) (->float b))))
+  )

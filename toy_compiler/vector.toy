@@ -1,0 +1,15 @@
+;; toy languge 
+;; vector library
+
+;; vector->list
+(def (vector->list v)
+  (def length (vector-length v))
+  (def (vector->list-iter v i)
+    (if (= i length)
+      '()
+      (cons (vector-ref v i)
+            (vector->list-iter v
+                               (+ i 1)))))
+  (vector->list-iter v 0))
+
+
