@@ -197,14 +197,14 @@ RETURN
 
 
 ------------------------------------------------------------------
-#### dictionary
+#### object (originally dictionary)
 ```
-Dictionary in toy language is implemented using AVL tree
+Object in toy language is implemented using Hashtable( Originally AVL tree )
 (def x {'a 12 'b 15 'add (lambda [a b] (+ a b))})
 x:a => 12
 (x:add 3 4) => 7
 
-key : "remove", "builtin-properties" are reserved
+~~~key : "remove", "builtin-properties" are reserved~~~
 
 ```
 

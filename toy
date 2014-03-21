@@ -54,12 +54,14 @@ else if (argv.length === 3 && argv[2] === "vm"){ // test vm
 
 	rl.setPrompt('toy> ')
 	rl.prompt()
+	var pc = 0;
+	var macros = [[]]
 	rl.on('line', function(line) {
 		var l = toy_vm.vm_lexer(line);
 		var p = toy_vm.vm_parser(l);
-		var macros = [[]]
 		var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
-		var e = toy_vm.vm(toy_vm.vm_insts , toy_vm.vm_env );
+		var e = toy_vm.vm(toy_vm.vm_insts , toy_vm.vm_env, pc);
+		pc = toy_vm.vm_insts.length;
 		// console.log("compile to ==> "+o);
 		//toy.display(o);
 		// toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )

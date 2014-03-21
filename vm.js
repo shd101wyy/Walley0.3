@@ -124,8 +124,8 @@ var lexer_iter = function(input_string, index)
 		return lexer_iter(input_string, index + 1);
 	if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
 		return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
-	if (input_string[index] == "{") // dictionary
-		return cons("(", cons("dictionary", lexer_iter(input_string, index + 1)));
+	if (input_string[index] == "{") // object
+		return cons("(", cons("object", lexer_iter(input_string, index + 1)));
 	if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
 	if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
 	if (input_string[index] == "~" && input_string[index+1] == "@")
@@ -313,7 +313,7 @@ var VARIABLE_TABLE = [
      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
-     "string-append", "lambda?", "vector-push!", "vector-pop!"
+     "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -588,6 +588,26 @@ var ENVIRONMENT =
 	    // 54 vector-pop!
 	    var c = stack_param[0].pop();
 	    return c;
+	}),
+	bpp(function(stack_param){
+	    // 55 object
+	    var key;
+	    var value;
+	    var output = {type: "object"}; // preserved
+	    for(var i = 0; i < stack_param.length; i=i+2){
+	    	key = stack_param[i];
+	    	value = stack_param[i+1];
+	    	output[key] = value;
+	    }
+	    return output;
+	}),
+	bpp(function(stack_param){
+	    // 56 object?
+	    return typeof(stack_param[0]) === "object" ? 'true' : null;
+	}),
+	bpp(function(stack_param){
+	    // 57 object-keys
+	    return Object.keys(stack_param[0])
 	})
 	]
 ];
@@ -1475,6 +1495,21 @@ var VM = function(INSTRUCTIONS, env, pc)
 			if(lambda instanceof Builtin_Primitive_Procedure){ // builtin lambda
 				pc = pc + 1;
 				accumulator = lambda.func(current_frame_pointer.slice(2)); // remove saved env and pc
+				frame_list = cdr(frame_list); // pop top frame
+				current_frame_pointer = car(frame_list) // update frame_pointer
+				continue;
+			}
+			if(typeof(lambda) === 'object'){
+				pc = pc + 1;
+				p0 = current_frame_pointer[2];
+				p1 = current_frame_pointer[3];
+				if(typeof(p1) === 'undefined'){
+					accumulator = lambda[p0];
+				}
+				else{
+					lambda[p0] = p1;
+					accumulator = lambda;
+				}
 				frame_list = cdr(frame_list); // pop top frame
 				current_frame_pointer = car(frame_list) // update frame_pointer
 				continue;
