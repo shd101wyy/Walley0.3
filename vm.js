@@ -19,7 +19,6 @@
 /*
 	Contruct Toy Language Data Types
 */
-var TYPE_NULL = 0;
 var TYPE_INTEGER = 1;
 var TYPE_FLOAT = 2;
 var TYPE_PAIR = 3;
@@ -28,6 +27,7 @@ var TYPE_OBJECT = 5;
 var TYPE_STRING = 6;
 var TYPE_LAMBDA = 7;
 var TYPE_BUILTIN_LAMBDA = 8;
+var TYPE_NULL = 0;
 
 var Value = function(){
 	this.type = 0; // this can be changed using set-data-type
@@ -39,6 +39,12 @@ var Value = function(){
 	this.string;   // string
 	this.builtin_lambda; // builtin_lambda
 	//this.user_defined_type = null; // user defined data type.
+}
+
+var make_null = function(){
+	var v = new Value();
+	v.type = TYPE_NULL;
+	return v;
 }
 
 var Cons = function(car_, cdr_)
@@ -421,7 +427,7 @@ var ENVIRONMENT =
 	bpp(function(stack_param)
 	    { // 7 vector?
 		if(stack_param[0].type === TYPE_VECTOR) return "true";
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 8 +
@@ -451,31 +457,31 @@ var ENVIRONMENT =
 	    { // 12 = only for number
 		if (stack_param[0].num == stack_param[1].num)
 		    return "true"
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 13 < only for number
 		if (stack_param[0].num < stack_param[1].num)
 		    return "true"
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 14 > only for number
 		if (stack_param[0].num > stack_param[1].num)
 		    return "true"
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 15 <= only for number
 		if (stack_param[0].num <= stack_param[1].num)
 		    return "true"
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 16 >= only for number
 		if (stack_param[0].num >= stack_param[1].num)
 		    return "true"
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 17 eq?
@@ -486,47 +492,47 @@ var ENVIRONMENT =
 		    return false;
 		}
 		else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
-			return stack_param[0].string === stack_param[1].string ? "true":null;
-		return stack_param[0] === stack_param[1] ? "true":null;
+			return stack_param[0].string === stack_param[1].string ? "true":make_null();
+		return stack_param[0] === stack_param[1] ? "true":make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 18 string?
 		if(stack_param[0].type === TYPE_STRING)
 		    return "true";
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 19 int?
 		if(stack_param[0].type === TYPE_INTEGER)
 		    return "true";
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 20 float?
 		if(stack_param[0].type === TYPE_FLOAT)
 		    return "true";
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 21 pair?
 		if(stack_param[0].type === TYPE_PAIR)
 		    return "true";
-		return null;
+		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 22 null?
-		if(stack_param[0] === null)
+		if(stack_param[0].type === TYPE_NULL)
 		    return "true";
-		return null;
+		return make_null();
 	    }), 
 	bpp(function(stack_param){
 	    // 23 string<?
 	    if(stack_param[0].string < stack_param[1].string) return "true"; 
-	    return null;
+	    return make_null();
 	}),
 	bpp(function(stack_param){
 	    // 24 string=?
-	    if(stack_param[0].string === stack_param[1].string) return "true"; return null;
+	    if(stack_param[0].string === stack_param[1].string) return "true"; return make_null();
 	}),
 	bpp(function(stack_param){
 	    // 25 string-ref
@@ -615,7 +621,7 @@ var ENVIRONMENT =
 	bpp(function(stack_param){
 	    // 46 display-string
 	    console.log(stack_param[0].string);
-	    return null;
+	    return make_null();
 	}),
 	bpp(function(stack_param){
 	    // 47 ->int
@@ -650,7 +656,7 @@ var ENVIRONMENT =
 	    // 52 lambda?
 	    if(stack_param[0].type === TYPE_LAMBDA || stack_param[0].type === TYPE_BUILTIN_LAMBDA)
 	    	return "true";
-	    return null;
+	    return make_null();
 	}),
 	bpp(function(stack_param){
 	    // 53 vector-push!
@@ -679,7 +685,7 @@ var ENVIRONMENT =
 	}),
 	bpp(function(stack_param){
 	    // 56 object?
-	    return stack_param[0].type === TYPE_OBJECT ? 'true' : null;
+	    return stack_param[0].type === TYPE_OBJECT ? 'true' : make_null();
 	}),
 	bpp(function(stack_param){
 	    // 57 object-keys
@@ -1529,7 +1535,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 					}
 					default: // null
 					{	
-						accumulator = null;
+						accumulator = make_null();
 						pc = pc + 1;
 						// console.log("NULL: ");
 						continue;
@@ -1545,7 +1551,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 			}
 			case TEST: // test
 			{
-				if(accumulator === null) // false, jump
+				if(accumulator.type === TYPE_NULL) // false, jump
 				{
 					pc = pc + (0x0FFF & inst);
 					continue;
@@ -1649,7 +1655,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 					return;
 				}
 				if(required_variadic_place !== -1){ // variadic value
-					var v = null;
+					var v = make_null();
 					for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
 						v = cons(current_frame_pointer[i], v);
 					}	
@@ -1664,7 +1670,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 				if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
 				{
 					for(var i = param_num; i < required_param_num; i++){
-						current_frame_pointer[i + 2] = null; // default value is null
+						current_frame_pointer[i + 2] = make_null(); // default value is null
 					}
 				}
 				
