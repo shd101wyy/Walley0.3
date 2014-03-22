@@ -1469,217 +1469,231 @@ var VM = function(INSTRUCTIONS, env, pc)
 	{
 		var inst = INSTRUCTIONS[pc];
 		var opcode = (inst & 0xF000) >> 12;
-		if(opcode === CONST){
-			if(inst === CONST_INTEGER){ // integer
-				accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 48)*/ 281474976710656)+  // couldn't shift left 48
-							  (INSTRUCTIONS[pc + 2] * /*Math.pow(2, 32)*/ 4294967296)+
-							  (INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/ 65536) +
-							   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 64);
-				accumulator = make_integer(accumulator);
-				pc = pc + 5;
-				// console.log("INT accumulator=> " + accumulator.num);
+		switch(opcode){
+			case CONST:
+			{
+				switch(inst){
+					case CONST_INTEGER: // integer
+					{
+						accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 48)*/ 281474976710656)+  // couldn't shift left 48
+								  (INSTRUCTIONS[pc + 2] * /*Math.pow(2, 32)*/ 4294967296)+
+								  (INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/ 65536) +
+								   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 64);
+						accumulator = make_integer(accumulator);
+						pc = pc + 5;
+						// console.log("INT accumulator=> " + accumulator.num);
+						continue;
+					}
+					case CONST_FLOAT:
+					{
+						accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 16)*/65536)+
+								  (INSTRUCTIONS[pc + 2])
+								  - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 32);
+						// console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
+						accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
+						accumulator = make_float(accumulator);
+						pc = pc + 5;
+						// console.log("FLOAT accumulator=> " + accumulator);
+						continue;
+					}
+					case CONST_STRING:
+					{
+						var length = INSTRUCTIONS[pc + 1]; // length used to create string. for C language in the future
+						var created_string = "";
+						var s;
+						pc = pc + 2;
+						while(true)
+						{
+							s = INSTRUCTIONS[pc];
+							var s1 = (0xFF00 & s) >> 8;
+							var s2 = (0x00FF & s);
+							if(s1 === 0x00) // reach end
+								break;
+							else
+								created_string += String.fromCharCode(s1);
+							if(s2 === 0x00) // reach end
+								break;
+							else
+								created_string += String.fromCharCode(s2);
+							pc = pc + 1;
+						}
+						// create string
+						var v = new Value();
+						v.string = created_string;
+						v.type = TYPE_STRING;
+						accumulator = v;
+						//accumulator = created_string;
+						// console.log("CREATED_STRING: |"+created_string+"|");
+						pc = pc + 1;
+						continue;
+					}
+					default: // null
+					{	
+						accumulator = null;
+						pc = pc + 1;
+						// console.log("NULL: ");
+						continue;
+					}
+				}
+			}
+			case PUSH_ARG: // push to environment
+			{
+				// console.log("PUSH_ARG");
+				current_frame_pointer[0x0FFF & inst] = accumulator; // push to current frame
+				pc = pc + 1;
 				continue;
 			}
-			else if (inst === CONST_FLOAT){ // float
-				accumulator = (INSTRUCTIONS[pc + 1] * /*Math.pow(2, 16)*/65536)+
-							  (INSTRUCTIONS[pc + 2])
-							  - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 32);
-				// console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
-				accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
-				accumulator = make_float(accumulator);
-				pc = pc + 5;
-				// console.log("FLOAT accumulator=> " + accumulator);
-				continue;
-			}
-			else if (inst === CONST_STRING){ // string
-				var length = INSTRUCTIONS[pc + 1]; // length used to create string. for C language in the future
-				var created_string = "";
-				var s;
-				pc = pc + 2;
-				while(true)
+			case TEST: // test
+			{
+				if(accumulator === null) // false, jump
 				{
-					s = INSTRUCTIONS[pc];
-					var s1 = (0xFF00 & s) >> 8;
-					var s2 = (0x00FF & s);
-					if(s1 === 0x00) // reach end
-						break;
-					else
-						created_string += String.fromCharCode(s1);
-					if(s2 === 0x00) // reach end
-						break;
-					else
-						created_string += String.fromCharCode(s2);
+					pc = pc + (0x0FFF & inst);
+					continue;
+				}
+				// run next
+				pc = pc + 1;
+				continue;
+			}
+			case JMP: // jump
+			{
+				var jump_steps = 0x07FF & inst;
+				var negative_flag = 0x0800 & inst;
+				if(negative_flag) jump_steps = - jump_steps;
+				if(jump_steps >> 11 === 1)
+					jump_steps -= Math.pow(2, 16);
+				pc = pc + jump_steps;
+				continue;
+			}
+			case SET: // set
+			{
+				// console.log("SET");
+				var frame_index = 0x0FFF & inst;               // get frame index
+				var value_index = INSTRUCTIONS[pc + 1];        // get value index
+				env[frame_index][value_index] = accumulator;
+				pc = pc + 2;
+				continue;
+			}
+			case GET: // get
+			{
+				var frame_index = 0x0FFF & inst;
+				var value_index = INSTRUCTIONS[pc + 1];
+				accumulator = env[frame_index][value_index];
+				pc = pc + 2;
+				continue;
+			}
+			case MAKELAMBDA: // make lambda
+			{
+				// console.log("MAKELAMBDA");
+				var param_num= (0x0FC0 & inst) >> 6;
+				var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
+				var start_pc = pc + 2;
+				var jump_steps = INSTRUCTIONS[pc + 1];
+
+				// accumulator = new Lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
+				accumulator = make_lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
+				pc = pc + jump_steps + 1;
+				continue;
+			}
+			case CALL: // call function
+			{
+				// console.log("CALL FUNCTION");
+				var param_num = (0x0FFF & inst); // get param num, including return_address.
+				var lambda;
+
+				// console.log("LAMBDA:");
+				// console.log(vm_env)
+				// console.log(lambda);
+				// console.log("PARAM NUM: " + param_num);
+				// a();
+
+				if(accumulator.type === TYPE_BUILTIN_LAMBDA){ // builtin lambda
+					lambda = accumulator.builtin_lambda;
 					pc = pc + 1;
+					accumulator = lambda(current_frame_pointer.slice(2)); // remove saved env and pc
+					frame_list = cdr(frame_list); // pop top frame
+					current_frame_pointer = car(frame_list) // update frame_pointer
+					continue;
 				}
-				// create string
-				var v = new Value();
-				v.string = created_string;
-				v.type = TYPE_STRING;
-				accumulator = v;
-				//accumulator = created_string;
-				// console.log("CREATED_STRING: |"+created_string+"|");
+				if(accumulator.type === TYPE_OBJECT){
+					lambda = accumulator.object;
+					pc = pc + 1;
+					p0 = current_frame_pointer[2];
+					p1 = current_frame_pointer[3];
+					if(typeof(p1) === 'undefined'){
+						accumulator = lambda[p0];
+					}
+					else{
+						lambda[p0] = p1;
+						accumulator = lambda;
+					}
+					frame_list = cdr(frame_list); // pop top frame
+					current_frame_pointer = car(frame_list) // update frame_pointer
+					continue;
+				}
+
+				lambda = accumulator.lambda; // user defined lambda
+				// user defined lambda
+				var required_param_num = lambda.param_num;
+				var required_variadic_place = lambda.variadic_place;
+				var start_pc = lambda.start_pc;
+				var new_env;
+				
+
+				new_env = lambda.env.slice(0);
+				new_env.push(current_frame_pointer);
+				current_frame_pointer[0] = env; // save current env to new-frame
+				current_frame_pointer[1] = pc + 1; // save pc
+
+				if(required_variadic_place === -1 && param_num - 1 > required_param_num){
+					console.log("ERROR: Too many parameters provided");
+					return;
+				}
+				if(required_variadic_place !== -1){ // variadic value
+					var v = null;
+					for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
+						v = cons(current_frame_pointer[i], v);
+					}	
+					current_frame_pointer[required_variadic_place + 2] = v;
+				}
+
+				// console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
+				// console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
+				// console.log("START_PC " + lambda.start_pc);
+				// console.log("OLD_PC   " + (pc + 1));
+
+				if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
+				{
+					for(var i = param_num; i < required_param_num; i++){
+						current_frame_pointer[i + 2] = null; // default value is null
+					}
+				}
+				
+				env = new_env;         // change env pointer
+				pc = start_pc;         // begin to call function
+				frame_list = cdr(frame_list) // update frame list
+				current_frame_pointer = car(frame_list);
+				continue;
+			}
+			case NEWFRAME: // create new frame
+			{ // create new frame
+				var new_frame = [];
+				frame_list = cons(new_frame, frame_list);
+				current_frame_pointer = new_frame;
 				pc = pc + 1;
 				continue;
 			}
-			else if (inst === CONST_NULL){ // null
-				accumulator = null;
-				pc = pc + 1;
-				// console.log("NULL: ");
+			case RETURN: // return
+			{ // return
+				// restore pc and env
+				pc = env[env.length - 1][1];
+				env = env[env.length - 1][0];
+				// update current_frame_pointer
+				//current_frame_pointer = car(frame_list);
 				continue;
 			}
-		}
-		else if ( opcode === PUSH_ARG) // push to environment
-		{
-			// console.log("PUSH_ARG");
-			current_frame_pointer[0x0FFF & inst] = accumulator; // push to current frame
-			pc = pc + 1;
-			continue;
-		}
-		else if ( opcode === TEST) // test
-		{
-			if(accumulator === null) // false, jump
-			{
-				pc = pc + (0x0FFF & inst);
-				continue;
-			}
-			// run next
-			pc = pc + 1;
-			continue;
-		}
-		else if ( opcode === JMP) // jump
-		{
-			var jump_steps = 0x07FF & inst;
-			var negative_flag = 0x0800 & inst;
-			if(negative_flag) jump_steps = - jump_steps;
-			if(jump_steps >> 11 === 1)
-				jump_steps -= Math.pow(2, 16);
-			pc = pc + jump_steps;
-			continue;
-		}
-		else if ( opcode === SET) // set
-		{
-			// console.log("SET");
-			var frame_index = 0x0FFF & inst;               // get frame index
-			var value_index = INSTRUCTIONS[pc + 1];        // get value index
-			env[frame_index][value_index] = accumulator;
-			pc = pc + 2;
-			continue;
-		}
-		else if ( opcode === GET ) // get
-		{
-			var frame_index = 0x0FFF & inst;
-			var value_index = INSTRUCTIONS[pc + 1];
-			accumulator = env[frame_index][value_index];
-			pc = pc + 2;
-			continue;
-		}
-		else if ( opcode === MAKELAMBDA) // make lambda
-		{
-			// console.log("MAKELAMBDA");
-			var param_num= (0x0FC0 & inst) >> 6;
-			var variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
-			var start_pc = pc + 2;
-			var jump_steps = INSTRUCTIONS[pc + 1];
-
-			// accumulator = new Lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
-			accumulator = make_lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
-			pc = pc + jump_steps + 1;
-			continue;
-		}
-		else if ( opcode === CALL) // call function
-		{
-			// console.log("CALL FUNCTION");
-			var param_num = (0x0FFF & inst); // get param num, including return_address.
-			var lambda;
-
-			// console.log("LAMBDA:");
-			// console.log(vm_env)
-			// console.log(lambda);
-			// console.log("PARAM NUM: " + param_num);
-			// a();
-
-			if(accumulator.type === TYPE_BUILTIN_LAMBDA){ // builtin lambda
-				lambda = accumulator.builtin_lambda;
-				pc = pc + 1;
-				accumulator = lambda(current_frame_pointer.slice(2)); // remove saved env and pc
-				frame_list = cdr(frame_list); // pop top frame
-				current_frame_pointer = car(frame_list) // update frame_pointer
-				continue;
-			}
-			if(accumulator.type === TYPE_OBJECT){
-				lambda = accumulator.object;
-				pc = pc + 1;
-				p0 = current_frame_pointer[2];
-				p1 = current_frame_pointer[3];
-				if(typeof(p1) === 'undefined'){
-					accumulator = lambda[p0];
-				}
-				else{
-					lambda[p0] = p1;
-					accumulator = lambda;
-				}
-				frame_list = cdr(frame_list); // pop top frame
-				current_frame_pointer = car(frame_list) // update frame_pointer
-				continue;
-			}
-
-			lambda = accumulator.lambda; // user defined lambda
-			// user defined lambda
-			var required_param_num = lambda.param_num;
-			var required_variadic_place = lambda.variadic_place;
-			var start_pc = lambda.start_pc;
-			var new_env;
-			
-
-			new_env = lambda.env.slice(0);
-			new_env.push(current_frame_pointer);
-			current_frame_pointer[0] = env; // save current env to new-frame
-			current_frame_pointer[1] = pc + 1; // save pc
-
-			if(required_variadic_place === -1 && param_num - 1 > required_param_num){
-				console.log("ERROR: Too many parameters provided");
-				return;
-			}
-			if(required_variadic_place !== -1){ // variadic value
-				var v = null;
-				for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
-					v = cons(current_frame_pointer[i], v);
-				}	
-				current_frame_pointer[required_variadic_place + 2] = v;
-			}
-
-			// console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
-			// console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
-			// console.log("START_PC " + lambda.start_pc);
-			// console.log("OLD_PC   " + (pc + 1));
-
-			if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
-			{
-				for(var i = param_num; i < required_param_num; i++){
-					current_frame_pointer[i + 2] = null; // default value is null
-				}
-			}
-			
-			env = new_env;         // change env pointer
-			pc = start_pc;         // begin to call function
-			frame_list = cdr(frame_list) // update frame list
-			current_frame_pointer = car(frame_list);
-			continue;
-		}
-		else if ( opcode === NEWFRAME){ // create new frame
-			var new_frame = [];
-			frame_list = cons(new_frame, frame_list);
-			current_frame_pointer = new_frame;
-			pc = pc + 1;
-			continue;
-		}
-		else if ( opcode === RETURN ){ // return
-			// restore pc and env
-			pc = env[env.length - 1][1];
-			env = env[env.length - 1][0];
-			// update current_frame_pointer
-			//current_frame_pointer = car(frame_list);
-			continue;
+			default:
+				console.log("ERROR: Invalid opcode");
+				return null;
 		}
 	}
 	console.log("Finishing running VM");
