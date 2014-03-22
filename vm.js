@@ -1620,13 +1620,15 @@ var VM = function(INSTRUCTIONS, env, pc)
 					current_frame_pointer = car(frame_list) // update frame_pointer
 					continue;
 				}
-				if(accumulator.type === TYPE_OBJECT){
+				if(accumulator.type === TYPE_OBJECT){ // object
 					lambda = accumulator.object;
 					pc = pc + 1;
 					p0 = current_frame_pointer[2];
 					p1 = current_frame_pointer[3];
 					if(typeof(p1) === 'undefined'){
 						accumulator = lambda[p0];
+						if(typeof(accumulator) === "undefined")
+							accumulator = make_null();
 					}
 					else{
 						lambda[p0] = p1;
