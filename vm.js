@@ -16,20 +16,58 @@
 	(def (add a) a)
 	(set 0 1 (param-num 1) (get 1 0)) ;; param num, get 1 0 save to accumulator
 */
+/*
+	Contruct Toy Language Data Types
+*/
+var TYPE_NULL = 0;
+var TYPE_INTEGER = 1;
+var TYPE_FLOAT = 2;
+var TYPE_PAIR = 3;
+var TYPE_VECTOR = 4;
+var TYPE_OBJECT = 5;
+var TYPE_STRING = 6;
+var TYPE_LAMBDA = 7;
+var TYPE_BUILTIN_LAMBDA = 8;
+
+var Value = function(){
+	this.type = 0; // this can be changed using set-data-type
+	this.num; 	   // int/float
+	this.cons;	   // pair
+	this.vector;   // vector
+	this.object;   // object
+	this.lambda;   // lambda
+	this.string;   // string
+	this.builtin_lambda; // builtin_lambda
+	//this.user_defined_type = null; // user defined data type.
+}
 
 var Cons = function(car_, cdr_)
 {
 	this.car = car_; this.cdr = cdr_;
 }
+/*
+	create cons data type
+*/
 var cons = function(v0, v1)
 {
-	return new Cons(v0, v1);
+	var v = new Value(); // create Value
+	v.cons = new Cons(v0, v1); 
+	v.type = TYPE_PAIR;
+	return v;
+	// return new Cons(v0, v1);
 }
+
 var Builtin_Primitive_Procedure = function(func)
 {
 	this.func = func;
 }
-var bpp = function(func){return new Builtin_Primitive_Procedure(func)}; // create Builtin_Primitive_Procedure
+var bpp = function(func){
+	var v = new Value();
+	v.type = TYPE_BUILTIN_LAMBDA;
+	v.builtin_lambda = func;
+	return v;
+	// return new Builtin_Primitive_Procedure(func)
+	}; // create Builtin_Primitive_Procedure
 
 var Lambda = function(param_num, variadic_place, start_pc, env)
 {
@@ -37,6 +75,16 @@ var Lambda = function(param_num, variadic_place, start_pc, env)
 	this.variadic_place = variadic_place;
 	this.start_pc = start_pc;
 	this.env = env;
+}
+/*
+	create lambda data type
+*/
+var make_lambda = function(param_num, variadic_place, start_pc, env){
+	var l = new Lambda(param_num, variadic_place, start_pc, env);
+	var v = new Value();
+	v.type = TYPE_LAMBDA;
+	v.lambda = l;
+	return v;
 }
 /*
 	this saved lambda is for tail call optimization and compilation
@@ -47,19 +95,31 @@ var Lambda_for_Compilation = function(param_num, variadic_place, start_pc, vt){
 	this.start_pc = start_pc;
 	this.vt = vt;
 }
-var Integer = function(num)
-{
-	this.num = num /*| 0 别用这个，这个还想只是16bits整数*/;
+
+/*
+	create integer data type
+*/
+var make_integer = function(num){
+	var v = new Value();
+	v.num = num;
+	v.type = TYPE_INTEGER;
+	return v;
 }
-var Float = function(num)
-{
-	this.num = num;
+/*
+	create float data type
+*/
+var make_float = function(num){
+	var v = new Value();
+	v.num = num;
+	v.type = TYPE_FLOAT;
+	return v;
 }
 var Macro = function(macro_name, clauses, variable_table){
 	this.macro_name = macro_name;
 	this.clauses = clauses;
 	this.vt = variable_table;
 }
+
 /*
 	注意。这里的environmen以
 	[[1], ["hello"]...] 的形式储存数据
@@ -83,12 +143,12 @@ var Environment = function(env)
 	}
 }*/
 var car = function(o)
-{
-	return o.car;
+{	return o.cons.car;
+	// return o.car;
 }
 var cdr = function(o)
-{
-	return o.cdr;
+{   return o.cons.cdr;
+	//return o.cdr;
 }
 
 var cadr = function(o){return car(cdr(o))};
@@ -313,7 +373,8 @@ var VARIABLE_TABLE = [
      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
-     "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys"
+     "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
+     "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -340,48 +401,51 @@ var ENVIRONMENT =
 
 	bpp(function(stack_param)
 	    { // 3 vector
-		return stack_param;
+	    	var v = new Value();
+	    	v.type = TYPE_VECTOR;
+	    	v.vector = stack_param;
+	    	return v;
 	    }),
 	bpp(function(stack_param)
 	    { // 4 vector-ref
-		return stack_param[0][stack_param[1].num];
+		return stack_param[0].vector[stack_param[1].num];
 	    }),
 	bpp(function(stack_param)
 	    { // 5 vector-set!
-		stack_param[0][stack_param[1].num] = stack_param[2];   return stack_param[2];
+		stack_param[0].vector[stack_param[1].num] = stack_param[2];   return stack_param[2];
 	    }),
 	bpp(function(stack_param)
 	    { // 6 vector-length
-		return new Integer(stack_param[0].length)
+		return make_integer(stack_param[0].vector.length)
 	    }),
 	bpp(function(stack_param)
 	    { // 7 vector?
-		if(stack_param[0] instanceof Array) return "true";
+		if(stack_param[0].type === TYPE_VECTOR) return "true";
 		return null;
 	    }),
 	bpp(function(stack_param)
 	    { // 8 +
-		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-		    return new Float(stack_param[0].num + stack_param[1].num);
-		return new Integer(stack_param[0].num + stack_param[1].num);
+		if (stack_param[0].type === TYPE_FLOAT || stack_param[1].type === TYPE_FLOAT)
+		    return make_float(stack_param[0].num + stack_param[1].num);
+		return make_integer(stack_param[0].num + stack_param[1].num);
 	    }),
 	bpp(function(stack_param)
 	    { // 9 -
-		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-		    return new Float(stack_param[0].num - stack_param[1].num);
-		return new Integer(stack_param[0].num - stack_param[1].num);
+		if (stack_param[0].type === TYPE_FLOAT || stack_param[1].type === TYPE_FLOAT)
+		    return make_float(stack_param[0].num - stack_param[1].num);
+		return make_integer(stack_param[0].num - stack_param[1].num);
 	    }),
 	bpp(function(stack_param)
 	    { // 10 *
-		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-		    return new Float(stack_param[0].num * stack_param[1].num);
-		return new Integer(stack_param[0].num * stack_param[1].num);
+		if (stack_param[0].type === TYPE_FLOAT || stack_param[1].type === TYPE_FLOAT)
+		    return make_float(stack_param[0].num * stack_param[1].num);
+		return make_integer(stack_param[0].num * stack_param[1].num);
 	    }),
 	bpp(function(stack_param)
 	    { // 11 /
-		if (stack_param[0] instanceof Float || stack_param[1] instanceof Float)
-		    return new Float(stack_param[0].num / stack_param[1].num);
-		return new Integer(stack_param[0].num / stack_param[1].num);
+		if (stack_param[0].type === TYPE_FLOAT || stack_param[1].type === TYPE_FLOAT)
+		    return make_float(stack_param[0].num / stack_param[1].num);
+		return make_integer(stack_param[0].num / stack_param[1].num);
 	    }),
 	bpp(function(stack_param)
 	    { // 12 = only for number
@@ -415,37 +479,37 @@ var ENVIRONMENT =
 	    }),
 	bpp(function(stack_param)
 	    { // 17 eq?
-		if ((stack_param[0] instanceof Integer || stack_param[0] instanceof Float) // check number
-		    && (stack_param[1] instanceof Integer || stack_param[1] instanceof Float))
+		if ((stack_param[0].type === TYPE_INTEGER || stack_param[0].type === TYPE_FLOAT) // check number
+		    && (stack_param[1].type === TYPE_INTEGER || stack_param[1].type === TYPE_FLOAT))
 		{
 		    if(stack_param[0].num === stack_param[1].num) return "true";
 		    return false;
 		}
-		if (stack_param[0] === stack_param[1])
-		    return "true"
-		return null;
+		else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
+			return stack_param[0].string === stack_param[1].string ? "true":null;
+		return stack_param[0] === stack_param[1] ? "true":null;
 	    }),
 	bpp(function(stack_param)
 	    { // 18 string?
-		if(typeof(stack_param[0]) === "string")
+		if(stack_param[0].type === TYPE_STRING)
 		    return "true";
 		return null;
 	    }),
 	bpp(function(stack_param)
 	    { // 19 int?
-		if(stack_param[0] instanceof Integer)
+		if(stack_param[0].type === TYPE_INTEGER)
 		    return "true";
 		return null;
 	    }),
 	bpp(function(stack_param)
 	    { // 20 float?
-		if(stack_param[0] instanceof Float)
+		if(stack_param[0].type === TYPE_FLOAT)
 		    return "true";
 		return null;
 	    }),
 	bpp(function(stack_param)
 	    { // 21 pair?
-		if(stack_param[0] instanceof Cons)
+		if(stack_param[0].type === TYPE_PAIR)
 		    return "true";
 		return null;
 	    }),
@@ -457,136 +521,145 @@ var ENVIRONMENT =
 	    }), 
 	bpp(function(stack_param){
 	    // 23 string<?
-	    if(stack_param[0] < stack_param[1]) return "true"; 
+	    if(stack_param[0].string < stack_param[1].string) return "true"; 
 	    return null;
 	}),
 	bpp(function(stack_param){
 	    // 24 string=?
-	    if(stack_param[0] === stack_param[1]) return "true"; return null;
+	    if(stack_param[0].string === stack_param[1].string) return "true"; return null;
 	}),
 	bpp(function(stack_param){
 	    // 25 string-ref
-	    return stack_param[0][stack_param[1].num];
+	    return stack_param[0].string[stack_param[1].num];
 	}),
 	bpp(function(stack_param){
 	    // 26 string-slice
-	    return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
+	    return stack_param[0].string.slice(stack_param[1].num, stack_param[2].num);
 	}),
 	bpp(function(stack_param){
 	    // 27 string-length
-	    return new Integer(stack_param[0].length);
+	    return make_integer(stack_param[0].string.length);
 	}),
 	bpp(function(stack_param){
 	    // 28 vector-slice
-	    return stack_param[0].slice(stack_param[1].num, stack_param[2].num);
+	    return stack_param[0].vector.slice(stack_param[1].num, stack_param[2].num);
 	}),
 	bpp(function(stack_param){
 	    // 29 acos
-	    return new Float(Math.acos(stack_param[0].num));
+	    return make_float(Math.acos(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 30 acosh
-	    return new Float(Math.acosh(stack_param[0].num));
+	    return make_float(Math.acosh(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 31 asin
-	    return new Float(Math.asin(stack_param[0].num));
+	    return make_float(Math.asin(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 32 asinh
-	    return new Float(Math.asinh(stack_param[0].num));
+	    return make_float(Math.asinh(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 33 atan
-	    return new Float(Math.atan(stack_param[0].num));
+	    return make_float(Math.atan(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 34 atanh
-	    return new Float(Math.atanh(stack_param[0].num));
+	    return make_float(Math.atanh(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 35 ceil
-	    return new Float(Math.ceil(stack_param[0].num));
+	    return make_float(Math.ceil(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 36 cos
-	    return new Float(Math.cos(stack_param[0].num));
+	    return make_float(Math.cos(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 37 cosh
-	    return new Float(Math.cosh(stack_param[0].num));
+	    return make_float(Math.cosh(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 38 exp
-	    return new Float(Math.exp(stack_param[0].num));
+	    return make_float(Math.exp(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 39 floor
-	    return new Float(Math.floor(stack_param[0].num));
+	    return make_float(Math.floor(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 40 loge
-	    return new Float(Math.log(stack_param[0].num));
+	    return make_float(Math.log(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 41 pow
-	    return new Float(Math.pow(stack_param[0].num, stack_param[1].num));
+	    return make_float(Math.pow(stack_param[0].num, stack_param[1].num));
 	}),
 	bpp(function(stack_param){
 	    // 42 sin
-	    return new Float(Math.sin(stack_param[0].num));
+	    return make_float(Math.sin(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 43 sinh
-	    return new Float(Math.sinh(stack_param[0].num));
+	    return make_float(Math.sinh(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 44 tan
-	    return new Float(Math.tan(stack_param[0].num));
+	    return make_float(Math.tan(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 45 tanh
-	    return new Float(Math.tanh(stack_param[0].num));
+	    return make_float(Math.tanh(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 46 display-string
-	    console.log(stack_param[0]);
+	    console.log(stack_param[0].string);
 	    return null;
 	}),
 	bpp(function(stack_param){
 	    // 47 ->int
-	   return new Integer(parseInt(stack_param[0].num));
+	   return make_integer(parseInt(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 48 ->float
-	    return new Float(parseFloat(stack_param[0].num));
+	    return make_float(parseFloat(stack_param[0].num));
 	}),
 	bpp(function(stack_param){
 	    // 49 int->string
-	   return "" + stack_param[0].num;
+	    var v = new Value();
+	    v.type = TYPE_STRING;
+	    v.string = "" + stack_param[0].num;
+	   	return v;
 	}),
 	bpp(function(stack_param){
 	    // 50 float->string
-	    return "" + stack_param[0].num;
-	}), 
+ 		var v = new Value();
+	    v.type = TYPE_STRING;
+	    v.string = "" + stack_param[0].num;
+	   	return v;	
+	   }), 
 	bpp(function(stack_param){
 	    // 51 string-append
-	    return stack_param[0] + stack_param[1];
+	    var v = new Value();
+	    v.type = TYPE_STRING;
+	    v.string = stack_param[0].string + stack_param[1].string;
+	    return v;
 	}),
 	bpp(function(stack_param){
 	    // 52 lambda?
-	    if(stack_param[0] instanceof Lambda || stack_param[0] instanceof Builtin_Primitive_Procedure)
+	    if(stack_param[0].type === TYPE_LAMBDA || stack_param[0].type === TYPE_BUILTIN_LAMBDA)
 	    	return "true";
 	    return null;
 	}),
 	bpp(function(stack_param){
 	    // 53 vector-push!
-	    stack_param[0].push(stack_param[1]);
+	    stack_param[0].vector.push(stack_param[1]);
 	    return stack_param[0];
 	}),
 	bpp(function(stack_param){
 	    // 54 vector-pop!
-	    var c = stack_param[0].pop();
+	    var c = stack_param[0].vector.pop();
 	    return c;
 	}),
 	bpp(function(stack_param){
@@ -599,15 +672,42 @@ var ENVIRONMENT =
 	    	value = stack_param[i+1];
 	    	output[key] = value;
 	    }
-	    return output;
+	    var v = new Value();
+	    v.type = TYPE_OBJECT;
+	    v.object = output;
+	    return v;;
 	}),
 	bpp(function(stack_param){
 	    // 56 object?
-	    return typeof(stack_param[0]) === "object" ? 'true' : null;
+	    return stack_param[0].type === TYPE_OBJECT ? 'true' : null;
 	}),
 	bpp(function(stack_param){
 	    // 57 object-keys
-	    return Object.keys(stack_param[0])
+	    return Object.keys(stack_param[0].object)
+	}),
+	bpp(function(stack_param){
+		// 58 bitwise-and 
+		return make_integer(stack_param[0].num & stack_param[1].num);
+	}),
+	bpp(function(stack_param){
+		// 59 bitwise-or 
+		return make_integer(stack_param[0].num | stack_param[1].num);
+	}),
+	bpp(function(stack_param){
+		// 60 bitwise-<< 
+		return make_integer(stack_param[0].num << stack_param[1].num);
+	}),
+	bpp(function(stack_param){
+		// 61 bitwise->> 
+		return make_integer(stack_param[0].num >> stack_param[1].num);
+	}),
+	bpp(function(stack_param){
+		// 62 bitwise-not 
+		return make_integer(~stack_param[0].num);
+	}),
+	bpp(function(stack_param){
+		// 63 bitwise-xor 
+		return make_integer(stack_param[0].num ^ stack_param[1].num);
 	})
 	]
 ];
@@ -654,12 +754,12 @@ var macro_match = function(a, b){
 		if(a === null && b === null) return output; // finish matching
 		else if((a === null && b !== null) || ( a!==null && b === null)) // doesnt match
 			return false;
-		else if (car(a) instanceof Cons && car(b) instanceof Cons){
+		else if (car(a).type === TYPE_PAIR && car(b).type === TYPE_PAIR){
 			var m = macro_match_iter(car(a), car(b), output);
 			if(m === false) return false; // doesnt match
 			return macro_match_iter(cdr(a), cdr(b), output);
 		}
-		else if (car(a) instanceof Cons && !(car(b) instanceof Cons)) return false;
+		else if (car(a).type === TYPE_PAIR && !(car(b).type === TYPE_PAIR)) return false;
 		else{
 			if (car(a)[0] === "#"){ // constant
 				if(car(a).slice(1) === car(b)) return macro_match_iter(cdr(a), cdr(b), output);
@@ -687,7 +787,7 @@ var macro_expand_with_arg_value = function(body, t){
 		}
 		return body;
 	}
-	else if ((car(body) instanceof Cons) && (car(car(body)) === "unquote-splice")){
+	else if ((car(body).type === TYPE_PAIR) && (car(car(body)) === "unquote-splice")){
 		var n = cadr( car(body) );
 		if(n in t){
 			var v = t[n];
@@ -697,7 +797,7 @@ var macro_expand_with_arg_value = function(body, t){
 		return cons(body,
 					macro_expand_with_arg_value(cdr(body), t));
 	}
-	else if(car(body) instanceof Cons){ // cons
+	else if(car(body).type === TYPE_PAIR){ // cons
 		return cons(macro_expand_with_arg_value(car(body), t), 
 				    macro_expand_with_arg_value(cdr(body), t));
 	}
@@ -739,7 +839,7 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 		return cons(0, cons(i[0], cons(i[1], null))); // get that variable
 
 	}
-	else if ((car(body) instanceof Cons) && (car(car(body)) === "unquote-splice")){
+	else if ((car(body).type === TYPE_PAIR) && (car(car(body)) === "unquote-splice")){
 		var n = cadr( car(body) );
 		if(n in t){
 			var v = t[n];
@@ -749,7 +849,7 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 		return cons(body,
 					macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
-	else if(car(body) instanceof Cons){ // cons
+	else if(car(body).type === TYPE_PAIR){ // cons
 		return cons(macro_expand_with_arg_value_for_compilation(car(body), t, vt, macros, true), 
 				    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
@@ -885,7 +985,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			return;
 		}
 	}
-	else if (l instanceof Cons)
+	else if (l.type === TYPE_PAIR)
 	{
 		var tag = car(l);
 		if(typeof(tag) === "number" && tag === 0){ // get for macro
@@ -900,14 +1000,14 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			// check integer float string null
 			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
 				return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
-			else if (v instanceof Cons) // pair
+			else if (v.type === TYPE_PAIR) // pair
 			{
 				var quote_list = function(l)
 	            {
 	                if(l == null) return null;
 	                var v = car(l);
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
-	                if(v instanceof Cons) return cons("cons", cons(/*cons(*/quote_list(v)/*, null)*/, cons(quote_list(cdr(l)), null)));
+	                if(v.type === TYPE_PAIR) return cons("cons", cons(/*cons(*/quote_list(v)/*, null)*/, cons(quote_list(cdr(l)), null)));
 	                else if (v === ".") return cons("quote", cons(cadr(l), null));
 	                return cons("cons", cons(cons("quote", cons(v, null)),  cons(quote_list(cdr(l)), null)));
 	            }
@@ -928,14 +1028,14 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			// check integer float string null
 			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
 				return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
-			else if (v instanceof Cons) // pair
+			else if (v.type === TYPE_PAIR) // pair
 			{
 				var quasiquote = function(l)
 	            {
 	                if(l == null) return null;
 	                var v = car(l);
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
-	                if(v instanceof Cons)
+	                if(v.type === TYPE_PAIR)
 	                {
 	                	if(car(v) === "unquote")
 	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
@@ -961,7 +1061,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		else if(tag == "def")
 		{
 			var variable_name = cadr(l);
-			if(variable_name instanceof Cons) // it is lambda format like (def (add a b) (+ a b))
+			if(variable_name.type === TYPE_PAIR) // it is lambda format like (def (add a b) (+ a b))
 			{
 				var var_name = car(variable_name);
 				var args = cdr(variable_name);
@@ -997,7 +1097,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 			if(variable_existed === false)
 				vt[vt.length - 1].push(variable_name); // add var name to variable table
-			if(variable_value instanceof Cons && car(variable_value) === "lambda"){
+			if(variable_value.type === TYPE_PAIR && car(variable_value) === "lambda"){
 				parent_func_name = variable_name;  // set parent_func_name
 			}
 			// compile value
@@ -1021,7 +1121,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 			else
 			{
-				if(variable_value instanceof Cons && car(variable_value) === "lambda"){
+				if(variable_value.type === TYPE_PAIR && car(variable_value) === "lambda"){
 					parent_func_name = variable_name;  // set parent_func_name
 				}
 				compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)// compile value
@@ -1339,7 +1439,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 	// console.log("parent_func_name: " + parent_func_name);
 	while(l !== null)
 	{
-		if(cdr(l) === null && car(l) instanceof Cons && car(car(l)) === parent_func_name){
+		if(cdr(l) === null && car(l).type === TYPE_PAIR && car(car(l)) === parent_func_name){
 			// console.log("Tail Call");
 			compiler(car(l), vt, macros, 1, null, functions_for_compilation) // tail call
 		}
@@ -1375,7 +1475,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 							  (INSTRUCTIONS[pc + 2] * /*Math.pow(2, 32)*/ 4294967296)+
 							  (INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/ 65536) +
 							   INSTRUCTIONS[pc + 4] - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 64);
-				accumulator = new Integer(accumulator);
+				accumulator = make_integer(accumulator);
 				pc = pc + 5;
 				// console.log("INT accumulator=> " + accumulator.num);
 				continue;
@@ -1386,7 +1486,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 							  - (INSTRUCTIONS[pc + 1] & 0x8000) * Math.pow(2, 32);
 				// console.log((INSTRUCTIONS[pc + 3] * Math.pow(2, 16)) + (INSTRUCTIONS[pc + 4]))
 				accumulator = accumulator + ((INSTRUCTIONS[pc + 3] * /*Math.pow(2, 16)*/65536) + (INSTRUCTIONS[pc + 4])) / /*Math.pow(10, 9)*/1000000000
-				accumulator = new Float(accumulator);
+				accumulator = make_float(accumulator);
 				pc = pc + 5;
 				// console.log("FLOAT accumulator=> " + accumulator);
 				continue;
@@ -1411,7 +1511,12 @@ var VM = function(INSTRUCTIONS, env, pc)
 						created_string += String.fromCharCode(s2);
 					pc = pc + 1;
 				}
-				accumulator = created_string;
+				// create string
+				var v = new Value();
+				v.string = created_string;
+				v.type = TYPE_STRING;
+				accumulator = v;
+				//accumulator = created_string;
 				// console.log("CREATED_STRING: |"+created_string+"|");
 				pc = pc + 1;
 				continue;
@@ -1476,7 +1581,8 @@ var VM = function(INSTRUCTIONS, env, pc)
 			var start_pc = pc + 2;
 			var jump_steps = INSTRUCTIONS[pc + 1];
 
-			accumulator = new Lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
+			// accumulator = new Lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
+			accumulator = make_lambda(param_num, variadic_place, start_pc, env.slice(0)); // set lambda
 			pc = pc + jump_steps + 1;
 			continue;
 		}
@@ -1484,7 +1590,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 		{
 			// console.log("CALL FUNCTION");
 			var param_num = (0x0FFF & inst); // get param num, including return_address.
-			var lambda = accumulator;
+			var lambda;
 
 			// console.log("LAMBDA:");
 			// console.log(vm_env)
@@ -1492,14 +1598,16 @@ var VM = function(INSTRUCTIONS, env, pc)
 			// console.log("PARAM NUM: " + param_num);
 			// a();
 
-			if(lambda instanceof Builtin_Primitive_Procedure){ // builtin lambda
+			if(accumulator.type === TYPE_BUILTIN_LAMBDA){ // builtin lambda
+				lambda = accumulator.builtin_lambda;
 				pc = pc + 1;
-				accumulator = lambda.func(current_frame_pointer.slice(2)); // remove saved env and pc
+				accumulator = lambda(current_frame_pointer.slice(2)); // remove saved env and pc
 				frame_list = cdr(frame_list); // pop top frame
 				current_frame_pointer = car(frame_list) // update frame_pointer
 				continue;
 			}
-			if(typeof(lambda) === 'object'){
+			if(accumulator.type === TYPE_OBJECT){
+				lambda = accumulator.object;
 				pc = pc + 1;
 				p0 = current_frame_pointer[2];
 				p1 = current_frame_pointer[3];
@@ -1515,7 +1623,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 				continue;
 			}
 
-
+			lambda = accumulator.lambda; // user defined lambda
 			// user defined lambda
 			var required_param_num = lambda.param_num;
 			var required_variadic_place = lambda.variadic_place;
@@ -1605,9 +1713,11 @@ var VM = function(INSTRUCTIONS, env, pc)
 //var l = lexer("(def (factorial n result) (if (= n 0) result (factorial (- n 1) (* n result)) )) (factorial 150 1)");
 //var l = lexer("(def (test n) (test n)")
 //var l = lexer("(cons 1 ())")
+//var l = lexer("(def x 12)");
 //console.log(l);
 //var o = parser(l);
-//console.log(o)
+//console.log(o);
+//console.log(car(cdr(cdr(car(o)))))
 //var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
 
 //console.log(VARIABLE_TABLE);
