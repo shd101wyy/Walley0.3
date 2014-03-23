@@ -1,5 +1,2 @@
-(def x 12)
-(def (f n) (if (= n 0) 1 (* n (f (- n 1)))))
-(f 100)
-(defmacro square ([x] [* ~x ~x]))
-(square 120)
+;;(display-string (object->string {'a 12 'b 15.3}))
+(display #[1,2,3,4, {'a 12 'b 15} '(1 2 3)])

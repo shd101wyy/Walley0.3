@@ -71,49 +71,56 @@
       (begin (def v (o (car keys)))
              (cond [(int? v)  ;; int
                     (object->string-iter (cdr keys)
-                                         (string-append ":"
+                                         (string-append output-str 
+                                                        ":"
                                                         (car keys)
                                                         " "
                                                         (int->string v)
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(float? v) ;; float
                     (object->string-iter (cdr keys)
-                                         (string-append ":" 
+                                         (string-append output-str 
+                                                        ":" 
                                                         (car keys)
                                                         " "
                                                         (float->string v)
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(vector? v) ;; vector
                     (object->string-iter (cdr keys)
-                                         (string-append ":" 
+                                         (string-append output-str
+                                                        ":" 
                                                         (car keys) 
                                                         " "
                                                         (vector->string v)
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(string? v) ;; string
                     (object->string-iter (cdr keys)
-                                         (string-append ":"
+                                         (string-append output-str
+                                                        ":"
                                                         (car keys) 
                                                         " "
                                                         v
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(pair? v) ;; pair
                     (object->string-iter (cdr keys)
-                                         (string-append ":"
+                                         (string-append output-str
+                                                        ":"
                                                         (car keys) 
                                                         " "
                                                         (list->string v)
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(lambda? v)
                     (object->string-iter (cdr keys)
-                                         (string-append ":"
+                                         (string-append output-str
+                                                        ":"
                                                         (car keys)
                                                         " "
                                                         (lambda->string v)
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(object? v)
                     (object->string-iter (cdr keys)
-                                         (string-append ":" 
+                                         (string-append output-str
+                                                        ":" 
                                                         (car keys)
                                                         " "
                                                         (object->string v)
@@ -140,5 +147,5 @@
   [(a . b) (string-append (->str ~a) (str ~@b))])
 ;; display strings
 (def (display arg)
-  (display (->str arg)))
+  (display-string (->str arg)))
 
