@@ -3,6 +3,7 @@
 (def vector->string ())
 (def lambda->string ())
 (def dictionary->string ())
+(def object->string ())
 ;; lambda->string
 (def (lambda->string a)
   "<lambda>")
@@ -60,6 +61,68 @@
                       (list->string-iter (cdr v) (string-append output-str (a:->string) (if (null? (cdr v)) "" " ")))]
                      ))))
   (list->string-iter v "("))
+
+;; object->string
+(def (object->string o)
+  (def keys (object-keys o))
+  (def (object->string-iter keys output-str)
+    (if (null? keys)
+      (string-append output-str "}")
+      (begin (def v (o (car keys)))
+             (cond [(int? v)  ;; int
+                    (object->string-iter (cdr keys)
+                                         (string-append ":"
+                                                        (car keys)
+                                                        " "
+                                                        (int->string v)
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [(float? v) ;; float
+                    (object->string-iter (cdr keys)
+                                         (string-append ":" 
+                                                        (car keys)
+                                                        " "
+                                                        (float->string v)
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [(vector? v) ;; vector
+                    (object->string-iter (cdr keys)
+                                         (string-append ":" 
+                                                        (car keys) 
+                                                        " "
+                                                        (vector->string v)
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [(string? v) ;; string
+                    (object->string-iter (cdr keys)
+                                         (string-append ":"
+                                                        (car keys) 
+                                                        " "
+                                                        v
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [(pair? v) ;; pair
+                    (object->string-iter (cdr keys)
+                                         (string-append ":"
+                                                        (car keys) 
+                                                        " "
+                                                        (list->string v)
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [(lambda? v)
+                    (object->string-iter (cdr keys)
+                                         (string-append ":"
+                                                        (car keys)
+                                                        " "
+                                                        (lambda->string v)
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [(object? v)
+                    (object->string-iter (cdr keys)
+                                         (string-append ":" 
+                                                        (car keys)
+                                                        " "
+                                                        (object->string v)
+                                                        (if (null? (cdr keys)) "" ", ")))]
+                   [else (display-string "ERROR: object->string invalid type")
+                         '()]
+                   )))) ;; end of function
+  (object->string-iter keys "{"))
+
 ;; (str 12 "Hello" " world") => "12Hello world"
 (def (->str arg)
   (cond [(int? arg) (int->string arg)]
@@ -70,10 +133,12 @@
         [(lambda? arg) (lambda->string arg)]
         [(object? arg) (object->string arg)] 
         [else (arg:->string)])) ;; impossible enter here
+;; concate strings
 (defmacro str 
   [() ""]
   [(a) (->str ~a)]
   [(a . b) (string-append (->str ~a) (str ~@b))])
-
-
+;; display strings
+(def (display arg)
+  (display (->str arg)))
 

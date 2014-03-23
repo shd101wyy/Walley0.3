@@ -112,7 +112,7 @@
                                       (string-slice input-string i (+ i split-str-length)))
                           ;; could split
                           (return-vector-func (vector-push! output saved-string)
-                                              (+ i (len split-str))
+                                              (+ i split-str-length)
                                               "")
                           (return-vector-func output
                                               (+ i 1)

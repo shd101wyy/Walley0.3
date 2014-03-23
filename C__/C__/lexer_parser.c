@@ -78,8 +78,7 @@ Object * Lexer_iter(char *input_str, int i, int length)
         return cons( Object_initString("~@"), Lexer_iter(input_str, i+2, length));
     else if(input_str[i] == '\'' || input_str[i] == '`' || input_str[i] == '~')
         return cons( Object_initString( String_charToString(input_str[i]) ), Lexer_iter(input_str, i + 1, length));
-    else if(input_str[i] == '"')
-    {
+    else if(input_str[i] == '"'){
         int end = Lexer_find_final_string_index(input_str, length, i+1);
         return cons( Object_initString(String_slice(input_str, i, end)), Lexer_iter(input_str, end, length));
     }

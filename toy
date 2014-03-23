@@ -1,4 +1,6 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --stack-size=65500
+// change stack size 
+
 var fs=require("fs")
 // var toy=require("./toy.js")
 var toy = require("./another_another_toy.js")
@@ -166,8 +168,15 @@ else if (argv.length == 4 && argv[2] == "compress"){
 }
 else if (argv[2] === "compile"){ // compile multiple files
     var macros = [[]]; // macros for lisp
+    var index_of_o = argv.indexOf("-o");
+    var end = argv.length;
+    var output_file_name = "./out.toyc"
+    if(index_of_o !== -1){
+	end = index_of_o;
+	output_file_name = "./" + argv[index_of_o + 1];
+    }
     console.log("Begin to compile: \n");
-    for(var i = 3; i < argv.length; i++){ // compile each file
+    for(var i = 3; i < end; i++){ // compile each file
 	var file_name = argv[i]
 	console.log("*  " + file_name);
 	if (typeof(file_name)=="undefined"){
@@ -176,11 +185,14 @@ else if (argv[2] === "compile"){ // compile multiple files
 	}
 	// get content of file
 	var content_in_file=fs.readFileSync(file_name,"utf8")
-	
+	// console.log(content_in_file);
 	var l = toy_vm.vm_lexer(content_in_file);
+	// console.log("finish running lexer");
 	var p = toy_vm.vm_parser(l);
+	// console.log("finish running parser");
 	var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
     }
+    console.log("\n\n** Finish Compilation **");
     // put vm_insts to file
     var s = "";
     var _4_digits_hex = function(num){
@@ -192,7 +204,7 @@ else if (argv[2] === "compile"){ // compile multiple files
 	    s += " ";
     }
     // write to file
-    fs.writeFile("./out.toyc", s, function(err) {
+    fs.writeFile(output_file_name, s, function(err) {
 	if(err) {
 	    console.log(err);
 	} else {

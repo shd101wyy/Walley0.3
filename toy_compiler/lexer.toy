@@ -152,6 +152,10 @@
                           ))
 ;; parse symbol or number or quick access
 (def (parser-symbol-or-number v)
+  (if (string=? (string-ref v 0) ;; if it is string, then dont parse 
+                "\"")
+    v
+    '())
   (def splitted_ (string-split v ":"))
   (if (or (string=? v ":")
           (= (list-length splitted_)

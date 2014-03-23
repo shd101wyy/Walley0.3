@@ -183,22 +183,22 @@ var isFloat = function(n){return isNumber(n) && !(isInteger(n))}
 */
 var lexer_iter = function(input_string, index)
 {
-	if (index == input_string.length) return  make_null();
-	if (input_string[index] == "(" || input_string[index] == ")")
+	if (index >= input_string.length) return  make_null();
+	else if (input_string[index] == "(" || input_string[index] == ")")
 		return cons(input_string[index], lexer_iter(input_string, index + 1));
-	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
+	else if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
 		return lexer_iter(input_string, index + 1);
-	if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
+	else if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
 		return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
-	if (input_string[index] == "{") // object
+	else if (input_string[index] == "{") // object
 		return cons("(", cons("object", lexer_iter(input_string, index + 1)));
-	if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
-	if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
-	if (input_string[index] == "~" && input_string[index+1] == "@")
+	else if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
+	else if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
+	else if (input_string[index] == "~" && input_string[index+1] == "@")
 		return cons("~@", lexer_iter(input_string, index + 2));
-	if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~")
+	else if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~")
 		return cons(input_string[index], lexer_iter(input_string, index+1));
-	if (input_string[index] == ";"){ // comment
+	else if (input_string[index] == ";"){ // comment
 		var i = index;
 		while(i != input_string.length){
 			if(input_string[i] == "\n") break;
@@ -206,7 +206,7 @@ var lexer_iter = function(input_string, index)
 		}
 		return lexer_iter(input_string, i);
 	}
-	if(input_string[index] === '"'){
+	else if(input_string[index] === '"'){
 		var i = index + 1;
 		while(i != input_string.length){
 			if(input_string[i] == '"') break;
@@ -248,6 +248,7 @@ var formatQuickAccess = function(ns, keys)
     return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0],  make_null())),  make_null())), 1);
 }
 var parser_symbol_or_number = function(v){
+	if(v[0] === '"') return v;
 	var splitted_ = v.split(":");
 	if(v === ":"  || splitted_.length == 1 || v[0] === ":" || v[v.length-1] === ":") //  : :abc abc: 
 		return v

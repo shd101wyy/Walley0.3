@@ -7,7 +7,8 @@
 (def (cddr x) (cdr (cdr x)))
 (def (caddr x) (car (cdr (cdr x))))
 (def (cdddr x) (cdr (cdr (cdr x))))
-
+;; list? function is the same as pair? function
+(def list? pair?)
 
 ;; list
 (def (list . arg) arg)
