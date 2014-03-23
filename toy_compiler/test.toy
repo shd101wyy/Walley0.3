@@ -7,5 +7,11 @@
 ;(display (> (string-length x) 2))
 ;(display (string=? (string-ref x 0) "0"))
 ;(display '())
-(display (lexer "(def x 12)(def x ~12 ~@3 `3 , 5) {'a 3} #[4 5]"))
-(display (string-split "math:sin:log" ":"))
+(def x "(def x 12) (math:add:* 3 4)")
+(def l (lexer x))
+(display l)
+(def p (parser l))
+(display p)
+
+
+

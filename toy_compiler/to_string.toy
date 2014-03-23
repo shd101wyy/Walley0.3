@@ -173,3 +173,7 @@
 (def (display arg)
   (display-string (->str arg)))
 
+;; error
+;; print error message
+(def (error arg)
+  (display-string (string-append "ERROR: " (->str arg))))
