@@ -394,7 +394,8 @@ var ENVIRONMENT =
     [
 	bpp(function(stack_param)
 	    { // 0 cons
-		return new Cons(stack_param[0], stack_param[1]);
+	    	return cons(stack_param[0], stack_param[1]);
+		//return new Cons(stack_param[0], stack_param[1]);
 	    }),
 	
 	bpp(function(stack_param)
