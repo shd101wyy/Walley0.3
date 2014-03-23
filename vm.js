@@ -183,7 +183,7 @@ var isFloat = function(n){return isNumber(n) && !(isInteger(n))}
 */
 var lexer_iter = function(input_string, index)
 {
-	if (index == input_string.length) return null;
+	if (index == input_string.length) return  make_null();
 	if (input_string[index] == "(" || input_string[index] == ")")
 		return cons(input_string[index], lexer_iter(input_string, index + 1));
 	if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
@@ -236,16 +236,16 @@ var lexer = function(input_string)
 /*
 	simple parser
 */
-var parser_rest = null;
+var parser_rest =  make_null();
 var formatQuickAccess = function(ns, keys)
 {
     var formatQuickAccess_iter = function(keys, output, count)
     {
         if(count === keys.length)
             return output;
-        return formatQuickAccess_iter(keys, cons(output, cons(cons("quote", cons(keys[count], null)), null)), count + 1);
+        return formatQuickAccess_iter(keys, cons(output, cons(cons("quote", cons(keys[count],  make_null())),  make_null())), count + 1);
     }
-    return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0], null)), null)), 1);
+    return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0],  make_null())),  make_null())), 1);
 }
 var parser_symbol_or_number = function(v){
 	var splitted_ = v.split(":");
@@ -269,30 +269,30 @@ var parser_special = function(l)
     l = cdr(l);
     if (car(l) === "(") // list
     {
-        return cons(tag, cons(parser_list(cdr(l)), null));
+        return cons(tag, cons(parser_list(cdr(l)),  make_null()));
     }
     else if (car(l) === "'" || car(l) === "~" || car(l) === "`")  // quote unquote quasiquote
     {   // here my be some errors
-        return cons(tag, cons(parser_special(l), null));
+        return cons(tag, cons(parser_special(l),  make_null()));
     }
     else  // symbol or number
     {
         parser_rest = cdr(l);
-        return cons(tag, cons(parser_symbol_or_number(car(l)), null));
+        return cons(tag, cons(parser_symbol_or_number(car(l)),  make_null()));
     }
 }
 var parser_list = function(l)
 {
-	if(l == null)
+	if(l.type === TYPE_NULL)
 	{
 		console.log("ERROR: invalid statement. Missing )");
-		parser_rest = null;
-		return null;
+		parser_rest =  make_null();
+		return  make_null();
 	}
 	if(car(l) == ")") // find end
 	{
 		parser_rest = cdr(l);
-		return null;
+		return  make_null();
 	}
 	else if (car(l) == "(") // another list
 	{
@@ -311,8 +311,8 @@ var parser_list = function(l)
 }
 var parser = function(l)
 {
-	if(l == null)
-		return null;
+	if(l.type === TYPE_NULL)
+		return  make_null();
 	else if (car(l) == "(")
 		return cons(parser_list(cdr(l)), parser(parser_rest));
 	// quote // unquote // quasiquote // unquote-splice
@@ -735,7 +735,7 @@ var vt_find = function(vt, var_name) // find variable
 var list_to_array = function(l) // convert list to array
 {
 	var return_array = [];
-	while(l !== null)
+	while(l.type !== TYPE_NULL)
 	{
 		return_array.push(car(l));
 		l = cdr(l);
@@ -747,7 +747,7 @@ var list_to_array = function(l) // convert list to array
 		'(3 4) '(5 6) => '(3 4 5 6)
 */
 var list_append = function(a, b){
-	if(a === null) return b;
+	if(a.type === TYPE_NULL) return b;
 	return cons(car(a), list_append(cdr(a), b));
 }
 /*
@@ -757,8 +757,8 @@ var list_append = function(a, b){
 */
 var macro_match = function(a, b){
 	var macro_match_iter = function(a, b, output){
-		if(a === null && b === null) return output; // finish matching
-		else if((a === null && b !== null) || ( a!==null && b === null)) // doesnt match
+		if(a.type === TYPE_NULL && b.type === TYPE_NULL) return output; // finish matching
+		else if((a.type === TYPE_NULL  && b.type !== TYPE_NULL) || ( a.type !== TYPE_NULL && b.type === TYPE_NULL)) // doesnt match
 			return false;
 		else if (car(a).type === TYPE_PAIR && car(b).type === TYPE_PAIR){
 			var m = macro_match_iter(car(a), car(b), output);
@@ -786,7 +786,7 @@ var macro_match = function(a, b){
 	eg (* ~x ~x) {:x 12} => (* 12 12)
 */
 var macro_expand_with_arg_value = function(body, t){
-	if(body === null) return null;
+	if(body.type === TYPE_NULL) return make_null();
 	else if(car(body) === "unquote"){
 		if(cadr(body) in t){
 			return t[cadr(body)];
@@ -812,7 +812,7 @@ var macro_expand_with_arg_value = function(body, t){
 }
 var macro_expand = function(macro, exps){
 	var clauses = macro.clauses;
-	while(clauses !== null){
+	while(clauses.type !== TYPE_NULL){
 		var match = macro_match(car(car(clauses)), exps);
 		if(match === false) {
 			clauses = cdr(clauses); continue;
@@ -822,7 +822,7 @@ var macro_expand = function(macro, exps){
 		}
 	}
 	console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
-	return null;
+	return make_null();
 }
 /* 
 	macro_expand_for_compilation
@@ -834,7 +834,7 @@ var macro_expand = function(macro, exps){
 																		here 0 is integer, different with string
 */
 var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, start_flag){
-	if(body === null) return null;
+	if(body.type === TYPE_NULL) return make_null();
 	else if(car(body) === "unquote"){ // this place might have problem
 		if(cadr(body) in t){
 			return t[cadr(body)];
@@ -842,7 +842,7 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 		var i = vt_find(vt, cadr(body)); // search vt
 		if(i[0] === -1)
 			return body;
-		return cons(0, cons(i[0], cons(i[1], null))); // get that variable
+		return cons(0, cons(i[0], cons(i[1], make_null()))); // get that variable
 
 	}
 	else if ((car(body).type === TYPE_PAIR) && (car(car(body)) === "unquote-splice")){
@@ -882,13 +882,13 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 					macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	else{
 		return cons(
-					cons(0, cons(i[0], cons(i[1], null))), // get that variable
+					cons(0, cons(i[0], cons(i[1], make_null()))), // get that variable
 					macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
 }
 var macro_expand_for_compilation = function(macro, exps, macros){
 	var clauses = macro.clauses;
-	while(clauses !== null){
+	while(clauses.type !== TYPE_NULL){
 		var match = macro_match(car(car(clauses)), exps);
 		if(match === false) {
 			clauses = cdr(clauses); continue;
@@ -898,7 +898,7 @@ var macro_expand_for_compilation = function(macro, exps, macros){
 		}
 	}
 	console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
-	return null;
+	return make_null();
 }
 /*
 	parent func name:
@@ -907,14 +907,14 @@ var macro_expand_for_compilation = function(macro, exps, macros){
 */	
 var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
 {
-	if(l === null)
+	if(l.type === TYPE_NULL)
 	{
 		INSTRUCTIONS.push(CONST_NULL); // push null
 		return;
 	}
 	if(typeof(l) === "string")
 	{
-		if(l === null)
+		if(l.type === TYPE_NULL)
 		{
 			INSTRUCTIONS.push( CONST_NULL);
 			return;
@@ -1004,18 +1004,18 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		{
 			var v = cadr(l);
 			// check integer float string null
-			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
+			if(v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"')
 				return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			else if (v.type === TYPE_PAIR) // pair
 			{
 				var quote_list = function(l)
 	            {
-	                if(l == null) return null;
+	                if(l.type === TYPE_NULL) return make_null();
 	                var v = car(l);
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
 	                if(v.type === TYPE_PAIR) return cons("cons", cons(/*cons(*/quote_list(v)/*, null)*/, cons(quote_list(cdr(l)), null)));
-	                else if (v === ".") return cons("quote", cons(cadr(l), null));
-	                return cons("cons", cons(cons("quote", cons(v, null)),  cons(quote_list(cdr(l)), null)));
+	                else if (v === ".") return cons("quote", cons(cadr(l), make_null()));
+	                return cons("cons", cons(cons("quote", cons(v, make_null())),  cons(quote_list(cdr(l)), make_null())));
 	            }
 	            return compiler(quote_list(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			}
@@ -1032,25 +1032,25 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			var v = cadr(l);
 			// check integer
 			// check integer float string null
-			if(v === null || isInteger(v) || isFloat(v) || v[0] === '"')
+			if(v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"')
 				return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			else if (v.type === TYPE_PAIR) // pair
 			{
 				var quasiquote = function(l)
 	            {
-	                if(l == null) return null;
+	                if(l.type === TYPE_NULL) return make_null();
 	                var v = car(l);
 	                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
 	                if(v.type === TYPE_PAIR)
 	                {
 	                	if(car(v) === "unquote")
-	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
+	                		return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), make_null())));
 	                	else if (car(v) === "unquote-splice")
-	                		return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), null)));
-	                	return cons("cons", cons(/*cons(*/quasiquote(v)/*, null)*/, cons(quasiquote(cdr(l)), null)));
+	                		return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), make_null())));
+	                	return cons("cons", cons(quasiquote(v), cons(quasiquote(cdr(l)), make_null())));
 	                }
-	                else if (v === ".") return cons("quote", cons(cadr(l), null));
-	                return cons("cons", cons( cons("quote", cons(v, null)), cons(quasiquote(cdr(l)), null)));
+	                else if (v === ".") return cons("quote", cons(cadr(l), make_null()));
+	                return cons("cons", cons( cons("quote", cons(v, make_null())), cons(quasiquote(cdr(l)), make_null())));
 	            }
 	            return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			}
@@ -1072,7 +1072,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 				var var_name = car(variable_name);
 				var args = cdr(variable_name);
 				var lambda = cons("lambda", cons(args, cddr(l)));
-				return compiler(cons("def", cons(var_name, cons(lambda, null))),
+				return compiler(cons("def", cons(var_name, cons(lambda, make_null()))),
 								vt,
 								macros,
 								tail_call_flag,
@@ -1081,8 +1081,8 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 
 			var variable_value;
-			if(cddr(l) === null)
-				variable_value = null;
+			if(cddr(l).type === TYPE_NULL)
+				variable_value = make_null();
 			else
 			 	variable_value = caddr(l);
 
@@ -1143,7 +1143,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			var conseq = caddr(l);
 			var alter;
 			if(cdddr(l) === l)
-				alter = null;
+				alter = make_null();
 			else
 			    alter = cadddr(l);
 
@@ -1155,7 +1155,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			/*
 				I changed this to compiler_begin for tail_call optimization
 			*/
-			compiler_begin(cons(conseq, null), vt, macros, parent_func_name, functions_for_compilation);
+			compiler_begin(cons(conseq, make_null()), vt, macros, parent_func_name, functions_for_compilation);
 			// compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
 			var index2 = INSTRUCTIONS.length;
 			INSTRUCTIONS.push(0x0000); // jump over alternative
@@ -1163,7 +1163,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			var jump_steps = index2 - index1 + 1;
 			INSTRUCTIONS[index1] = (TEST << 12) | jump_steps;
 
-			compiler_begin(cons(alter, null), vt, macros, parent_func_name, functions_for_compilation);
+			compiler_begin(cons(alter, make_null()), vt, macros, parent_func_name, functions_for_compilation);
 			// compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
 			var index3 = INSTRUCTIONS.length;
 			jump_steps = index3 - index2;
@@ -1222,12 +1222,12 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		else if (tag === "cond"){
 			var cond_clauses = cdr(l);
 			var expand_clauses = function(clauses){
-				if(clauses === null)
-					return null;
+				if(clauses.type === TYPE_NULL)
+					return make_null();
 				var first = car(clauses);
 				var rest = cdr(clauses);
 				if(car(first) === "else"){
-					if(rest === null){
+					if(rest.type === TYPE_NULL){
 						return cons("begin", cdr(first));
 					}
 					else{
@@ -1255,12 +1255,12 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			vt_.push([])          // we add a new frame
 			macros_.push([]);     // add new frame
 
-			vt_[vt_.length - 1].push(null); // save space for parent-env.
-			vt_[vt_.length - 1].push(null); // save space for return address.
+			vt_[vt_.length - 1].push(make_null()); // save space for parent-env.
+			vt_[vt_.length - 1].push(make_null()); // save space for return address.
 
 			while(true)
 			{
-				if(params == null) break;
+				if(params.type === TYPE_NULL) break;
 				if(car(params) === ".") // variadic
 				{
 					variadic_place = counter;
@@ -1315,7 +1315,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 				var frame = macros[i];
 				for(var j = frame.length - 1; j >= 0; j--){
 					if(frame[j].macro_name === macro_name){
-						var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), null));
+						var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), make_null()));
 						return compiler(e, 
 										vt,
 										macros,
@@ -1331,7 +1331,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		}
 		// return
 		else if (tag === "return"){
-			compiler(cdr(l) === null? null : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+			compiler(cdr(l).type === TYPE_NULL? make_null() : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			INSTRUCTIONS.push(RETURN << 12);
 			return;
 		}
@@ -1372,10 +1372,10 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 				for(var i = 0; i < param_num; i++){
 					if(i === functions_for_compilation.variadic_place){ // variadic param
 						count_params++;
-						var p = null;
+						var p = make_null();
 						var j = param_num - 1;
 						for(; j >= i; j--){
-							p = cons("cons", cons(params[j], cons(p, null)));
+							p = cons("cons", cons(params[j], cons(p, make_null())));
 						}
 						compiler(p, vt, macros, false, parent_func_name, functions_for_compilation); // each argument is not tail call
 						// set to current frame
@@ -1440,14 +1440,14 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 
 var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_compilation)
 {
-	if(typeof(parent_func_name) === "undefined") parent_func_name = null;
-	if(typeof(functions_for_compilation) === "undefined") functions_for_compilation = null;
+	if(typeof(parent_func_name) === "undefined") parent_func_name = make_null();
+	if(typeof(functions_for_compilation) === "undefined") functions_for_compilation = make_null();
 	// console.log("parent_func_name: " + parent_func_name);
-	while(l !== null)
+	while(l.type !== TYPE_NULL)
 	{
-		if(cdr(l) === null && car(l).type === TYPE_PAIR && car(car(l)) === parent_func_name){
+		if(cdr(l).type === TYPE_NULL && car(l).type === TYPE_PAIR && car(car(l)) === parent_func_name){
 			// console.log("Tail Call");
-			compiler(car(l), vt, macros, 1, null, functions_for_compilation) // tail call
+			compiler(car(l), vt, macros, 1, make_null(), functions_for_compilation) // tail call
 		}
 		else 
 			compiler(car(l), vt, macros, 0, parent_func_name, functions_for_compilation) // not tail call;
@@ -1467,10 +1467,10 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 var VM = function(INSTRUCTIONS, env, pc)
 {
 	if(typeof(pc) === "undefined") pc = 0;
-	var accumulator = null; // accumulator
+	var accumulator = make_null(); // accumulator
 	var length_of_insts = INSTRUCTIONS.length;
-	var current_frame_pointer = null; // pointer that points to current new frame
-	var frame_list = cons(null, null); // stack used to save frames    head frame1 frame0 tail, queue
+	var current_frame_pointer = make_null(); // pointer that points to current new frame
+	var frame_list = cons(make_null(), make_null()); // stack used to save frames    head frame1 frame0 tail, queue
 	while(pc !== length_of_insts)
 	{
 		var inst = INSTRUCTIONS[pc];
@@ -1701,7 +1701,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 			}
 			default:
 				console.log("ERROR: Invalid opcode");
-				return null;
+				return make_null();
 		}
 	}
 	console.log("Finishing running VM");

@@ -1,0 +1,5 @@
+(def x 12)
+(def (f n) (if (= n 0) 1 (* n (f (- n 1)))))
+(f 100)
+(defmacro square ([x] [* ~x ~x]))
+(square 120)

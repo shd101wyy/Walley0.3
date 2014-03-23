@@ -8,7 +8,7 @@
 (def #t 'true)
 (def #f '())
 ;; def not
-(def (not arg0) (if arg0 () 'true))
+(def (not arg0) (if arg0 '() 'true))
 
 
 ;; and
