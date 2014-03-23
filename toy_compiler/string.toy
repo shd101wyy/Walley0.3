@@ -2,6 +2,13 @@
 ;; string.toy
 ;; define string package
 
+;; string-length 
+;; string-slice
+;; string-ref
+;; string-append
+;; string->char-code
+
+;; I might support char data type in the future
 
 ;; string find string
 ;; eg: (string-find "Hello" "H")   => 0
@@ -143,12 +150,106 @@
             (return-list-func start-index ""))          
           ))
 
-;; eg "Hello" => Hello
-;; eg "Hello abc" => #str{Hello abc}
-(def (format-string input-str)
-  (def i (string-find input-str " "))
-  (if (= i -1)
-    input-str
-    (string-append "#str{" input-str "}")))
+
+;; get several char code
+(def char-code-0 (string->char-code "0" 0))
+(def char-code-9 (string->char-code "9" 0))
+(def char-code-A (string->char-code "A" 0))
+(def char-code-Z (string->char-code "Z" 0))
+(def char-code-a (string->char-code "a" 0))
+(def char-code-z (string->char-code "z" 0))
+(def char-code-space (string->char-code " " 0))
+(def char-code-\t (string->char-code "\t" 0))
+(def char-code-\n (string->char-code "\n" 0))
+;; string-is-digit
+(def (string-is-digit s)
+  (def length-of-str (string-length s))
+  (def (string-is-digit-iter i)
+    (if (= i length-of-str)
+      'true
+      (begin (def c (string->char-code s i))
+             (if (and (>= c
+                          char-code-0)
+                      (<= c
+                          char-code-9))
+               (string-is-digit-iter (+ i 1))
+               '()))))
+   (if (and (> length-of-str 2) ;; check 0x hexa
+           (string=? (string-ref s 0)
+                     "0")
+           (string=? (string-ref s 1)
+                     "x"))
+    (string-is-digit-iter 2)
+    (string-is-digit-iter 0)))
+
+;; string-is-upper
+(def (string-is-upper s)
+  (def length-of-str (string-length s))
+  (def (string-is-upper-iter i)
+    (if (= i length-of-str)
+      'true
+      (begin (def c (string->char-code s i))
+             (if (and (>= c
+                          char-code-A)
+                      (<= c
+                          char-code-Z))
+               (string-is-upper-iter (+ i 1))
+               '()))))
+  (string-is-upper-iter 0))
+
+;; string-is-lower
+(def (string-is-lower s)
+  (def length-of-str (string-length s))
+  (def (string-is-lower-iter i)
+    (if (= i length-of-str)
+      'true
+      (begin (def c (string->char-code s i))
+             (if (and (>= c
+                          char-code-a)
+                      (<= c
+                          char-code-z))
+               (string-is-lower-iter (+ i 1))
+               '()))))
+  (string-is-lower-iter 0))
+
+;; string-is-alpha
+(def (string-is-alpha s)
+  (def length-of-str (string-length s))
+  (def (string-is-alpha-iter i)
+    (if (= i length-of-str)
+      'true
+      (begin (def c (string->char-code s i))
+             (if (or (and (>= c
+                              char-code-a)
+                          (<= c
+                              char-code-z))
+                     (and (>= c 
+                              char-code-A)
+                          (<= c 
+                              char-code-Z)))
+               (string-is-alpha-iter (+ i 1))
+               '()))))
+  (string-is-alpha-iter 0))
+
+;; string-is-space
+(def (string-is-space s)
+  (def length-of-str (string-length s))
+  (def (string-is-space-iter i)
+    (if (= i length-of-str)
+      'true
+      (begin (def c (string->char-code s i))
+             (if (or (= c
+                        char-code-space)
+                     (= c
+                        char-code-\t)
+                     (= c
+                        char-code-\n))
+               (string-is-space-iter (+ i 1))  
+               false))))
+  (string-is-space-iter 0))
+
+
+
+
 
 

@@ -4,6 +4,15 @@
 (def lambda->string ())
 (def dictionary->string ())
 (def object->string ())
+
+;; eg "Hello" => Hello
+;; eg "Hello abc" => #str{Hello abc}
+(def (format-string input-str)
+  (def i (string-find input-str " "))
+  (if (= i -1)
+    input-str
+    (string-append "#str{" input-str "}")))
+
 ;; lambda->string
 (def (lambda->string a)
   "<lambda>")
@@ -16,7 +25,9 @@
     (if (= count (vector-length v))
       (string-append output-str "]")
       (begin (def a (vector-ref v count))
-             (cond [(int? a) 
+             (cond [(null? a)
+                    (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") "()"))]
+                   [(int? a) 
                     (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (int->string a)))]
                    [(float? a)
                     (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (float->string a)))]
@@ -43,7 +54,9 @@
   (def (list->string-iter v output-str)
     (if (null? v) (string-append output-str ")")
         (begin (def a (car v))
-               (cond [ (int? a)
+               (cond [ (null? a)
+                       (list->string-iter (cdr v) (string-append output-str "()") (if (null? (cdr v)) "" " "))]
+                     [ (int? a)
                        (list->string-iter (cdr v) (string-append output-str (int->string a) (if (null? (cdr v)) "" " ")))]
                      [ (float? a)
                        (list->string-iter (cdr v) (string-append output-str (float->string a) (if (null? (cdr v)) "" " ")))]
@@ -69,7 +82,17 @@
     (if (null? keys)
       (string-append output-str "}")
       (begin (def v (o (car keys)))
-             (cond [(int? v)  ;; int
+             (cond [(null? v) ;; null
+                    (object->string-iter (cdr keys)
+                                         (string-append output-str
+                                                        ":"
+                                                        (car keys)
+                                                        " "
+                                                        "()"
+                                                        (if (null? (cdr keys))
+                                                          ""
+                                                          ", ")))] 
+                   [(int? v)  ;; int
                     (object->string-iter (cdr keys)
                                          (string-append output-str 
                                                         ":"
@@ -132,7 +155,8 @@
 
 ;; (str 12 "Hello" " world") => "12Hello world"
 (def (->str arg)
-  (cond [(int? arg) (int->string arg)]
+  (cond [(null? arg) "()"]
+        [(int? arg) (int->string arg)]
         [(float? arg) (float->string arg)]
         [(vector? arg) (vector->string arg)]
         [(string? arg) arg]

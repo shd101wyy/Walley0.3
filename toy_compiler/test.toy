@@ -1,3 +1,6 @@
 ;;(display-string (object->string {'a 12 'b 15.3}))
-(display '("Hello World" 12))
-(display (string-find "Hello World" " "))
+;(display '("Hello World" 12))
+;(display (string-find "Hello World" " "))
+(display 12)
+;(display (string-is-space "Hello"))
+(display '())
