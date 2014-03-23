@@ -499,7 +499,7 @@ var ENVIRONMENT =
 		    && (stack_param[1].type === TYPE_INTEGER || stack_param[1].type === TYPE_FLOAT))
 		{
 		    if(stack_param[0].num === stack_param[1].num) return make_string("true");
-		    return false;
+		    return make_null();
 		}
 		else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
 			return stack_param[0].string === stack_param[1].string ? make_string("true"):make_null();

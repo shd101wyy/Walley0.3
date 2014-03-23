@@ -7,4 +7,5 @@ logic.toy             :   logics
 string.toy            :   string  
 list.toy              :   list  
 vector.toy            :   vector  
-to_string.toy         :   to string
+to_string.toy         :   to string  
+lexer_parser.toy      :   lexer and parser  

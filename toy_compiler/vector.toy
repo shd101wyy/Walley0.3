@@ -12,4 +12,16 @@
                                (+ i 1)))))
   (vector->list-iter v 0))
 
-
+;; vector-find
+;; find element in vector and return its index
+(def (vector-find v o start-index)
+  (set! start-index (or start-index 0))
+  (def length (vector-length v))
+  (def (vector-find-iter i)
+    (if (= i length)
+      -1 ;; didn't find
+      (if (eq? (vector-ref v i)
+               o)
+        i
+        (vector-find-iter (+ i 1))))) 
+  (vector-find-iter start-index))

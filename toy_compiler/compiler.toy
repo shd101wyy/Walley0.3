@@ -1,0 +1,51 @@
+;; compiler.toy
+;; compiler written in toy language
+
+;; define opcodes
+(def SET 0x0)
+(def GET 0x1)
+
+(def CONST 0x2)
+(def CONST_INTEGER 0x2100)
+(def CONST_FLOAT 0x2200)
+(def CONST_STRING 0x2300)
+(def CONST_NULL 0x2400)
+
+(def MAKELAMBDA 0x3)
+(def RETURN 0x4)
+(def NEWFRAME 0x5)
+(def PUSH_ARG 0x6)
+(def CALL 0x7)
+(def JMP 0x8)
+(def TEST 0x9)
+
+
+;; GLOBAL VARIABLES
+;; used to save variable name
+;; this might be changed in the future
+(def VARIABLE_TABLE  
+  #[
+    ;; frame 0
+    #["cons", "car", "cdr", "vector", "vector-ref", "vector-set!",
+      "vector-length", "vector?", "+", "-", "*", "/", "=",
+      "<", ">", "<=", ">=", "eq?", "string?", "int?",
+      "float?", "pair?", "null?", 
+      "string<?", "string=?", "string-ref", "string-slice", "string-length",
+      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
+      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
+      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
+      "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
+      "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor", 
+      "string->char-code", "char-code->string"
+      ]
+    ])
+;; used to save macros
+(def MACROS #[#[]]) 
+(def BUILTIN_PRIMITIVE_PROCEDURE_NUM (vector-length (vector-ref VARIABLE_TABLE 0)))
+
+;; var ENVIRONMENT is written in C/JavaScript Language
+
+
+
+
+
