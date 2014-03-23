@@ -46,6 +46,12 @@ var make_null = function(){
 	v.type = TYPE_NULL;
 	return v;
 }
+var make_string = function(s){
+	var v = new Value();
+	v.type = TYPE_STRING;
+	v.string = s;
+	return v;
+}
 
 var Cons = function(car_, cdr_)
 {
@@ -429,7 +435,7 @@ var ENVIRONMENT =
 	    }),
 	bpp(function(stack_param)
 	    { // 7 vector?
-		if(stack_param[0].type === TYPE_VECTOR) return "true";
+		if(stack_param[0].type === TYPE_VECTOR) return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
@@ -459,31 +465,31 @@ var ENVIRONMENT =
 	bpp(function(stack_param)
 	    { // 12 = only for number
 		if (stack_param[0].num == stack_param[1].num)
-		    return "true"
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 13 < only for number
 		if (stack_param[0].num < stack_param[1].num)
-		    return "true"
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 14 > only for number
 		if (stack_param[0].num > stack_param[1].num)
-		    return "true"
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 15 <= only for number
 		if (stack_param[0].num <= stack_param[1].num)
-		    return "true"
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 16 >= only for number
 		if (stack_param[0].num >= stack_param[1].num)
-		    return "true"
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
@@ -491,55 +497,58 @@ var ENVIRONMENT =
 		if ((stack_param[0].type === TYPE_INTEGER || stack_param[0].type === TYPE_FLOAT) // check number
 		    && (stack_param[1].type === TYPE_INTEGER || stack_param[1].type === TYPE_FLOAT))
 		{
-		    if(stack_param[0].num === stack_param[1].num) return "true";
+		    if(stack_param[0].num === stack_param[1].num) return make_string("true");
 		    return false;
 		}
 		else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
-			return stack_param[0].string === stack_param[1].string ? "true":make_null();
-		return stack_param[0] === stack_param[1] ? "true":make_null();
+			return stack_param[0].string === stack_param[1].string ? make_string("true"):make_null();
+		return stack_param[0] === stack_param[1] ? make_string("true"):make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 18 string?
 		if(stack_param[0].type === TYPE_STRING)
-		    return "true";
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 19 int?
 		if(stack_param[0].type === TYPE_INTEGER)
-		    return "true";
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 20 float?
 		if(stack_param[0].type === TYPE_FLOAT)
-		    return "true";
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 21 pair?
 		if(stack_param[0].type === TYPE_PAIR)
-		    return "true";
+		    return make_string("true");
 		return make_null();
 	    }),
 	bpp(function(stack_param)
 	    { // 22 null?
 		if(stack_param[0].type === TYPE_NULL)
-		    return "true";
+		    return make_string("true");
 		return make_null();
 	    }), 
 	bpp(function(stack_param){
 	    // 23 string<?
-	    if(stack_param[0].string < stack_param[1].string) return "true"; 
+	    if(stack_param[0].string < stack_param[1].string) return make_string("true");
 	    return make_null();
 	}),
 	bpp(function(stack_param){
 	    // 24 string=?
-	    if(stack_param[0].string === stack_param[1].string) return "true"; return make_null();
+	    if(stack_param[0].string === stack_param[1].string) return make_string("true"); return make_null();
 	}),
 	bpp(function(stack_param){
 	    // 25 string-ref
-	    return stack_param[0].string[stack_param[1].num];
+	    var v = new Value();
+	    v.type = TYPE_STRING;
+	    v.string = stack_param[0].string[stack_param[1].num]; 
+	    return v;
 	}),
 	bpp(function(stack_param){
 	    // 26 string-slice
@@ -661,7 +670,7 @@ var ENVIRONMENT =
 	bpp(function(stack_param){
 	    // 52 lambda?
 	    if(stack_param[0].type === TYPE_LAMBDA || stack_param[0].type === TYPE_BUILTIN_LAMBDA)
-	    	return "true";
+	    	return make_string("true");
 	    return make_null();
 	}),
 	bpp(function(stack_param){
@@ -696,7 +705,7 @@ var ENVIRONMENT =
 	}),
 	bpp(function(stack_param){
 	    // 56 object?
-	    return stack_param[0].type === TYPE_OBJECT ? 'true' : make_null();
+	    return stack_param[0].type === TYPE_OBJECT ? make_string("true") : make_null();
 	}),
 	bpp(function(stack_param){
 	    // 57 object-keys
@@ -1556,10 +1565,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 							pc = pc + 1;
 						}
 						// create string
-						var v = new Value();
-						v.string = created_string;
-						v.type = TYPE_STRING;
-						accumulator = v;
+						accumulator = make_string(created_string);
 						//accumulator = created_string;
 						// console.log("CREATED_STRING: |"+created_string+"|");
 						pc = pc + 1;

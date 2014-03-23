@@ -174,7 +174,7 @@
                           char-code-9))
                (string-is-digit-iter (+ i 1))
                '()))))
-   (if (and (> length-of-str 2) ;; check 0x hexa
+  (if (and (> length-of-str 2) ;; check 0x hexa
            (string=? (string-ref s 0)
                      "0")
            (string=? (string-ref s 1)
