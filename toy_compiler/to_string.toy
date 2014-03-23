@@ -23,7 +23,7 @@
                    [(vector? a)
                     (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (vector->string a)))]
                    [(string? a)
-                    (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") a))]
+                    (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (format-string a)))]
                    [(pair? a)
                     (vector-string-iter v (+ count 1) (string-append output-str (if (= count 0) "" " ") (list->string a)))]
                    [(lambda? a)
@@ -50,7 +50,7 @@
                      [ (vector? a)
                        (list->string-iter (cdr v) (string-append output-str (vector->string a) (if (null? (cdr v)) "" " ")))]
                      [ (string? a)
-                       (list->string-iter (cdr v) (string-append output-str a (if (null? (cdr v)) "" " ")))]
+                       (list->string-iter (cdr v) (string-append output-str (format-string a) (if (null? (cdr v)) "" " ")))]
                      [ (pair? a)
                        (list->string-iter (cdr v) (string-append output-str (list->string a) (if (null? (cdr v)) "" " ")))]
                      [(lambda? a)
@@ -99,7 +99,7 @@
                                                         ":"
                                                         (car keys) 
                                                         " "
-                                                        v
+                                                        (format-string v)
                                                         (if (null? (cdr keys)) "" ", ")))]
                    [(pair? v) ;; pair
                     (object->string-iter (cdr keys)

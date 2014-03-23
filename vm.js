@@ -542,7 +542,10 @@ var ENVIRONMENT =
 	}),
 	bpp(function(stack_param){
 	    // 26 string-slice
-	    return stack_param[0].string.slice(stack_param[1].num, stack_param[2].num);
+	    var v = new Value();
+	    v.type = TYPE_STRING;
+	    v.string = stack_param[0].string.slice(stack_param[1].num, stack_param[2].num);
+	    return v;
 	}),
 	bpp(function(stack_param){
 	    // 27 string-length

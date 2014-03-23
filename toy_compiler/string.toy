@@ -10,7 +10,7 @@
                          (set! start-index (or start-index 0))
                          (set! end-index (or end-index (string-length input-str)))
                          (def input-str-length (string-length input-str))
-                         (def find-string-length (string-length find-string))
+                         (def find-string-length (string-length find-string))                  
                          (def string-find-helper
                            (lambda [i]
                                    ;; didn't find required string
