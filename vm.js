@@ -215,7 +215,8 @@ var lexer_iter = function(input_string, index)
 	else if(input_string[index] === '"'){
 		var i = index + 1;
 		while(i != input_string.length){
-			if(input_string[i] == '"') break;
+			if(input_string[i] === "\\") {i = i + 2; continue;}
+			if(input_string[i] === "\"") break;
 			i++
 		}
 	    return cons(input_string.slice(index, i + 1), 

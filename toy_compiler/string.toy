@@ -249,7 +249,38 @@
   (string-is-space-iter 0))
 
 
-
-
+;; eval string
+;; eg "\"Hello\"" => string Hello
+;; support \t \n \a \"
+(def (eval-string-for-compilation s)
+  (def length-of-str (- (string-length s) 1))
+  (def (eval-string-iter i output-str)
+    (def c (string-ref s i))
+    (if (>= i length-of-str)
+      output-str
+      (if (and (< (+ i 1)
+                  length-of-str)
+               (string=? c
+                         "\\"))
+        (begin (def c1 (string-ref s (+ i 1)))
+               (cond [(string=? c1 "t")
+                      (eval-string-iter (+ i 2)
+                                        (string-append output-str "\t"))]
+                     [(string=? c1 "n")
+                      (eval-string-iter (+ i 2)
+                                        (string-append output-str "\n"))]
+                     [(string=? c1 "a")
+                      (eval-string-iter (+ i 2)
+                                        (string-append output-str "\a"))]
+                     [(string=? c1 "\"")
+                      (eval-string-iter (+ i 2)
+                                        (string-append output-str "\""))]
+                     [else 
+                      (eval-string-iter (+ i 1)
+                                        (string-append output-str "\\"))]))
+        (eval-string-iter (+ i 1)
+                          (string-append output-str c))
+        )))
+  (eval-string-iter 1 ""))
 
 

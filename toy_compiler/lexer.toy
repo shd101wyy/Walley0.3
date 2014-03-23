@@ -2,15 +2,6 @@
 ;; lexer and parser
 ;; ==== macros ====
 ;; and
-(defmacro and 
-  [() 'true]
-  [(a) (if  ~a  ~a ())]
-  [(a . b) (if ~a  (and ~@b) ())])
-;; or
-(defmacro or 
-	[() ()] 
-	[(a) (if ~a ~a ())] 
-	[(a . b) (if ~a ~a (or ~@b))])
 ;; Lexer
 (def (lexer-iter input-string index result)
   (def length-of-input-string (string-length input-string))
@@ -27,9 +18,13 @@
     (if (= index (string-length input-string))
       index
       (if (string=? (string-ref input-string index)
-                    "\"")
-        (+ index 1)
-        (lexer-string input-string (+ index 1)))))
+                    "\\")
+        (lexer-string input-string (+ index 2))
+        (if (string=? (string-ref input-string index)
+                      "\"")
+          (+ index 1)
+          (lexer-string input-string (+ index 1))))
+      ))
   ;; v
   (def (lexer-v input-string index)
     (def c (string-ref input-string index))
