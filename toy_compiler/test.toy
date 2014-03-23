@@ -8,3 +8,4 @@
 ;(display (string=? (string-ref x 0) "0"))
 ;(display '())
 (display (lexer "(def x 12)(def x ~12 ~@3 `3 , 5) {'a 3} #[4 5]"))
+(display (string-split "math:sin:log" ":"))

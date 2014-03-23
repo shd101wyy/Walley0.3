@@ -128,111 +128,117 @@
                    (lexer-iter input-string 0 '())))
 
 ;; parser
-;(def parser-rest '())
-;(def (formatQuickAccess ns keys)
-;  (def (formatQuickAccess-iter keys output count)
-;    (if (= count (list-length keys))
-;      output
-;      (formatQuickAccess-iter (cdr keys)
-;                              (cons output 
-;                                    (cons (cons 'quote 
-;                                                (cons (car keys)
-;                                                      '()))
-;                                          '()))
-;                              )))
-;  (formatQuickAccess-iter (cdr keys) 
-;                          (cons ns 
-;                                (cons (cons 'quote
-;                                            (cons (car keys)
-;                                                  '()))
-;                                      '()))
-;                          ))
-;; parse symbol or number or quick access
-;(def (parser-symbol-or-number v)
-;  (if (string=? (string-ref v 0) ;; if it is string, then dont parse 
-;                "\"")
-;    v
-;    '())
-;  (def splitted_ (string-split v ":"))
-;  (if (or (string=? v ":")
-;          (= (list-length splitted_)
-;              1)
-;          (string=? (string-ref v 0)
-;                    ":")
-;          (string=? (string-ref v 
-;                                (- (string-length v)
-;                                   1))
-;                    ":"))
-;    v
-;    (begin (def ns (car splitted_))
-;           (def keys (cdr splitted_))
-;           (formatQuickAccess ns keys))
-;    ))
-;; parse special
-;(def (parser-special l)
-;  (def tag (car l))
-;  (cond [(string=? tag "'")
-;         (set! tag "quote")]
-;        [(string=? tag "~")
-;         (set! tag "unquote")]
-;        [(string=? tag "~@")
-;         (set! tag "unquote-splice")]
-;        [else (set! tag "quasiquote")])
-;  (set! l (cdr l))
-;  (cond [(string=? (car l)  ;; list
-;                   "(")
-;         (cons tag
-;               (cons (parser-list (cdr l) ;; list
-;                                  '())))]
-;        [(or (string=? (car l) "'")
-;             (string=? (car l) "~")
-;             (string=? (car l) "`")
-;             )
-;         (cons tag ;; this place might have errors
-;               (cons (parser-special l)
-;                     '()))]
-;        [else  ;; symbol or number
-;         (set! parser-rest (cdr l))
-;         (cons tag 
-;               (cons (parser-symbol-or-number (car l))
-;                     '()))]))
+(def parser-rest '())
+(def formatQuickAccess '())
+(def parser-symbol-or-number '())
+(def parser-special '())
+(def parser-list '())
+(def parser '())
 
-;(def (parser-list l)
-;  (cond [(null? l)
-;         (display-string "ERROR: invalid statement; Missing )")
-;         (set! parser-rest '())
-;         '()]
-;        [(string=? (car l)
-;                   ")")
-;         (set! parser-rest (cdr l))
-;         '()]
-;        [(string=? (car l)
-;                   "(")
-;         (cons (parser-list (cdr l))
-;               (parser-list parser-rest))]
-;        [(or (string=? (car l) "'") ;; quote, unquote, quasiquote, unquote-splice
-;             (string=? (car l) "~")
-;             (string=? (car l) "`")
-;             (string=? (car l) "~@"))
-;         (cons (parser-special l)
-;               (parser-list parser-rest))]
-;        [else (cons (parser-symbol-or-number (car l))
-;                    (parser-list (cdr l)))]))
+(def (formatQuickAccess ns keys)
+  (def (formatQuickAccess-iter keys output count)
+    (if (= count (list-length keys))
+      output
+      (formatQuickAccess-iter (cdr keys)
+                              (cons output 
+                                    (cons (cons 'quote 
+                                                (cons (car keys)
+                                                      '()))
+                                          '()))
+                              )))
+  (formatQuickAccess-iter (cdr keys) 
+                          (cons ns 
+                                (cons (cons 'quote
+                                            (cons (car keys)
+                                                  '()))
+                                      '()))
+                          ))
+;; parse symbol or number or quick access
+(def (parser-symbol-or-number v)
+  (if (string=? (string-ref v 0) ;; if it is string, then dont parse 
+                "\"")
+    v
+    '())
+  (def splitted_ (string-split v ":"))
+  (if (or (string=? v ":")
+          (= (list-length splitted_)
+              1)
+          (string=? (string-ref v 0)
+                    ":")
+          (string=? (string-ref v 
+                                (- (string-length v)
+                                   1))
+                    ":"))
+    v
+    (begin (def ns (car splitted_))
+           (def keys (cdr splitted_))
+           (formatQuickAccess ns keys))
+    ))
+;; parse special
+(def (parser-special l)
+  (def tag (car l))
+  (cond [(string=? tag "'")
+         (set! tag "quote")]
+        [(string=? tag "~")
+         (set! tag "unquote")]
+        [(string=? tag "~@")
+         (set! tag "unquote-splice")]
+        [else (set! tag "quasiquote")])
+  (set! l (cdr l))
+  (cond [(string=? (car l)  ;; list
+                   "(")
+         (cons tag
+               (cons (parser-list (cdr l) ;; list
+                                  '())))]
+        [(or (string=? (car l) "'")
+             (string=? (car l) "~")
+             (string=? (car l) "`")
+             )
+         (cons tag ;; this place might have errors
+               (cons (parser-special l)
+                     '()))]
+        [else  ;; symbol or number
+         (set! parser-rest (cdr l))
+         (cons tag 
+               (cons (parser-symbol-or-number (car l))
+                     '()))]))
+
+(def (parser-list l)
+  (cond [(null? l)
+         (display-string "ERROR: invalid statement; Missing )")
+         (set! parser-rest '())
+         '()]
+        [(string=? (car l)
+                   ")")
+         (set! parser-rest (cdr l))
+         '()]
+        [(string=? (car l)
+                   "(")
+         (cons (parser-list (cdr l))
+               (parser-list parser-rest))]
+        [(or (string=? (car l) "'") ;; quote, unquote, quasiquote, unquote-splice
+             (string=? (car l) "~")
+             (string=? (car l) "`")
+             (string=? (car l) "~@"))
+         (cons (parser-special l)
+               (parser-list parser-rest))]
+        [else (cons (parser-symbol-or-number (car l))
+                    (parser-list (cdr l)))]))
 
 ;; ******* parser ****** ;; 
-;(def (parser l)
-;  (cond [(null? l)
-;         '()]
-;        [(string=? (car l)
-;                   "(")
-;         (cons (parser-list (cdr l))
-;               (parser parser-rest))]
-;        [(or (string=? (car l) "'")
-;             (string=? (car l) "~")
-;             (string=? (car l) "`")
-;             (string=? (car l) "~@"))
-;         (cons (parser-special l)
-;               (parser parser-rest))]
-;        [else 
-;         (cons (parser-symbol-or-number (car l))
-;               (parser (cdr l)))]))
+(def (parser l)
+  (cond [(null? l)
+         '()]
+        [(string=? (car l)
+                   "(")
+         (cons (parser-list (cdr l))
+               (parser parser-rest))]
+        [(or (string=? (car l) "'")
+             (string=? (car l) "~")
+             (string=? (car l) "`")
+             (string=? (car l) "~@"))
+         (cons (parser-special l)
+               (parser parser-rest))]
+        [else 
+         (cons (parser-symbol-or-number (car l))
+               (parser (cdr l)))]))

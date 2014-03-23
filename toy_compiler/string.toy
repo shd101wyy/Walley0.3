@@ -116,17 +116,20 @@
                                                                    i
                                                                    input-str-length)))
                         (if (string=? split-str
-                                      (string-slice input-string i (+ i split-str-length)))
+                                      (string-slice input-string
+                                                    i 
+                                                    (+ i split-str-length)))
                           ;; could split
                           (return-vector-func (vector-push! output saved-string)
                                               (+ i split-str-length)
                                               "")
                           (return-vector-func output
                                               (+ i 1)
-                                              (+ saved-string (string-ref input-string i))))))))
+                                              (string-append saved-string 
+                                                             (string-ref input-string i))))))))
           (def return-list-func 
             (lambda [i saved-string]
-                    (if (eq? i input-str-length) ;; end
+                    (if (= i input-str-length) ;; end
                       `(~saved-string)
                       ;; not end yet
                       (if (> (+ i split-str-length) input-str-length) 
@@ -140,10 +143,12 @@
                                                     i
                                                     (+ i split-str-length)))
                                                ;; could split
-                          (cons saved-string (return-list-func (+ i split-str-length)
-                                                               ""))
+                          (cons saved-string 
+                                (return-list-func (+ i split-str-length)
+                                                  ""))
                           (return-list-func (+ i 1)
-                                            (+ saved-string (string-ref input-string i))))))))
+                                            (string-append saved-string 
+                                                           (string-ref input-string i))))))))
           
           (if return-vector
             (return-vector-func #[] start-index "")
