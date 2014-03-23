@@ -13,5 +13,9 @@
 (def p (parser l))
 (display p)
 
+(for [i '(1 2 3 4 5 6)]
+  (display i))
 
-
+;(def (test) (return 34) 35)
+;(display (test))
+(display (list-range 10))

@@ -68,3 +68,25 @@
 (def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))
 
 
+;; list range
+;; (list-range 6) => '(0 1 2 3 4 5)
+;; (list-range 3 5) => '(3, 4)
+(def (list-range a0 a1 a2)
+  ;; judge several conditions
+    (def judge-sign (if (< a2 0) 
+                      <=
+                    >=
+                    ))
+    (def (list-range-iter v)
+      (if (judge-sign v a1)
+        '()
+        (cons v 
+              (list-range-iter (+ v a2)))))
+    (list-range-iter a0))
+;; macro for the function above
+(defmacro list-range 
+  [(n) (~list-range 0 ~n 1)]
+  [(a, b) (~list-range ~a ~b 1)]
+  [(a, b, c) (~list-range ~a ~b ~c)])
+
+

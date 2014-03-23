@@ -47,7 +47,7 @@
 
 ;; find variable in Variable Table
 (def (vt-find vt var-name)
-  )
+  '())
 
 
 

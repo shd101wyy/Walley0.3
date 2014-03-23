@@ -26,3 +26,25 @@
         (vector-find-iter (+ i 1))))) 
   (vector-find-iter start-index))
 
+;; vector-range
+;; (vector-range 6) => #[0,1,2,3,4,5]
+;; (vector-range 3 5) => #[3,4]
+(def (vector-range a0 a1 a2)
+  ;; judge several conditions
+  (def judge-sign (if (< a2 0) 
+                    <=
+                    >=
+                    ))
+  (def output #[])
+  (def (vector-range-iter v)
+    (if (judge-sign v a1)
+      output
+      (begin (vector-push! output v)
+             (vector-range-iter (+ v a2))))
+    )
+  (vector-range-iter a0))
+;; macro for the function above
+(defmacro vector-range 
+  [(n) (~vector-range 0 ~n 1)]
+  [(a, b) (~vector-range ~a ~b 1)]
+  [(a, b, c) (~vector-range ~a ~b ~c)])

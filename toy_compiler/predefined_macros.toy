@@ -69,21 +69,21 @@
 ;;    (display i))
 (defm for [[i v] . body]
   [if (pair? ~v) ;; v is pair
-   (let [for-pair (lambda [v]
-                      (if (null? v)
+   (let [for-pair (lambda [__v__]
+                      (if (null? __v__)
                         '()
-                        (begin (def ~i (car v))
+                        (begin (def ~i (car __v__))
                                ~@body
-                               (for-pair (cdr v)))))]
-     (for_pair ~v))
+                               (for-pair (cdr __v__)))))]
+     (for-pair ~v))
    (let [v ~v
          length (vector-length v) 
-         for-vector (lambda [i]
-                            (if (= i length)
+         for-vector (lambda [__i__]
+                            (if (= __i__ length)
                               '()
-                              (begin (def ~i (vector-ref v i))
+                              (begin (def ~i (vector-ref v __i__))
                                      ~@body
-                                     (for-vector (+ i 1)))))]
+                                     (for-vector (+ __i__ 1)))))]
      (for-vector 0))])
 
 
