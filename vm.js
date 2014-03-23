@@ -672,11 +672,16 @@ var ENVIRONMENT =
 	    // 55 object
 	    var key;
 	    var value;
-	    var output = {type: "object"}; // preserved
+	    //var output = {type: "object"}; // preserved
+	    var output = {};
 	    for(var i = 0; i < stack_param.length; i=i+2){
 	    	key = stack_param[i];
+	    	if(stack_param[i].type !== TYPE_STRING){
+	    		console.log("ERROR: object invalid key");
+	    		return make_null();
+	    	}
 	    	value = stack_param[i+1];
-	    	output[key] = value;
+	    	output[key.string] = value;
 	    }
 	    var v = new Value();
 	    v.type = TYPE_OBJECT;
@@ -689,7 +694,17 @@ var ENVIRONMENT =
 	}),
 	bpp(function(stack_param){
 	    // 57 object-keys
-	    return Object.keys(stack_param[0].object)
+	    // return cons
+	    var c = make_null();
+	    var keys =  Object.keys(stack_param[0].object);
+	    for(var i = keys.length - 1; i >= 0; i--){
+	    	var v_ = new Value();
+	    	v_.type = TYPE_STRING;
+	    	v_.string = keys[i];
+	    	c = cons(v_, c);
+	    }
+	    return c;
+	    //return Object.keys(stack_param[0].object)
 	}),
 	bpp(function(stack_param){
 		// 58 bitwise-and 
@@ -1626,12 +1641,12 @@ var VM = function(INSTRUCTIONS, env, pc)
 					p0 = current_frame_pointer[2];
 					p1 = current_frame_pointer[3];
 					if(typeof(p1) === 'undefined'){
-						accumulator = lambda[p0];
+						accumulator = lambda[p0.string];
 						if(typeof(accumulator) === "undefined")
 							accumulator = make_null();
 					}
 					else{
-						lambda[p0] = p1;
+						lambda[p0.string] = p1;
 						accumulator = lambda;
 					}
 					frame_list = cdr(frame_list); // pop top frame
