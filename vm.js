@@ -951,24 +951,23 @@ var macro_expand_for_compilation = function(macro, exps, macros){
 		eg (def (f n) (f 12)) when calling (f 12), its parent_func_name is "f"
 		   (def (f1 n) (f2 12)) when calling (f2 12), its parent_func_name is "f1"
 */	
-var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
-{
-	if(l.type === TYPE_NULL)
-	{
+var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation){
+	if(l.type === TYPE_NULL){
 		INSTRUCTIONS.push(CONST_NULL); // push null
 		return;
 	}
-	if(typeof(l) === "string")
-	{
-		if(l.type === TYPE_NULL)
-		{
+	if(typeof(l) === "string"){
+		if(l.type === TYPE_NULL){
 			INSTRUCTIONS.push( CONST_NULL);
 			return;
 		}
 		// check number
-		else if(isInteger(l)) // 32 bit integer
+		else if(isInteger(l)) // 64 bit integer
 		{
 			var i = parseInt(l);
+			if(i < 0){
+				return compiler(cons("-", cons("0", cons(l.slice(1), make_null()))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+			}
 			INSTRUCTIONS.push( CONST_INTEGER );
 			INSTRUCTIONS.push( /*(0xFFFF000000000000 & i) >> 48*/ (i / Math.pow(2, 48) & 0xFFFF) );
 			INSTRUCTIONS.push( /*(0x0000FFFF00000000 & i) >> 32*/ (i / Math.pow(2, 32) & 0xFFFF) );
@@ -980,9 +979,11 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			First 32 bits: integer
 			Second 32 bits: float
 		*/
-		else if(isFloat(l))
-		{
+		else if(isFloat(l)){
 			var f = parseFloat(l);
+			if(f < 0){
+				return compiler(cons("-", cons("0", cons(l.slice(1), make_null()))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+			}
 			var i = parseInt(f);
 			INSTRUCTIONS.push(CONST_FLOAT);
 			INSTRUCTIONS.push((i >> 16) & 0x0000FFFF);
@@ -996,8 +997,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			return;
 		}
 		// string
-		else if (l[0] === '"')
-		{
+		else if (l[0] === '"'){
 			var s = eval(l);
 			var length = s.length;
 			INSTRUCTIONS.push(CONST_STRING); // create string
@@ -1037,8 +1037,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			return;
 		}
 	}
-	else if (l.type === TYPE_PAIR)
-	{
+	else if (l.type === TYPE_PAIR){
 		var tag = car(l);
 		if(typeof(tag) === "number" && tag === 0){ // get for macro
 				INSTRUCTIONS.push(GET << 12 | cadr(l));
@@ -1046,8 +1045,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 				return;
 		}
 		// quote
-		if (tag === "quote")
-		{
+		if (tag === "quote"){
 			var v = cadr(l);
 			// check integer float string null
 			if(v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"')
@@ -1073,8 +1071,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 			return;
 		}
-		else if (tag == "quasiquote") // add quasiquote
-		{
+		else if (tag == "quasiquote"){ // add quasiquote
 			var v = cadr(l);
 			// check integer
 			// check integer float string null
@@ -1110,8 +1107,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		}
 
 		// (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
-		else if(tag == "def")
-		{
+		else if(tag == "def"){
 			var variable_name = cadr(l);
 			if(variable_name.type === TYPE_PAIR) // it is lambda format like (def (add a b) (+ a b))
 			{
@@ -1183,8 +1179,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 		}
 		// (if test conseq alter)
-		else if (tag === "if")
-		{
+		else if (tag === "if"){
 			var test = cadr(l);
 			var conseq = caddr(l);
 			var alter;
@@ -1216,8 +1211,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			INSTRUCTIONS[index2] = (JMP << 12) | (jump_steps > 0 ? (0) : (1 << 11)) | jump_steps; // I think the jump_steps is always > 0
 			return;
 		}
-		else if (tag === "begin") // begin
-		{
+		else if (tag === "begin"){ // begin
 			compiler_begin(cdr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 			return;
 		}
@@ -1291,8 +1285,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		}
 		// (lambda (a b) ...)
 		// (lambda (a . b) ...)
-		else if (tag === "lambda")
-		{
+		else if (tag === "lambda"){
 			var params = cadr(l); // get parameters
 			var variadic_place = -1; // variadic place
 			var counter = 0; // count of parameter num
@@ -1304,8 +1297,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			vt_[vt_.length - 1].push(make_null()); // save space for parent-env.
 			vt_[vt_.length - 1].push(make_null()); // save space for return address.
 
-			while(true)
-			{
+			while(true){
 				if(params.type === TYPE_NULL) break;
 				if(car(params) === ".") // variadic
 				{
@@ -1382,8 +1374,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			return;
 		}
 		// call function
-		else
-		{
+		else{ 
 			// check whether macro
 			var func = car(l);
 			if(typeof(func) === "string"){
@@ -1403,7 +1394,6 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			}
 			// tail call
 			if(tail_call_flag){
-
 				// so no new frame				
 				var start_index = vt[vt.length - 1].length;
 				var track_index = start_index;
