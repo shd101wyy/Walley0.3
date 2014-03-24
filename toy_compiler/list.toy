@@ -3,6 +3,7 @@
 ;;
 (def null '())
 (def nil '())
+(def (caar x) (car (car x)))
 (def (cadr x) (car (cdr x)))
 (def (cddr x) (cdr (cdr x)))
 (def (caddr x) (car (cdr (cdr x))))

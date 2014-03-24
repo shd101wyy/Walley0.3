@@ -223,11 +223,32 @@
                 ])]
         [(pair? l)
          (def tag (car l))
-         (cond [(string=? tag "quote") ;; quote
+         (cond [(int? tag) '()]        ;; macro get 
+               [(string=? tag "quote") ;; quote
                 (def v (cadr l))
-                (cond [(or (null? v)
-                           (int? v)
-                           (float? v)
+                (cond [(pair? v)
+                       (def (quote-list l)  ;; function used to compile list
+                         (cond [(null? l)
+                                '()]
+                               [(pair? (car l)) ;; (() a) car is pair
+                                (list "cons" (quote-list (car l)) (quote-list (cdr l)))]
+                               [(eq? (car l) ".")
+                                (list "quote" (cadr l))]
+                               ;; (cons "quote" (cons (cadr l) '()))]
+                               [else 
+                                (list "cons" 
+                                      (list "quote" (car l))
+                                      (quote-list (cdr l)))]))
+                       (compiler (quote-list v) ;; compile formatted expression
+                                 vt
+                                 insts
+                                 macros
+                                 lambdas
+                                 tail-call-flag
+                                 parent-func-name)] 
+                      [(or (null? v)
+                           (isInteger v)
+                           (isFloat v)
                            (string=? (string-ref v 0)
                                      "\""))
                        ;; it is () int float or string. 
@@ -238,23 +259,123 @@
                                  lambdas
                                  tail-call-flag
                                  parent-func-name)]
-                      ;[(or (pair? v))
-                      ;]
-                      
+                      [else   ;; symbol/string 
+                       (compiler (string-append "\"" v "\"")
+                                 vt
+                                 insts
+                                 macros
+                                 lambdas
+                                 tail-call-flag
+                                 parent-func-name)]
                       )
                 ]
                [(string=? tag "quasiquote")  ;; quasiquote
-                '()
+                (def v (cadr l))
+                (cond [(pair? v)
+                       (def (quasiquote l)
+                         (cond [(null? l) '()] 
+                               [(pair? (car l))
+                                (cond [(eq? (caar l)
+                                            "unquote")
+                                       (list "cons" (cadr (car l)) (quasiquote (cdr l)))]
+                                      [(eq? (caar l)
+                                            "unquote-splice")
+                                       (list "append" (cadr (car l)) (quasiquote (cdr l)))]
+                                      [else 
+                                       (list "cons" (quasiquote (car l)) (quasiquote (cdr l)))])
+                                ]
+                               [(eq? (car l) ".")
+                                (list "quote" (cadr l))]
+                               [else 
+                                (list "cons"
+                                      (list "quote" (car l))
+                                      (quasiquote (cdr l)))]
+                               ))
+
+                       (compiler (quasiquote v)
+                                 vt
+                                 insts
+                                 macros
+                                 lambdas
+                                 tail-call-flag
+                                 parent-func-name)]
+                      [(or (null? v)
+                           (isInteger v)
+                           (isFloat v)
+                           (string=? (string-ref v 0)
+                                     "\""))
+                       ;; it is () int float or string. 
+                       (compiler v
+                                 vt
+                                 insts
+                                 macros
+                                 lambdas
+                                 tail-call-flag
+                                 parent-func-name)]
+                      [else   ;; symbol/string 
+                       (compiler (string-append "\"" v "\"")
+                                 vt
+                                 insts
+                                 macros
+                                 lambdas
+                                 tail-call-flag
+                                 parent-func-name)])
                 ]
                [(string=? tag "def")
-                '()]
+                (def variable-name (cadr l))
+                (if (pair? variable-name)
+                  ;; (def (add a b) (+ a b))
+                  (let! [var-name (car variable-name)
+                         args     (cdr variable-name)
+                         lambda-body (cons "lambda" (cons args (cddr l)))]
+                        (compiler (list "def" var-name lambda-body)
+                                  vt
+                                  insts
+                                  macros
+                                  lambdas
+                                  tail-call-flag
+                                  parent-func-name))
+                  ;; (def variable-name variable-value)
+                  (begin (def variable-value (if (null? (cddr l)) '() (caddr l))) 
+                         ;; check whether variable already defined
+                         (def frame (vector-ref vt 
+                                                (- (vector-length vt)
+                                                   1)))
+                         (def frame-length (vector-length frame))
+                         (def (check-variable-existed-in-current-top-frame i)
+                           (if (= i frame-length)
+                             (begin (vector-push! frame variable-name)
+                                    frame-length)  ;; didn't find, so add to top frame
+                             (if (string=? (vector-ref frame i)
+                                           variable-name)
+                               ;; find variable-name
+                               i
+                               ;; didn't find, so continue
+                               (check-variable-existed-in-current-top-frame (+ i 1)))))
+                          (def variable-index (check-variable-existed-in-current-top-frame 0)) ;; search variable
+                          (set! parent-func-name  ;; update parent-func-name if val is lambda
+                                (if (and (pair? variable-value)
+                                         (eq? "lambda" (car variable-value)))
+                                  variable-name
+                                  parent-func-name))
+                          (compiler variable-value  ;; compile value
+                                    vt
+                                    insts
+                                    macros
+                                    lambdas
+                                    tail-call-flag
+                                    parent-func-name)
+                          ;; add instructions
+                          (vector-push! insts (bitwise-or (bitwise-<< SET 12)
+                                                          (- (vector-length vt)
+                                                             1)))
+                          (vector-push! insts variable-index)
+                         ))]
                [(string=? tag "set!")
                 '()]
                [(string=? tag "if")
                 '()]
                [(string=? tag "begin")
-                '()]
-               [(string=? tag "cond")
                 '()]
                [(string=? tag "lambda")
                 '()]
@@ -265,10 +386,12 @@
                [(string=? tag "return")
                 '()]
                [else
-                '()]
+                (display "ERROR: compiler error")
+                'ERROR] ;; error handler
                )]
         [else
          (display "ERROR: compiler error")
+         (display l)
          'ERROR ;; error handler
          ])
   )
@@ -320,12 +443,15 @@
 
 ;; test
 ;; run compiler
-;(def x "123")
-;(def l (lexer x))
-;(def p (parser l))
+(def x "(def x 12) (def y 15) (def x 13)")
+(def l (lexer x))
+(def p (parser l))
 
-;(def INSTS #[])
-;(compiler-begin  p 
-;          VARIABLE_TABLE
-;          INSTS)
-;(printInstructions INSTS)
+(display "PARSER: ")
+(display p)
+
+(def INSTS #[])
+(compiler-begin  p 
+          VARIABLE_TABLE
+          INSTS)
+(printInstructions INSTS)
