@@ -36,7 +36,7 @@
       "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
       "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
       "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor", 
-      "string->char-code", "char-code->string", "int->string-18"
+      "string->char-code", "char-code->string", "int->string-16", "string->int", "string->float"
       ]
     ])
 ;; used to save macros
@@ -59,6 +59,273 @@
         )))
   (vt-find-iter 0)) 
 
+;; 4-digits-hex
+(def (4-digits-hex num)
+  (def s (int->string-16 num))
+  (def l (string-length s))
+  (def (zeros-ahead-str num s)
+    (if (= num 0)
+      s
+      (zeros-ahead-str (- num 1)
+                       (string-append s "0"))))
+  (cond [(< l 4) ;; put 0 ahead
+         (string-append (zeros-ahead-str (- 4 l) "")
+                        s)]
+        [else 
+         s]))
+;; printInstructions
+(def (printInstructions insts)
+  (def num 1)
+  (def out-str "")
+  (def insts-length (vector-length insts))
+  (def (% n0 n1) (let! [result (->int (/ n0 n1))]  (- n0 (* result n1))))
+  (def (helper i) ;; so ugly...
+    (if (= i insts-length)
+      (display out-str) ;; done
+      (begin (set! out-str (string-append out-str
+                                          (4-digits-hex (vector-ref insts i))
+                                          " "))
+             (if (= (% num 4)
+                    0)
+               (begin (display out-str)
+                      (set! out-str "")
+                      (++ num)
+                      (helper (+ i 1)))
+               (begin (++ num)
+                      (helper (+ i 1)))))
+      ))
+  (helper 0))
+
+;; check string is Integer
+(def (isInteger n)
+  (def l (string-length n))
+  (if (= l 0)
+    '()
+    (begin (set! n (if (string=? (string-ref n 0)
+                                 "-")
+                     (string-slice 1 l)
+                     n))
+           (or (string=? n "0")     ;; 0
+               (string-is-digit n)) ;; hexa or decimal 
+           )
+    ))
+;; check string is float
+(def (isFloat n)
+  (def index-of-dot (string-find n "."))
+  (if (= index-of-dot -1)
+    '()  ;; not float
+    (let! [a (string-slice n 
+                           0
+                           index-of-dot)
+           b (string-slice n
+                           (+ index-of-dot 1)
+                           (string-length n))]
+          (and (isInteger a)
+               (isInteger b)))))
+;; Compiler 
+(def (compiler 
+      l       ;;; input expression 
+      vt      ;;; variable table
+      insts   ;;; instructions
+      macros  ;;; macros 
+      lambdas ;;; lambdas
+      tail-call-flag  ;;; used to check whether exp is tail call
+      parent-func-name  ;;; current function name
+      )
+  (cond [(null? l) ;; null
+         (vector-push! insts CONST_NULL)] ;; push null
+        [(string? l) ;; num var .. null
+         ;; check number
+         (cond [(isInteger l) ;; integer
+                (def i (string->int l))
+                (if (< i 0) ;; negative number
+                  (compiler (list "-" "0" l)
+                            vt
+                            insts
+                            macros
+                            lambdas
+                            tail-call-flag
+                            parent-func-name)
+                  (begin ;(display i)
+                         (if (> i 0x7FFFFFFF)
+                           (begin ;(display 0xFFFFFFFF) 
+                                  (display "ERROR: Integer too big")
+                                  'ERROR)
+                           (begin (vector-push! insts CONST_INTEGER) ;;;; TRY 32bits first
+                                  (vector-push! insts (bitwise->> (bitwise-and 0xFFFF0000
+                                                                               i)
+                                                                  16))
+                                  (vector-push! insts (bitwise-and 0xFFFF
+                                                                   i))))
+                         ))
+                ]
+               [(isFloat l)   ;; float
+                (def f (string->float l))
+                (if (< f 0) ;; negative number
+                  (compiler (list "-" 0 l)
+                            vt
+                            insts
+                            macros
+                            lambdas
+                            tail-call-flag
+                            parent-func-name)
+                  (begin 
+                   (def i (->int f))   ;; positive number 
+                   (if (> i 0xFFFF)
+                     (begin (display "ERROR: Float too big")
+                            'ERROR)
+                     (begin (vector-push! insts CONST_FLOAT)
+                            (vector-push! insts i) ;; int part
+                            
+                            (def d (->int (* (- f i) ;; decimal part
+                                             10000)))
+                            (vector-push! insts d)))
+                   ))
+                ]
+               [(string=? (string-ref l 0) ;; string
+                          "\"")
+                (def s (eval-string-for-compilation l))
+                (def length (string-length s))
+                (vector-push! insts CONST_STRING) ;; create string
+                (vector-push! insts (+ length 1)) ;; with length
+                (def find-end false)
+                (def (compile-string i) ;; return find-end
+                  (if (= i length)
+                    '() ;; didnt find end
+                    (if (= (+ i 1)
+                           length)
+                      (begin ;; find end 
+                       (vector-push! insts (bitwise-and (bitwise-<< (string->char-code s i)
+                                                                    8)
+                                                        0xFF00)
+                                     'true))
+                      (begin ;; didnt find end 
+                       (vector-push! insts (bitwise-or (bitwise-<< (string->char-code s i)
+                                                                   8)
+                                                       (string->char-code s (+ i 1))))
+                       (compile-string  (+ i 2))))))
+                (if (compile-string 0)
+                  '() ;; find end already
+                  (vector-push! insts 0x0000 ;; add end
+                                ))]
+               [else          ;; variable
+                (def index (vt-find vt l))
+                (if (= (vector-ref index 0)
+                       -1)
+                  (begin ;; didnt find 
+                   (display (string-append "ERROR: undefined variables: " l))
+                   'ERROR ;; error handler
+                   )
+                  (begin ;; find 
+                   (vector-push! insts (bitwise-or (bitwise-<< GET 12)
+                                                   (vector-ref index 0)))
+                   (vector-push! insts (vector-ref index 1))))
+                ])]
+        [(pair? l)
+         (def tag (car l))
+         (cond [(string=? tag "quote") ;; quote
+                (def v (cadr l))
+                (cond [(or (null? v)
+                           (int? v)
+                           (float? v)
+                           (string=? (string-ref v 0)
+                                     "\""))
+                       ;; it is () int float or string. 
+                       (compiler v
+                                 vt
+                                 insts
+                                 macros
+                                 lambdas
+                                 tail-call-flag
+                                 parent-func-name)]
+                      ;[(or (pair? v))
+                      ;]
+                      
+                      )
+                ]
+               [(string=? tag "quasiquote")  ;; quasiquote
+                '()
+                ]
+               [(string=? tag "def")
+                '()]
+               [(string=? tag "set!")
+                '()]
+               [(string=? tag "if")
+                '()]
+               [(string=? tag "begin")
+                '()]
+               [(string=? tag "cond")
+                '()]
+               [(string=? tag "lambda")
+                '()]
+               [(string=? tag "defmacro")
+                '()]
+               [(string=? tag "macroexpand-1")
+                '()]
+               [(string=? tag "return")
+                '()]
+               [else
+                '()]
+               )]
+        [else
+         (display "ERROR: compiler error")
+         'ERROR ;; error handler
+         ])
+  )
+;; Compiler Begin
+(def (compiler-begin
+      l       ;;; input expression
+      vt      ;;; variable table
+      insts   ;;; instructions
+      macros  ;;; macros 
+      lambdas ;;; lambdas 
+      tail-call-flag ;;; used to check whether exp is tail call
+      parent-func-name  ;;; current function name
+      )
+  (if (null? l)
+    'Done   ; finish compilation
+    (if (and (null? (cdr l)) ;; last exp
+             (pair? (car l)) ;; exp might be lambda
+             (string=? (car (car l))  ;; has the same function name
+                       parent-func-name)) 
+      ;; tail call
+      (begin (let! [result (compiler (car l)
+                                     vt
+                                     insts
+                                     macros
+                                     lambdas
+                                     'true     ;; tail call
+                                     '())]
+                   (if (eq? result 'ERROR)
+                     (begin (display "EXP: ") (display (car l))) ;; get error
+                     '()))
+             'Done) ;; finish compilation
+      ;; not tail call
+      (begin (let [result (compiler (car l)
+                                    vt
+                                    insts
+                                    macros
+                                    lambdas
+                                    '()        ;; not tail call
+                                    parent-func-name)]
+               (if (eq? result 'ERROR)
+                 (begin (display "EXP: ")
+                        (display (car l))) ;; get error
+                 '())
+               (compiler-begin (cdr l)
+                               vt
+                               insts))
+             ))))
 
 
+;; test
+;; run compiler
+;(def x "123")
+;(def l (lexer x))
+;(def p (parser l))
 
+;(def INSTS #[])
+;(compiler-begin  p 
+;          VARIABLE_TABLE
+;          INSTS)
+;(printInstructions INSTS)

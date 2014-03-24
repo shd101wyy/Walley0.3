@@ -92,4 +92,24 @@
      (for-vector 0))])
 
 
+;; cond
+;; (cond [test0 . body0] [test1 . body1] [test2 . body2] ...)
+(defmacro cond 
+  [() ()]
+  [([#else . body])
+   (begin ~@body)]
+  [([#else . body] . rest)
+   (begin (display "ERROR: Macro cond. Expression existed after else")
+          (display (quote ~rest)))]
+  [([test . body])
+   (if ~test 
+     (begin ~@body) 
+     '())]
+  [([test . body] . rest)
+   (if ~test 
+     (begin ~@body)
+     (cond ~@rest))])
+
+
+
 

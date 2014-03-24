@@ -21,3 +21,6 @@
 ;(display (vector-find #[1,2,3] 1))
 ;(defn square [x] (* x x))
 
+(display "====")
+(display (cond ['() 2] ['() 4] [else 5] [else 6]))
+

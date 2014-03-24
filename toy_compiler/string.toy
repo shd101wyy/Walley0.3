@@ -163,6 +163,8 @@
 (def char-code-Z (string->char-code "Z" 0))
 (def char-code-a (string->char-code "a" 0))
 (def char-code-z (string->char-code "z" 0))
+(def char-code-F (string->char-code "F" 0))
+(def char-code-f (string->char-code "f" 0))
 (def char-code-space (string->char-code " " 0))
 (def char-code-\t (string->char-code "\t" 0))
 (def char-code-\n (string->char-code "\n" 0))
@@ -176,15 +178,30 @@
              (if (and (>= c
                           char-code-0)
                       (<= c
-                          char-code-9))
+                          char-code-9)
+                      )
                (string-is-digit-iter (+ i 1))
+               '()))))
+  (def (string-is-digit-iter-16 i)
+    (if (= i length-of-str)
+      'true
+      (begin (def c (string->char-code s i))
+             (if (or (and (>= c 
+                              char-code-0)
+                          (<= c
+                              char-code-9))
+                     (or (and (>= c char-code-a)
+                              (<= c char-code-f))
+                         (and (>= c char-code-A)
+                              (<= c char-code-F))))
+               (string-is-digit-iter-16 (+ i 1))
                '()))))
   (if (and (> length-of-str 2) ;; check 0x hexa
            (string=? (string-ref s 0)
                      "0")
            (string=? (string-ref s 1)
                      "x"))
-    (string-is-digit-iter 2)
+    (string-is-digit-iter-16 2)
     (string-is-digit-iter 0)))
 
 ;; string-is-upper
