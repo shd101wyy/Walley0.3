@@ -389,7 +389,7 @@ var VARIABLE_TABLE = [
      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
      "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
      "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor", 
-     "string->char-code", "char-code->string"
+     "string->char-code", "char-code->string", "int->string-18"
      ]
 					  ];
 var MACROS = [[]]; // used to save macros
@@ -756,6 +756,10 @@ var ENVIRONMENT =
 		v.type = TYPE_STRING;
 		v.string = String.fromCharCode( stack_param[0].num );
 		return v;
+	}),
+	bpp(function(stack_param){
+		// 66 	int->string-18
+		return make_string(stack_param[0].num.toString(16));
 	})
 	]
 ];
