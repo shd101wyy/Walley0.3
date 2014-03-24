@@ -36,7 +36,7 @@
       "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
       "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
       "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor", 
-      "string->char-code", "char-code->string"
+      "string->char-code", "char-code->string", "int->string-18"
       ]
     ])
 ;; used to save macros
@@ -47,7 +47,17 @@
 
 ;; find variable in Variable Table
 (def (vt-find vt var-name)
-  '())
+  (def vt-length (vector-length vt))
+  (defn vt-find-iter [i]
+    (if (= i vt-length)
+      #[-1, -1]
+      (let [index (vector-find (vector-ref vt i)
+                               var-name)]
+        (if (= -1 index)
+          (vt-find-iter (+ i 1))
+          #[i, index])
+        )))
+  (vt-find-iter 0)) 
 
 
 

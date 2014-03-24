@@ -1624,11 +1624,11 @@ var VM = function(INSTRUCTIONS, env, pc)
 			}
 			case GET: // get
 			{
-				var frame_index = 0x0FFF & inst;
-				var value_index = INSTRUCTIONS[pc + 1];
-				accumulator = env[frame_index][value_index];
-				pc = pc + 2;
-				continue;
+			    var frame_index = 0x0FFF & inst;
+			    var value_index = INSTRUCTIONS[pc + 1];
+			    accumulator = env[frame_index][value_index];
+			    pc = pc + 2;
+			    continue;
 			}
 			case MAKELAMBDA: // make lambda
 			{

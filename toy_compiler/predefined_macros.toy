@@ -8,6 +8,11 @@
 ;; (square 14) => (* 14 14)
 (defmacro defm ([macro_name a b] [defmacro ~macro_name (~a ~b)]))
 
+;; defn
+;; eg (defn square [x] (* x x))
+(defm defn [fn-name args . body]
+  [def ~fn-name (lambda ~args ~@body)])
+
 ;; defs
 ;; (defs a 12 b 15) => (begin (def a 12) (def b 15))
 (defmacro defs 
@@ -28,8 +33,8 @@
 
 ;; while
 (defm while [arg . body]
-  (let [__t (lambda [] (if ~arg (begin ~@body (__t))  () ))]
-    (__t)))
+  (let [__t__ (lambda [] (if ~arg (begin ~@body (__t__))  '() ))]
+    (__t__)))
 
 ;; extend string-append so that it support variadic parameters 
 (defmacro string-append
