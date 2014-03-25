@@ -174,7 +174,9 @@
                                                                i))
                               ))
                      ))
-                  )]
+                  )
+                (display "DONE")
+                ]
                [(isFloat l)   ;; float
                 (let [f (string->float l)]
                   (if (< f 0) ;; negative number
@@ -423,57 +425,58 @@
                        )))]
                ;;; ############ if ############
                  [(string=? tag "if")
-                  (def test (cadr l))
-                  (def conseq (caddr l))
-                  (def alter (if (null? (cdddr l)) '() (cadddr l)))
-                  ;; compile test, which is not tail call
-                  (compiler test
-                            vt
-                            insts
-                            macros
-                            function-for-compilation
-                            '()
-                            parent-func-name)
-                  ;; save index
-                  (def index1 (vector-length insts))
-                  ;; push test, but we dont know jump steps right now
-                  (vector-push! insts 0x0000) ;; jump over consequence
-                  
-                  ;; compile conseq
-                  (compiler-begin (cons conseq '())
-                                  vt
-                                  insts
-                                  macros
-                                  function-for-compilation
-                                  tail-call-flag
-                                  parent-func-name)
-                  ;; save index
-                  (def index2 (vector-length insts))
-                  (vector-push! insts 0x0000) ;; jump over alternative
-                  (def jump-steps (+ (- index2 index1) 1))
-
-                  ;; set index1
-                  (vector-set! insts index1 (bitwise-or (bitwise-<< TEST 12)
-                                                        jump-steps))
-                  
-                  ;; compile alternative
-                  (compiler-begin (cons alter '())
-                                  vt
-                                  insts
-                                  macros
-                                  function-for-compilation
-                                  tail-call-flag
-                                  parent-func-name)
-                  ;; save index
-                  (def index3 (vector-length insts))
-                  (def jump-steps (- index3 index2))
-                  ;; set index2
-                  (vector-set! insts index2 (bitwise-or (bitwise-or (bitwise-<< JMP 12)
-                                                                    (if (> jump-steps 0)
-                                                                      0
-                                                                      (bitwise-<< JMP 11)))
-                                                        jump-steps))
-                  ]
+                  (let [test (cadr l)
+                        conseq (caddr l)
+                        alter (if (null? (cdddr l)) '() (cadddr l))
+                        ]
+                    ;; compile test, which is not tail call
+                    (compiler test
+                              vt
+                              insts
+                              macros
+                              function-for-compilation
+                              '()
+                              parent-func-name)
+                    ;; save index
+                    (let [index1 (vector-length insts)
+                          ]
+                      ;; push test, but we dont know jump steps right now            
+                      (vector-push! insts 0x0000) ;; jump over consequence
+                      ;; compile conseq
+                      (compiler-begin (cons conseq '())
+                                      vt
+                                      insts
+                                      macros
+                                      function-for-compilation
+                                      tail-call-flag
+                                      parent-func-name)
+                      (let [index2 (vector-length insts) ;; save index2
+                            jump-steps (+ (- index2 index1) 1)]
+                        (vector-push! insts 0x0000) ;; jump over alternative
+                        ;; set index1
+                        (vector-set! insts index1 (bitwise-or (bitwise-<< TEST 12)
+                                                              jump-steps))
+                        
+                        ;; compile alternative
+                        (compiler-begin (cons alter '())
+                                        vt
+                                        insts
+                                        macros
+                                        function-for-compilation
+                                        tail-call-flag
+                                        parent-func-name)
+                        (let [index3 (vector-length insts) ;; save index
+                              jump-steps (- index3 index2)]
+                          ;; set index2
+                          (vector-set! insts
+                                       index2
+                                       (bitwise-or (bitwise-or (bitwise-<< JMP 12)
+                                                               (if (> jump-steps 0)
+                                                                 0
+                                                                 (bitwise-<< JMP 11)))
+                                                   jump-steps))
+                          ))))
+                   ]
                  ;; ############ begin ##############
                  [(string=? tag "begin")
                   (compiler-begin (cdr l)
@@ -486,64 +489,65 @@
                  ;; ############# lambda ############
                  ;; (lambda args . body)
                  [(string=? tag "lambda")
-                  (def params (cadr l))   ;; get parameters
-                  (def variadic-place -1) ;; variadic-place
-                  (def counter 0)         ;; count of parameter num
-                  (def vt_ (vector-slice vt 0 (vector-length vt))) ;; new variable table
-                  (def macros_ (vector-slice macros 0 (vector-length macros))) ;; new macros
-                  (def top-frame_ #['() '()])
-                  (vector-push! vt_ top-frame_)  ;; add new frame, and save space for parent-env and return-address
-                  (vector-push! macros_ #[])  ;; add new frame
-                  
-                  (def (count-parameters
-                        params             ;; provided parameters
-                        counter)           ;; counter for parameters, parameters num
-                    (cond [(null? params)
-                           counter
-                           ]
-                          [(string=? (car params) ".") ;; variadic
-                           (begin (set! variadic-place counter) ;; set variadic-place
-                                  (vector-push! top-frame_ (cadr params))  ;; push param
-                                  (+ counter 1) ;; return counter
-                                  )
-                           ]
-                          [else (begin (vector-push! top-frame_ (car params)) ;; push param
-                                       (count-parameters (cdr params)  ;; continue func
-                                                         (+ counter 1)))]
-                          ))
-                  (set! counter (count-parameters params 0))
-                  
-                  ;; make lambda
-                  (vector-push! insts (bitwise-or (bitwise-<< MAKELAMBDA 12) ;; op
-                                                  (bitwise-<< counter 6)     ;; #param
-                                                  (if (= variadic-place -1) 
-                                                    0x0000                   ;; variadic-place
-                                                    (bitwise-<< variadic-place 1))
-                                                  (if (= variadic-place -1)
-                                                    0x0000 ;; flag for variadic-place
-                                                    0x0001)))
-                  ;; save index1
-                  (def index1 (vector-length insts))
-                  (vector-push! insts 0x0000)  ;; steps that needed to jump over lambda
-                  
-                  ;; for tail call optimization
-                  (def start-pc (vector-length insts)) ; get start-pc
-                  ;; compile body
-                  (def c-body (compiler-begin (cddr l)
-                                              vt_
-                                              insts
-                                              macros_
-                                              ;; function-for-compilation
-                                              #(counter, variadic-place, start-pc, vt_)
-                                              tail-call-flag
-                                              parent-func-name))
-                  
-                  ;; return
-                  (vector-push! insts (bitwise-<< RETURN 12))
-                  
-                  (def index2 (vector-length insts))
-                  (vector-set! insts index1 (- index2 index1)) ;; set jump steps
-                  ;; DONE
+                  (let [params (cadr l)  ;; get parameters
+                        variadic-place -1 ;; variadic-place
+                        counter 0         ;; count of parameter num
+                        vt_ (vector-slice vt 0 (vector-length vt)) ;; new variable table
+                        macros_ (vector-slice macros 0 (vector-length macros)) ;; new macros
+                        top-frame_ #['() '()]
+                        count-parameters 
+                        (lambda [params    ;; provided parameters
+                                 counter   ;; counter for parameters, parameters num
+                                 ]
+                                (cond [(null? params)
+                                       counter
+                                       ]
+                                      [(string=? (car params) ".") ;; variadic
+                                       (begin (set! variadic-place counter) ;; set variadic-place
+                                              (vector-push! top-frame_ (cadr params))  ;; push param
+                                              (+ counter 1) ;; return counter
+                                              )
+                                       ]
+                                      [else (begin (vector-push! top-frame_ (car params)) ;; push param
+                                                   (count-parameters (cdr params)  ;; continue func
+                                                                     (+ counter 1)))]
+                                      ))
+                        counter (count-parameters params 0)
+                        ] 
+          
+                    
+                    (vector-push! vt_ top-frame_)  ;; add new frame, and save space for parent-env and return-address
+                    (vector-push! macros_ #[])  ;; add new frame
+                    ;; make lambda
+                    (vector-push! insts 
+                                  (bitwise-or (bitwise-<< MAKELAMBDA 12) ;; op
+                                              (bitwise-<< counter 6)     ;; #param
+                                              (if (= variadic-place -1) 
+                                                0x0000                   ;; variadic-place
+                                                (bitwise-<< variadic-place 1))
+                                              (if (= variadic-place -1)
+                                                0x0000 ;; flag for variadic-place
+                                                0x0001)))
+                    (let [index1 (vector-length insts)] ;; save index1
+                      (vector-push! insts 0x0000)  ;; steps that needed to jump over lambda
+                      ;; for tail call optimization
+                      (let [start-pc (vector-length insts) ;; get start-pc
+                            ]
+                        ;; compile body
+                        (compiler-begin (cddr l)
+                                        vt_
+                                        insts
+                                        macros_
+                                        ;; function-for-compilation
+                                        #(counter, variadic-place, start-pc, vt_)
+                                        tail-call-flag
+                                        parent-func-name)
+                        ;; return
+                        (vector-push! insts (bitwise-<< RETURN 12))
+                        (vector-set! insts index1 (- (vector-length insts)
+                                                     index1)) ;; set jump steps
+                        ;; DONE
+                        )))
                   ]
                  [(string=? tag "defmacro")
                   '()]

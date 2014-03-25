@@ -1205,10 +1205,10 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		alter = cadddr(l);
 
 	    compiler(test, vt, macros, false, parent_func_name, functions_for_compilation); // compile test, the test is not tail call
-	    var index1 = INSTRUCTIONS.length;
 	    // push test, but now we don't know jump steps
-	    INSTRUCTIONS.push(0x0000); // jump over consequence
-
+	    INSTRUCTIONS.push(TEST<<12); // jump over consequence
+	    var index1 = INSTRUCTIONS.length;
+	    INSTRUCTIONS.push(0x0000);  // jump steps
 	    /*
 	      I changed this to compiler_begin for tail_call optimization
 	    */
@@ -1216,11 +1216,14 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    //vt_0.push(vt[vt.length-1].slice(0));
 	    compiler_begin(cons(conseq, make_null()), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
+	  
 	    var index2 = INSTRUCTIONS.length;
+	    INSTRUCTIONS.push(JMP << 12) // jmp
 	    INSTRUCTIONS.push(0x0000); // jump over alternative
+	    INSTRUCTIONS.push(0x0000);
 
-	    var jump_steps = index2 - index1 + 1;
-	    INSTRUCTIONS[index1] = (TEST << 12) | jump_steps;
+	    var jump_steps = index2 - index1 + 4;
+	    INSTRUCTIONS[index1] = jump_steps;
 
 	    //var vt_1 = vt.slice(0, vt.length - 1);
 	    //vt_1.push(vt[vt.length-1].slice(0));
@@ -1228,7 +1231,9 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
 	    var index3 = INSTRUCTIONS.length;
 	    jump_steps = index3 - index2;
-	    INSTRUCTIONS[index2] = (JMP << 12) | (jump_steps > 0 ? (0) : (1 << 11)) | jump_steps; // I think the jump_steps is always > 0
+	    
+	    INSTRUCTIONS[index2 + 1] = (0xFFFF0000 & jump_steps) >> 16;
+	    INSTRUCTIONS[index2 + 2] = (0xFFFF & jump_steps);
 	    return;
 	}
 	else if (tag === "begin"){ // begin
@@ -1466,8 +1471,10 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		}
 		// jump back
 		var start_pc = functions_for_compilation.start_pc; // start pc for that lambda
+		INSTRUCTIONS.push(JMP<<12);
 		var jump_steps = -(INSTRUCTIONS.length - start_pc); // jump steps
-		INSTRUCTIONS.push((JMP << 12) | (jump_steps > 0 ? 0 : (1 << 11)) | (jump_steps > 0 ? jump_steps : -jump_steps ));
+		INSTRUCTIONS.push((0xFFFF0000 & jump_steps) >> 16);
+		INSTRUCTIONS.push(0xFFFF & jump_steps);
 		return;
 	    }
 	    // not tail call
@@ -1522,6 +1529,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 
 var VM = function(INSTRUCTIONS, env, pc)
 {
+    printInstructions(INSTRUCTIONS);
     if(typeof(pc) === "undefined") pc = 0;
     var accumulator = make_null(); // accumulator
     var length_of_insts = INSTRUCTIONS.length;
@@ -1608,21 +1616,16 @@ var VM = function(INSTRUCTIONS, env, pc)
 	    {
 		if(accumulator.type === TYPE_NULL) // false, jump
 		{
-		    pc = pc + (0x0FFF & inst);
+		    pc = pc + (INSTRUCTIONS[pc+1]);
 		    continue;
 		}
 		// run next
-		pc = pc + 1;
+		pc = pc + 2;
 		continue;
 	    }
 	case JMP: // jump
 	    {
-		var jump_steps = 0x07FF & inst;
-		var negative_flag = 0x0800 & inst;
-		if(negative_flag) jump_steps = - jump_steps;
-		if(jump_steps >> 11 === 1)
-		    jump_steps -= Math.pow(2, 16);
-		pc = pc + jump_steps;
+		pc = pc + ((INSTRUCTIONS[pc + 1] << 16) | INSTRUCTIONS[pc + 2]);
 		continue;
 	    }
 	case SET: // set

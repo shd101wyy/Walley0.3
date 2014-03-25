@@ -73,7 +73,7 @@ MAKELAMBDA 0011 000000      00000            0     ;; make lambda
 RETURN 0100 000000000000				       ;; return accumulator
   	     op             		               ;; get 1 => last-env
 			                        	        ;; get 2 => last-inst according to return-address-index => return-address
-				1- op : 4 
+				1- op : 4
 eg:
 (def (test a) a)
 ----------------------------------------------------------------
@@ -83,14 +83,14 @@ eg:
 0x100
 ----------------------------------------------------------------
 NEWFRAME 0101 00000000000 0    ;; create new frame to store arguments
-          op              
-				1- op : 4 
+          op
+				1- op : 4
 ----------------------------------------------------------------
 PUSH_ARG 0110 000000000000  ;; push accumulator to current-frame
 				1- op index
 ----------------------------------------------------------------
-CALL     0111 000000000000 
-  	     1- op param-num 
+CALL     0111 000000000000
+  	     1- op param-num
   	     ;; 在以后不需要再用到 param-num， 因为在compile的时候会做检查
   	     ;; store 1=> push current-env to new-frame index0
 				 ;; store 2=> push next inst index to new-frame index1
@@ -111,15 +111,18 @@ eg:
 
 ----------------------------------------------------------------
 
-JMP 1000 0 00000000000 ;; jmp forward or backwards
-    inst neg-flag jmp-steps
-    neg-flag is ued to judge jmp-steps positive or negative
-    (because javascript 0x8<<12 | -52 still gives -52)...
-    (I wont use that in C)
+JMP 1000 000000000000 ;; jmp forward or backwards
+    jmp require 3 pcs
+
+		1000 000000000000 opcode
+		00000000000000000 jmp steps, which is 32 bits
+		00000000000000000
 
 ----------------------------------------------------------------
 TEST 1001 000000000000 ;; test value in accumulator if pass run next, otherwise jmp
-       inst   jmp-steps
+    test require 2 pcs
+		1001 000000000000 opcode
+		00000000000000000 jmp steps
 
 ----------------------------------------------------------------
 self in lambda
@@ -173,7 +176,7 @@ RETURN
 #### macro
 ```
 ;; define macro
-(defmacro square 
+(defmacro square
 	[[x] [* ~x ~x]])
 (square 12) => (* x x)
 
@@ -188,7 +191,7 @@ RETURN
       [[. args]  [begin ~@args]])
 
 ;; define one macro
-(defm square [x] [* ~x ~x]) 
+(defm square [x] [* ~x ~x])
 (square 15) => (* 15 15)
 
 ;; macroexpand-1
@@ -209,30 +212,3 @@ x:a => 12
 ```
 
 ------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
