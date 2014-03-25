@@ -1212,7 +1212,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    /*
 	      I changed this to compiler_begin for tail_call optimization
 	    */
-	    compiler_begin(cons(conseq, make_null()), vt, macros, parent_func_name, functions_for_compilation);
+	    compiler_begin(cons(conseq, make_null()), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
 	    var index2 = INSTRUCTIONS.length;
 	    INSTRUCTIONS.push(0x0000); // jump over alternative
@@ -1220,7 +1220,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    var jump_steps = index2 - index1 + 1;
 	    INSTRUCTIONS[index1] = (TEST << 12) | jump_steps;
 
-	    compiler_begin(cons(alter, make_null()), vt, macros, parent_func_name, functions_for_compilation);
+	    compiler_begin(cons(alter, make_null()), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
 	    var index3 = INSTRUCTIONS.length;
 	    jump_steps = index3 - index2;

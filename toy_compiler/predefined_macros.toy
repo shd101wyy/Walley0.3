@@ -61,6 +61,14 @@
   [(a) (/ 1 a)]
   [(a . b) (~/ ~a (* ~@b))])
 
+;; macros used to expand bitwise-and bitwise-or
+(defmacro bitwise-and
+  [(a b) (~bitwise-and ~a ~b)]
+  [(a . b) (~bitwise-and ~a (bitwise-and ~@b))])
+(defmacro bitwise-or
+  [(a b) (~bitwise-or ~a ~b)]
+  [(a . b) (~bitwise-or ~a (bitwise-or ~@b))])
+
 ;; i++ i--
 (defm -- [x] [set! ~x (- ~x 1)])
 (defm ++ [x] [set! ~x (+ ~x 1)])

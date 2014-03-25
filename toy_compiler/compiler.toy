@@ -123,12 +123,15 @@
           (and (isInteger a)
                (isInteger b)))))
 ;; Compiler 
+(def compiler ())
+(def compiler-begin ())
+;; begin to write compiler function
 (def (compiler 
       l       ;;; input expression 
       vt      ;;; variable table
       insts   ;;; instructions
       macros  ;;; macros 
-      lambdas ;;; lambdas
+      function-for-compilation ;;; function-for-compilation
       tail-call-flag  ;;; used to check whether exp is tail call
       parent-func-name  ;;; current function name
       )
@@ -143,7 +146,7 @@
                             vt
                             insts
                             macros
-                            lambdas
+                            function-for-compilation
                             tail-call-flag
                             parent-func-name)
                   (begin ;(display i)
@@ -166,7 +169,7 @@
                             vt
                             insts
                             macros
-                            lambdas
+                            function-for-compilation
                             tail-call-flag
                             parent-func-name)
                   (begin 
@@ -243,7 +246,7 @@
                                  vt
                                  insts
                                  macros
-                                 lambdas
+                                 function-for-compilation
                                  tail-call-flag
                                  parent-func-name)] 
                       [(or (null? v)
@@ -256,7 +259,7 @@
                                  vt
                                  insts
                                  macros
-                                 lambdas
+                                 function-for-compilation
                                  tail-call-flag
                                  parent-func-name)]
                       [else   ;; symbol/string 
@@ -264,7 +267,7 @@
                                  vt
                                  insts
                                  macros
-                                 lambdas
+                                 function-for-compilation
                                  tail-call-flag
                                  parent-func-name)]
                       )
@@ -296,7 +299,7 @@
                                  vt
                                  insts
                                  macros
-                                 lambdas
+                                 function-for-compilation
                                  tail-call-flag
                                  parent-func-name)]
                       [(or (null? v)
@@ -309,7 +312,7 @@
                                  vt
                                  insts
                                  macros
-                                 lambdas
+                                 function-for-compilation
                                  tail-call-flag
                                  parent-func-name)]
                       [else   ;; symbol/string 
@@ -317,10 +320,11 @@
                                  vt
                                  insts
                                  macros
-                                 lambdas
+                                 function-for-compilation
                                  tail-call-flag
                                  parent-func-name)])
                 ]
+               ;;; ######### def #########################################
                [(string=? tag "def")
                 (def variable-name (cadr l))
                 (if (pair? variable-name)
@@ -332,7 +336,7 @@
                                   vt
                                   insts
                                   macros
-                                  lambdas
+                                  function-for-compilation
                                   tail-call-flag
                                   parent-func-name))
                   ;; (def variable-name variable-value)
@@ -362,7 +366,7 @@
                                     vt
                                     insts
                                     macros
-                                    lambdas
+                                    function-for-compilation
                                     tail-call-flag
                                     parent-func-name)
                           ;; add instructions
@@ -371,14 +375,158 @@
                                                              1)))
                           (vector-push! insts variable-index)
                          ))]
+               ;;; ################ set! ############################
                [(string=? tag "set!")
-                '()]
+                (def variable-name (cadr l))    ;; variable name
+                (def variable-value (caddr l))  ;; variable value
+                (def index (vt-find vt variable-name))
+                (if (= (vector-ref index 0)
+                       -1)
+                  (begin ;; didnt find variable 
+                   (display (string-append "ERROR: Undefined Variable: " variable-name))
+                   'ERROR)
+                  (begin
+                   (set! parent-func-name (if (and (pair? variable-value) ;; update parent-func-name
+                                                   (eq? (car variable-value) "lambda"))
+                                            variable-name
+                                            parent-func-name))
+                   (compiler variable-value ;; compile value
+                             vt
+                             insts
+                             macros
+                             function-for-compilation
+                             tail-call-flag
+                             parent-func-name)
+                   ;; add instructions
+                   (vector-push! insts (bitwise-or (bitwise-<< SET 12)
+                                                   (bitwise-and 0x0FFF (vector-ref index 0))))
+                   (vector-push! insts (bitwise-and 0x0000FFFF
+                                                    (vector-ref index 1)))
+                   ))]
+               ;;; ############ if ############
                [(string=? tag "if")
-                '()]
+                (def test (cadr l))
+                (def conseq (caddr l))
+                (def alter (if (null? (cdddr l)) '() (cadddr l)))
+                ;; compile test, which is not tail call
+                (compiler test
+                          vt
+                          insts
+                          macros
+                          function-for-compilation
+                          '()
+                          parent-func-name)
+                ;; save index
+                (def index1 (vector-length insts))
+                ;; push test, but we dont know jump steps right now
+                (vector-push! insts 0x0000) ;; jump over consequence
+                
+                ;; compile conseq
+                (compiler-begin (cons conseq '())
+                          vt
+                          insts
+                          macros
+                          function-for-compilation
+                          tail-call-flag
+                          parent-func-name)
+                ;; save index
+                (def index2 (vector-length insts))
+                (vector-push! insts 0x0000) ;; jump over alternative
+                (def jump-steps (+ (- index2 index1) 1))
+
+                ;; set index1
+                (vector-set! insts index1 (bitwise-or (bitwise-<< TEST 12)
+                                                      jump-steps))
+                
+                ;; compile alternative
+                (compiler-begin (cons alter '())
+                                vt
+                                insts
+                                macros
+                                function-for-compilation
+                                tail-call-flag
+                                parent-func-name)
+                ;; save index
+                (def index3 (vector-length insts))
+                (def jump-steps (- index3 index2))
+                ;; set index2
+                (vector-set! insts index2 (bitwise-or (bitwise-or (bitwise-<< JMP 12)
+                                                                  (if (> jump-steps 0)
+                                                                    0
+                                                                    (bitwise-<< JMP 11)))
+                                                      jump-steps))
+                ]
+               ;; ############ begin ##############
                [(string=? tag "begin")
-                '()]
+                (compiler-begin (cdr l)
+                                vt
+                                insts
+                                macros
+                                function-for-compilation
+                                tail-call-flag
+                                parent-func-name)]
+               ;; ############# lambda ############
+               ;; (lambda args . body)
                [(string=? tag "lambda")
-                '()]
+                (def params (cadr l))   ;; get parameters
+                (def variadic-place -1) ;; variadic-place
+                (def counter 0)         ;; count of parameter num
+                (def vt_ (vector-slice vt 0 (vector-length vt))) ;; new variable table
+                (def macros_ (vector-slice macros 0 (vector-length macros))) ;; new macros
+                (def top-frame_ #['() '()])
+                (vector-push! vt_ top-frame_)  ;; add new frame, and save space for parent-env and return-address
+                (vector-push! macros_ #[])  ;; add new frame
+                
+                (def (count-parameters
+                      params             ;; provided parameters
+                      counter)           ;; counter for parameters, parameters num
+                  (cond [(null? params)
+                         counter
+                         ]
+                        [(string=? (car params) ".") ;; variadic
+                         (begin (set! variadic-place counter) ;; set variadic-place
+                                (vector-push! top-frame_ (cadr params))  ;; push param
+                                (+ counter 1) ;; return counter
+                                )
+                         ]
+                        [else (begin (vector-push! top-frame_ (car params)) ;; push param
+                                     (count-parameters (cdr params)  ;; continue func
+                                                       (+ counter 1)))]
+                        ))
+                (set! counter (count-parameters params 0))
+                
+                ;; make lambda
+                (vector-push! insts (bitwise-or (bitwise-<< MAKELAMBDA 12) ;; op
+                                                (bitwise-<< counter 6)     ;; #param
+                                                (if (= variadic-place -1) 
+                                                  0x0000                   ;; variadic-place
+                                                  (bitwise-<< variadic-place 1))
+                                                (if (= variadic-place -1)
+                                                  0x0000 ;; flag for variadic-place
+                                                  0x0001)))
+                ;; save index1
+                (def index1 (vector-length insts))
+                (vector-push! insts 0x0000)  ;; steps that needed to jump over lambda
+                
+                ;; for tail call optimization
+                (def start-pc (vector-length insts)) ; get start-pc
+                ;; compile body
+                (def c-body (compiler-begin (cddr l)
+                                            vt_
+                                            insts
+                                            macros_
+                                            ;; function-for-compilation
+                                            #(counter, variadic-place, start-pc, vt_)
+                                            tail-call-flag
+                                            parent-func-name))
+                
+                ;; return
+                (vector-push! insts (bitwise-<< RETURN 12))
+                
+                (def index2 (vector-length insts))
+                (vector-set! insts index1 (- index2 index1)) ;; set jump steps
+                ;; DONE
+                ]
                [(string=? tag "defmacro")
                 '()]
                [(string=? tag "macroexpand-1")
@@ -401,7 +549,7 @@
       vt      ;;; variable table
       insts   ;;; instructions
       macros  ;;; macros 
-      lambdas ;;; lambdas 
+      function-for-compilation ;;; function-for-compilation 
       tail-call-flag ;;; used to check whether exp is tail call
       parent-func-name  ;;; current function name
       )
@@ -416,7 +564,7 @@
                                      vt
                                      insts
                                      macros
-                                     lambdas
+                                     function-for-compilation
                                      'true     ;; tail call
                                      '())]
                    (if (eq? result 'ERROR)
@@ -428,7 +576,7 @@
                                     vt
                                     insts
                                     macros
-                                    lambdas
+                                    function-for-compilation
                                     '()        ;; not tail call
                                     parent-func-name)]
                (if (eq? result 'ERROR)
@@ -443,7 +591,7 @@
 
 ;; test
 ;; run compiler
-(def x "(def x 12) (def y 15) (def x 13)")
+(def x "1")
 (def l (lexer x))
 (def p (parser l))
 
@@ -452,6 +600,6 @@
 
 (def INSTS #[])
 (compiler-begin  p 
-          VARIABLE_TABLE
-          INSTS)
+                 VARIABLE_TABLE
+                 INSTS)
 (printInstructions INSTS)
