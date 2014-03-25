@@ -122,6 +122,10 @@
                            (string-length n))]
           (and (isInteger a)
                (isInteger b)))))
+
+;; ###################################################
+;; ERROR:
+;;      1 不应该允许 def in if 。 例如 (if 1 (def x 2) (def y 3)) 是错误的
 ;; Compiler 
 (def compiler ())
 (def compiler-begin ())
@@ -135,203 +139,216 @@
       tail-call-flag  ;;; used to check whether exp is tail call
       parent-func-name  ;;; current function name
       )
+  ;(display l)
+  ;(display vt)
+  ;(display insts)
+  ;(display macros)
+  ;(display function-for-compilation)
+  ;(display tail-call-flag)
+  ;(display parent-func-name)
+
   (cond [(null? l) ;; null
          (vector-push! insts CONST_NULL)] ;; push null
         [(string? l) ;; num var .. null
          ;; check number
          (cond [(isInteger l) ;; integer
-                (def i (string->int l))
-                (if (< i 0) ;; negative number
-                  (compiler (list "-" "0" l)
-                            vt
-                            insts
-                            macros
-                            function-for-compilation
-                            tail-call-flag
-                            parent-func-name)
-                  (begin ;(display i)
-                         (if (> i 0x7FFFFFFF)
-                           (begin ;(display 0xFFFFFFFF) 
-                                  (display "ERROR: Integer too big")
-                                  'ERROR)
-                           (begin (vector-push! insts CONST_INTEGER) ;;;; TRY 32bits first
-                                  (vector-push! insts (bitwise->> (bitwise-and 0xFFFF0000
-                                                                               i)
-                                                                  16))
-                                  (vector-push! insts (bitwise-and 0xFFFF
-                                                                   i))))
-                         ))
-                ]
+                (let [i (string->int l)]
+                  (if (< i 0) ;; negative number
+                    (compiler (list "-" "0" l)
+                              vt
+                              insts
+                              macros
+                              function-for-compilation
+                              tail-call-flag
+                              parent-func-name)
+                    (begin ;(display i)
+                     (if (> i 0x7FFFFFFF)
+                       (begin ;(display 0xFFFFFFFF) 
+                        (display "ERROR: Integer too big")
+                        'ERROR)
+                       (begin (vector-push! insts CONST_INTEGER) ;;;; TRY 32bits first
+                              (vector-push! insts (bitwise->> (bitwise-and 0xFFFF0000
+                                                                           i)
+                                                              16))
+                              (vector-push! insts (bitwise-and 0xFFFF
+                                                               i))
+                              ))
+                     ))
+                  )]
                [(isFloat l)   ;; float
-                (def f (string->float l))
-                (if (< f 0) ;; negative number
-                  (compiler (list "-" 0 l)
-                            vt
-                            insts
-                            macros
-                            function-for-compilation
-                            tail-call-flag
-                            parent-func-name)
-                  (begin 
-                   (def i (->int f))   ;; positive number 
-                   (if (> i 0xFFFF)
-                     (begin (display "ERROR: Float too big")
-                            'ERROR)
-                     (begin (vector-push! insts CONST_FLOAT)
-                            (vector-push! insts i) ;; int part
-                            
-                            (def d (->int (* (- f i) ;; decimal part
-                                             10000)))
-                            (vector-push! insts d)))
-                   ))
+                (let [f (string->float l)]
+                  (if (< f 0) ;; negative number
+                    (compiler (list "-" 0 l)
+                              vt
+                              insts
+                              macros
+                              function-for-compilation
+                              tail-call-flag
+                              parent-func-name)
+                    (begin 
+                     (let [i (->int f)]   ;; positive number 
+                       (if (> i 0xFFFF)
+                         (begin (display "ERROR: Float too big")
+                                'ERROR)
+                         (begin (vector-push! insts CONST_FLOAT)
+                                (vector-push! insts i) ;; int part
+                                (vector-push! insts (->int (* (- f i) ;; decimal part
+                                                              10000)))))))))
                 ]
                [(string=? (string-ref l 0) ;; string
                           "\"")
-                (def s (eval-string-for-compilation l))
-                (def length (string-length s))
-                (vector-push! insts CONST_STRING) ;; create string
-                (vector-push! insts (+ length 1)) ;; with length
-                (def find-end false)
-                (def (compile-string i) ;; return find-end
-                  (if (= i length)
-                    '() ;; didnt find end
-                    (if (= (+ i 1)
-                           length)
-                      (begin ;; find end 
-                       (vector-push! insts (bitwise-and (bitwise-<< (string->char-code s i)
-                                                                    8)
-                                                        0xFF00)
-                                     'true))
-                      (begin ;; didnt find end 
-                       (vector-push! insts (bitwise-or (bitwise-<< (string->char-code s i)
-                                                                   8)
-                                                       (string->char-code s (+ i 1))))
-                       (compile-string  (+ i 2))))))
-                (if (compile-string 0)
-                  '() ;; find end already
-                  (vector-push! insts 0x0000 ;; add end
-                                ))]
+                (let [s (eval-string-for-compilation l)
+                      length (string-length s)
+                      find-end false
+                      compile-string (lambda [i] ;; return find-end
+                                             (if (= i length)
+                                               '() ;; didnt find end
+                                               (if (= (+ i 1)
+                                                      length)
+                                                 (begin ;; find end 
+                                                  (vector-push! insts (bitwise-and (bitwise-<< (string->char-code s i)
+                                                                                               8)
+                                                                                   0xFF00)
+                                                                'true))
+                                                 (begin ;; didnt find end 
+                                                  (vector-push! insts (bitwise-or (bitwise-<< (string->char-code s i)
+                                                                                              8)
+                                                                                  (string->char-code s (+ i 1))))
+                                                  (compile-string  (+ i 2))))))]
+
+                  (vector-push! insts CONST_STRING) ;; create string
+                  (vector-push! insts (+ length 1)) ;; with length
+                  (if (compile-string 0)
+                    '() ;; find end already
+                    (vector-push! insts 0x0000 ;; add end
+                                  )))]
                [else          ;; variable
-                (def index (vt-find vt l))
-                (if (= (vector-ref index 0)
-                       -1)
-                  (begin ;; didnt find 
-                   (display (string-append "ERROR: undefined variables: " l))
-                   'ERROR ;; error handler
-                   )
-                  (begin ;; find 
-                   (vector-push! insts (bitwise-or (bitwise-<< GET 12)
-                                                   (vector-ref index 0)))
-                   (vector-push! insts (vector-ref index 1))))
+                (let [index (vt-find vt l)]
+                  (if (= (vector-ref index 0)
+                         -1)
+                    (begin ;; didnt find 
+                     (display (string-append "ERROR: undefined variables: " l))
+                     'ERROR ;; error handler
+                     )
+                    (begin ;; find 
+                     (vector-push! insts (bitwise-or (bitwise-<< GET 12)
+                                                     (vector-ref index 0)))
+                     (vector-push! insts (vector-ref index 1)))))
                 ])]
         [(pair? l)
-         (def tag (car l))
-         (cond [(int? tag) '()]        ;; macro get 
-               [(string=? tag "quote") ;; quote
-                (def v (cadr l))
-                (cond [(pair? v)
-                       (def (quote-list l)  ;; function used to compile list
-                         (cond [(null? l)
-                                '()]
-                               [(pair? (car l)) ;; (() a) car is pair
-                                (list "cons" (quote-list (car l)) (quote-list (cdr l)))]
-                               [(eq? (car l) ".")
-                                (list "quote" (cadr l))]
-                               ;; (cons "quote" (cons (cadr l) '()))]
-                               [else 
-                                (list "cons" 
-                                      (list "quote" (car l))
-                                      (quote-list (cdr l)))]))
-                       (compiler (quote-list v) ;; compile formatted expression
-                                 vt
-                                 insts
-                                 macros
-                                 function-for-compilation
-                                 tail-call-flag
-                                 parent-func-name)] 
-                      [(or (null? v)
-                           (isInteger v)
-                           (isFloat v)
-                           (string=? (string-ref v 0)
-                                     "\""))
-                       ;; it is () int float or string. 
-                       (compiler v
-                                 vt
-                                 insts
-                                 macros
-                                 function-for-compilation
-                                 tail-call-flag
-                                 parent-func-name)]
-                      [else   ;; symbol/string 
-                       (compiler (string-append "\"" v "\"")
-                                 vt
-                                 insts
-                                 macros
-                                 function-for-compilation
-                                 tail-call-flag
-                                 parent-func-name)]
-                      )
-                ]
-               [(string=? tag "quasiquote")  ;; quasiquote
-                (def v (cadr l))
-                (cond [(pair? v)
-                       (def (quasiquote l)
-                         (cond [(null? l) '()] 
-                               [(pair? (car l))
-                                (cond [(eq? (caar l)
-                                            "unquote")
-                                       (list "cons" (cadr (car l)) (quasiquote (cdr l)))]
-                                      [(eq? (caar l)
-                                            "unquote-splice")
-                                       (list "append" (cadr (car l)) (quasiquote (cdr l)))]
-                                      [else 
-                                       (list "cons" (quasiquote (car l)) (quasiquote (cdr l)))])
-                                ]
-                               [(eq? (car l) ".")
-                                (list "quote" (cadr l))]
-                               [else 
-                                (list "cons"
-                                      (list "quote" (car l))
-                                      (quasiquote (cdr l)))]
-                               ))
-
-                       (compiler (quasiquote v)
-                                 vt
-                                 insts
-                                 macros
-                                 function-for-compilation
-                                 tail-call-flag
-                                 parent-func-name)]
-                      [(or (null? v)
-                           (isInteger v)
-                           (isFloat v)
-                           (string=? (string-ref v 0)
-                                     "\""))
-                       ;; it is () int float or string. 
-                       (compiler v
-                                 vt
-                                 insts
-                                 macros
-                                 function-for-compilation
-                                 tail-call-flag
-                                 parent-func-name)]
-                      [else   ;; symbol/string 
-                       (compiler (string-append "\"" v "\"")
-                                 vt
-                                 insts
-                                 macros
-                                 function-for-compilation
-                                 tail-call-flag
-                                 parent-func-name)])
-                ]
+         (let [tag (car l)]
+           (cond [(int? tag) '()]        ;; macro get 
+                 [(string=? tag "quote") ;; quote
+                  (let [v (car l)]
+                    (cond [(pair? v)
+                           (let [quote-list 
+                                 (lambda [l] ;; function used to compile list
+                                         (cond [(null? l)
+                                                '()]
+                                               [(pair? (car l)) ;; (() a) car is pair
+                                                (list "cons" (quote-list (car l)) (quote-list (cdr l)))]
+                                               [(eq? (car l) ".")
+                                                (list "quote" (cadr l))]
+                                               ;; (cons "quote" (cons (cadr l) '()))]
+                                               [else 
+                                                (list "cons" 
+                                                      (list "quote" (car l))
+                                                      (quote-list (cdr l)))])
+                                         )]
+                             (compiler (quote-list v) ;; compile formatted expression
+                                       vt
+                                       insts
+                                       macros
+                                       function-for-compilation
+                                       tail-call-flag
+                                       parent-func-name))
+                           ] 
+                          [(or (null? v)
+                               (isInteger v)
+                               (isFloat v)
+                               (string=? (string-ref v 0)
+                                         "\""))
+                           ;; it is () int float or string. 
+                           (compiler v
+                                     vt
+                                     insts
+                                     macros
+                                     function-for-compilation
+                                     tail-call-flag
+                                     parent-func-name)]
+                          [else   ;; symbol/string 
+                           (compiler (string-append "\"" v "\"")
+                                     vt
+                                     insts
+                                     macros
+                                     function-for-compilation
+                                     tail-call-flag
+                                     parent-func-name)]
+                        ))
+                  ]
+                 [(string=? tag "quasiquote")  ;; quasiquote
+                  (let [v (cadr l)]
+                    (cond [(pair? v)  
+                           (let [quasiquote
+                                 (lambda [l]
+                                         (cond [(null? l) '()] 
+                                               [(pair? (car l))
+                                                (cond [(eq? (caar l)
+                                                            "unquote")
+                                                       (list "cons" (cadr (car l)) (quasiquote (cdr l)))]
+                                                      [(eq? (caar l)
+                                                            "unquote-splice")
+                                                       (list "append" (cadr (car l)) (quasiquote (cdr l)))]
+                                                      [else 
+                                                       (list "cons" (quasiquote (car l)) (quasiquote (cdr l)))])
+                                                ]
+                                               [(eq? (car l) ".")
+                                                (list "quote" (cadr l))]
+                                               [else 
+                                                (list "cons"
+                                                      (list "quote" (car l))
+                                                      (quasiquote (cdr l)))]
+                                               ))]
+                             (compiler (quasiquote v)
+                                       vt
+                                       insts
+                                       macros
+                                       function-for-compilation
+                                       tail-call-flag
+                                       parent-func-name)
+                             )]
+                          
+                          [(or (null? v)
+                               (isInteger v)
+                               (isFloat v)
+                               (string=? (string-ref v 0)
+                                         "\""))
+                           ;; it is () int float or string. 
+                           (compiler v
+                                     vt
+                                     insts
+                                     macros
+                                     function-for-compilation
+                                     tail-call-flag
+                                     parent-func-name)]
+                          [else   ;; symbol/string 
+                           (compiler (string-append "\"" v "\"")
+                                     vt
+                                     insts
+                                     macros
+                                     function-for-compilation
+                                     tail-call-flag
+                                     parent-func-name)]))
+                  
+                  ]
                ;;; ######### def #########################################
-               [(string=? tag "def")
-                (def variable-name (cadr l))
-                (if (pair? variable-name)
-                  ;; (def (add a b) (+ a b))
-                  (let! [var-name (car variable-name)
-                         args     (cdr variable-name)
-                         lambda-body (cons "lambda" (cons args (cddr l)))]
+                 [(string=? tag "def")
+                  (let [variable-name (cadr l)]
+                    (if (pair? variable-name)
+                      ;; (def (add a b) (+ a b))
+                      (let [var-name (car variable-name)
+                            args     (cdr variable-name)
+                            lambda-body (cons "lambda" (cons args (cddr l)))]
                         (compiler (list "def" var-name lambda-body)
                                   vt
                                   insts
@@ -339,204 +356,205 @@
                                   function-for-compilation
                                   tail-call-flag
                                   parent-func-name))
-                  ;; (def variable-name variable-value)
-                  (begin (def variable-value (if (null? (cddr l)) '() (caddr l))) 
-                         ;; check whether variable already defined
-                         (def frame (vector-ref vt 
-                                                (- (vector-length vt)
-                                                   1)))
-                         (def frame-length (vector-length frame))
-                         (def (check-variable-existed-in-current-top-frame i)
-                           (if (= i frame-length)
-                             (begin (vector-push! frame variable-name)
-                                    frame-length)  ;; didn't find, so add to top frame
-                             (if (string=? (vector-ref frame i)
-                                           variable-name)
-                               ;; find variable-name
-                               i
-                               ;; didn't find, so continue
-                               (check-variable-existed-in-current-top-frame (+ i 1)))))
-                          (def variable-index (check-variable-existed-in-current-top-frame 0)) ;; search variable
-                          (set! parent-func-name  ;; update parent-func-name if val is lambda
-                                (if (and (pair? variable-value)
-                                         (eq? "lambda" (car variable-value)))
-                                  variable-name
-                                  parent-func-name))
-                          (compiler variable-value  ;; compile value
-                                    vt
-                                    insts
-                                    macros
-                                    function-for-compilation
-                                    tail-call-flag
+                      ;; (def variable-name variable-value)                      
+                      (let [variable-value (if (null? (cddr l)) '() (caddr l))
+                            ;; check whether variable already defined
+                            frame (vector-ref vt 
+                                              (- (vector-length vt)
+                                                 1))
+                            frame-length (vector-length frame)
+                            check-variable-existed-in-current-top-frame 
+                            (lambda [i]
+                                    (if (= i frame-length)
+                                      (begin (vector-push! frame variable-name)
+                                             frame-length)  ;; didn't find, so add to top frame
+                                      (if (string=? (vector-ref frame i)
+                                                    variable-name)
+                                        ;; find variable-name
+                                        i
+                                        ;; didn't find, so continue
+                                        (check-variable-existed-in-current-top-frame (+ i 1)))))
+                            variable-index (check-variable-existed-in-current-top-frame 0) ;; search variable
+                            ]
+                        (compiler variable-value  ;; compile value
+                                  vt
+                                  insts
+                                  macros
+                                  function-for-compilation
+                                  tail-call-flag
+                                  (if (and (pair? variable-value)  ;; update parent-func-name if val is lambda
+                                           (eq? "lambda" (car variable-value)))
+                                    variable-name
                                     parent-func-name)
-                          ;; add instructions
-                          (vector-push! insts (bitwise-or (bitwise-<< SET 12)
-                                                          (- (vector-length vt)
-                                                             1)))
-                          (vector-push! insts variable-index)
-                         ))]
+                                  )
+                        ;; add instructions
+                        (vector-push! insts (bitwise-or (bitwise-<< SET 12)
+                                                        (- (vector-length vt)
+                                                           1)))
+                        (vector-push! insts variable-index))                         
+                      ))]
                ;;; ################ set! ############################
-               [(string=? tag "set!")
-                (def variable-name (cadr l))    ;; variable name
-                (def variable-value (caddr l))  ;; variable value
-                (def index (vt-find vt variable-name))
-                (if (= (vector-ref index 0)
-                       -1)
-                  (begin ;; didnt find variable 
-                   (display (string-append "ERROR: Undefined Variable: " variable-name))
-                   'ERROR)
-                  (begin
-                   (set! parent-func-name (if (and (pair? variable-value) ;; update parent-func-name
-                                                   (eq? (car variable-value) "lambda"))
-                                            variable-name
-                                            parent-func-name))
-                   (compiler variable-value ;; compile value
-                             vt
-                             insts
-                             macros
-                             function-for-compilation
-                             tail-call-flag
-                             parent-func-name)
-                   ;; add instructions
-                   (vector-push! insts (bitwise-or (bitwise-<< SET 12)
-                                                   (bitwise-and 0x0FFF (vector-ref index 0))))
-                   (vector-push! insts (bitwise-and 0x0000FFFF
-                                                    (vector-ref index 1)))
-                   ))]
+                 [(string=? tag "set!")
+                  (let [variable-name (cadr l)    ;; variable name
+                        variable-value (caddr l)  ;; variable value
+                        index (vt-find vt variable-name) ;; index of variable
+                        ]  
+                    (if (= (vector-ref index 0)
+                           -1)
+                      (begin ;; didnt find variable 
+                       (display (string-append "ERROR: Undefined Variable: " variable-name))
+                       'ERROR)
+                      (begin
+                       (compiler variable-value ;; compile value
+                                 vt
+                                 insts
+                                 macros
+                                 function-for-compilation
+                                 tail-call-flag
+                                 (if (and (pair? variable-value) ;; update parent-func-name
+                                          (eq? (car variable-value) "lambda"))
+                                   variable-name
+                                   parent-func-name))
+                       ;; add instructions
+                       (vector-push! insts (bitwise-or (bitwise-<< SET 12)
+                                                       (bitwise-and 0x0FFF (vector-ref index 0))))
+                       (vector-push! insts (bitwise-and 0x0000FFFF
+                                                        (vector-ref index 1)))
+                       )))]
                ;;; ############ if ############
-               [(string=? tag "if")
-                (def test (cadr l))
-                (def conseq (caddr l))
-                (def alter (if (null? (cdddr l)) '() (cadddr l)))
-                ;; compile test, which is not tail call
-                (compiler test
-                          vt
-                          insts
-                          macros
-                          function-for-compilation
-                          '()
-                          parent-func-name)
-                ;; save index
-                (def index1 (vector-length insts))
-                ;; push test, but we dont know jump steps right now
-                (vector-push! insts 0x0000) ;; jump over consequence
-                
-                ;; compile conseq
-                (compiler-begin (cons conseq '())
-                          vt
-                          insts
-                          macros
-                          function-for-compilation
-                          tail-call-flag
-                          parent-func-name)
-                ;; save index
-                (def index2 (vector-length insts))
-                (vector-push! insts 0x0000) ;; jump over alternative
-                (def jump-steps (+ (- index2 index1) 1))
+                 [(string=? tag "if")
+                  (def test (cadr l))
+                  (def conseq (caddr l))
+                  (def alter (if (null? (cdddr l)) '() (cadddr l)))
+                  ;; compile test, which is not tail call
+                  (compiler test
+                            vt
+                            insts
+                            macros
+                            function-for-compilation
+                            '()
+                            parent-func-name)
+                  ;; save index
+                  (def index1 (vector-length insts))
+                  ;; push test, but we dont know jump steps right now
+                  (vector-push! insts 0x0000) ;; jump over consequence
+                  
+                  ;; compile conseq
+                  (compiler-begin (cons conseq '())
+                                  vt
+                                  insts
+                                  macros
+                                  function-for-compilation
+                                  tail-call-flag
+                                  parent-func-name)
+                  ;; save index
+                  (def index2 (vector-length insts))
+                  (vector-push! insts 0x0000) ;; jump over alternative
+                  (def jump-steps (+ (- index2 index1) 1))
 
-                ;; set index1
-                (vector-set! insts index1 (bitwise-or (bitwise-<< TEST 12)
-                                                      jump-steps))
-                
-                ;; compile alternative
-                (compiler-begin (cons alter '())
-                                vt
-                                insts
-                                macros
-                                function-for-compilation
-                                tail-call-flag
-                                parent-func-name)
-                ;; save index
-                (def index3 (vector-length insts))
-                (def jump-steps (- index3 index2))
-                ;; set index2
-                (vector-set! insts index2 (bitwise-or (bitwise-or (bitwise-<< JMP 12)
-                                                                  (if (> jump-steps 0)
-                                                                    0
-                                                                    (bitwise-<< JMP 11)))
-                                                      jump-steps))
-                ]
-               ;; ############ begin ##############
-               [(string=? tag "begin")
-                (compiler-begin (cdr l)
-                                vt
-                                insts
-                                macros
-                                function-for-compilation
-                                tail-call-flag
-                                parent-func-name)]
-               ;; ############# lambda ############
-               ;; (lambda args . body)
-               [(string=? tag "lambda")
-                (def params (cadr l))   ;; get parameters
-                (def variadic-place -1) ;; variadic-place
-                (def counter 0)         ;; count of parameter num
-                (def vt_ (vector-slice vt 0 (vector-length vt))) ;; new variable table
-                (def macros_ (vector-slice macros 0 (vector-length macros))) ;; new macros
-                (def top-frame_ #['() '()])
-                (vector-push! vt_ top-frame_)  ;; add new frame, and save space for parent-env and return-address
-                (vector-push! macros_ #[])  ;; add new frame
-                
-                (def (count-parameters
-                      params             ;; provided parameters
-                      counter)           ;; counter for parameters, parameters num
-                  (cond [(null? params)
-                         counter
-                         ]
-                        [(string=? (car params) ".") ;; variadic
-                         (begin (set! variadic-place counter) ;; set variadic-place
-                                (vector-push! top-frame_ (cadr params))  ;; push param
-                                (+ counter 1) ;; return counter
-                                )
-                         ]
-                        [else (begin (vector-push! top-frame_ (car params)) ;; push param
-                                     (count-parameters (cdr params)  ;; continue func
-                                                       (+ counter 1)))]
-                        ))
-                (set! counter (count-parameters params 0))
-                
-                ;; make lambda
-                (vector-push! insts (bitwise-or (bitwise-<< MAKELAMBDA 12) ;; op
-                                                (bitwise-<< counter 6)     ;; #param
-                                                (if (= variadic-place -1) 
-                                                  0x0000                   ;; variadic-place
-                                                  (bitwise-<< variadic-place 1))
-                                                (if (= variadic-place -1)
-                                                  0x0000 ;; flag for variadic-place
-                                                  0x0001)))
-                ;; save index1
-                (def index1 (vector-length insts))
-                (vector-push! insts 0x0000)  ;; steps that needed to jump over lambda
-                
-                ;; for tail call optimization
-                (def start-pc (vector-length insts)) ; get start-pc
-                ;; compile body
-                (def c-body (compiler-begin (cddr l)
-                                            vt_
-                                            insts
-                                            macros_
-                                            ;; function-for-compilation
-                                            #(counter, variadic-place, start-pc, vt_)
-                                            tail-call-flag
-                                            parent-func-name))
-                
-                ;; return
-                (vector-push! insts (bitwise-<< RETURN 12))
-                
-                (def index2 (vector-length insts))
-                (vector-set! insts index1 (- index2 index1)) ;; set jump steps
-                ;; DONE
-                ]
-               [(string=? tag "defmacro")
-                '()]
-               [(string=? tag "macroexpand-1")
-                '()]
-               [(string=? tag "return")
-                '()]
-               [else
-                (display "ERROR: compiler error")
-                'ERROR] ;; error handler
-               )]
+                  ;; set index1
+                  (vector-set! insts index1 (bitwise-or (bitwise-<< TEST 12)
+                                                        jump-steps))
+                  
+                  ;; compile alternative
+                  (compiler-begin (cons alter '())
+                                  vt
+                                  insts
+                                  macros
+                                  function-for-compilation
+                                  tail-call-flag
+                                  parent-func-name)
+                  ;; save index
+                  (def index3 (vector-length insts))
+                  (def jump-steps (- index3 index2))
+                  ;; set index2
+                  (vector-set! insts index2 (bitwise-or (bitwise-or (bitwise-<< JMP 12)
+                                                                    (if (> jump-steps 0)
+                                                                      0
+                                                                      (bitwise-<< JMP 11)))
+                                                        jump-steps))
+                  ]
+                 ;; ############ begin ##############
+                 [(string=? tag "begin")
+                  (compiler-begin (cdr l)
+                                  vt
+                                  insts
+                                  macros
+                                  function-for-compilation
+                                  tail-call-flag
+                                  parent-func-name)]
+                 ;; ############# lambda ############
+                 ;; (lambda args . body)
+                 [(string=? tag "lambda")
+                  (def params (cadr l))   ;; get parameters
+                  (def variadic-place -1) ;; variadic-place
+                  (def counter 0)         ;; count of parameter num
+                  (def vt_ (vector-slice vt 0 (vector-length vt))) ;; new variable table
+                  (def macros_ (vector-slice macros 0 (vector-length macros))) ;; new macros
+                  (def top-frame_ #['() '()])
+                  (vector-push! vt_ top-frame_)  ;; add new frame, and save space for parent-env and return-address
+                  (vector-push! macros_ #[])  ;; add new frame
+                  
+                  (def (count-parameters
+                        params             ;; provided parameters
+                        counter)           ;; counter for parameters, parameters num
+                    (cond [(null? params)
+                           counter
+                           ]
+                          [(string=? (car params) ".") ;; variadic
+                           (begin (set! variadic-place counter) ;; set variadic-place
+                                  (vector-push! top-frame_ (cadr params))  ;; push param
+                                  (+ counter 1) ;; return counter
+                                  )
+                           ]
+                          [else (begin (vector-push! top-frame_ (car params)) ;; push param
+                                       (count-parameters (cdr params)  ;; continue func
+                                                         (+ counter 1)))]
+                          ))
+                  (set! counter (count-parameters params 0))
+                  
+                  ;; make lambda
+                  (vector-push! insts (bitwise-or (bitwise-<< MAKELAMBDA 12) ;; op
+                                                  (bitwise-<< counter 6)     ;; #param
+                                                  (if (= variadic-place -1) 
+                                                    0x0000                   ;; variadic-place
+                                                    (bitwise-<< variadic-place 1))
+                                                  (if (= variadic-place -1)
+                                                    0x0000 ;; flag for variadic-place
+                                                    0x0001)))
+                  ;; save index1
+                  (def index1 (vector-length insts))
+                  (vector-push! insts 0x0000)  ;; steps that needed to jump over lambda
+                  
+                  ;; for tail call optimization
+                  (def start-pc (vector-length insts)) ; get start-pc
+                  ;; compile body
+                  (def c-body (compiler-begin (cddr l)
+                                              vt_
+                                              insts
+                                              macros_
+                                              ;; function-for-compilation
+                                              #(counter, variadic-place, start-pc, vt_)
+                                              tail-call-flag
+                                              parent-func-name))
+                  
+                  ;; return
+                  (vector-push! insts (bitwise-<< RETURN 12))
+                  
+                  (def index2 (vector-length insts))
+                  (vector-set! insts index1 (- index2 index1)) ;; set jump steps
+                  ;; DONE
+                  ]
+                 [(string=? tag "defmacro")
+                  '()]
+                 [(string=? tag "macroexpand-1")
+                  '()]
+                 [(string=? tag "return")
+                  '()]
+                 [else
+                  (display "ERROR: compiler error")
+                  'ERROR] ;; error handler
+                 )])
         [else
          (display "ERROR: compiler error")
          (display l)
@@ -553,9 +571,11 @@
       tail-call-flag ;;; used to check whether exp is tail call
       parent-func-name  ;;; current function name
       )
+  (display l)
   (if (null? l)
     'Done   ; finish compilation
-    (if (and (null? (cdr l)) ;; last exp
+    (if (and (not (null? parent-func-name)) 
+             (null? (cdr l)) ;; last exp
              (pair? (car l)) ;; exp might be lambda
              (string=? (car (car l))  ;; has the same function name
                        parent-func-name)) 
@@ -572,26 +592,36 @@
                      '()))
              'Done) ;; finish compilation
       ;; not tail call
-      (begin (let [result (compiler (car l)
+      (begin (display "ENTER HERE2")
+             (display (compiler (car l)
+                                vt
+                                insts
+                                macros
+                                function-for-compilation
+                                '()        ;; not tail call
+                                parent-func-name))
+             (display "DONE")
+             (let [result (compiler (car l)
                                     vt
                                     insts
                                     macros
                                     function-for-compilation
                                     '()        ;; not tail call
                                     parent-func-name)]
+               (display "Enter Here")
                (if (eq? result 'ERROR)
                  (begin (display "EXP: ")
                         (display (car l))) ;; get error
-                 '())
-               (compiler-begin (cdr l)
-                               vt
-                               insts))
+                 (compiler-begin (cdr l)
+                                 vt
+                                 insts))
+               )
              ))))
 
 
 ;; test
 ;; run compiler
-(def x "1")
+(def x "12")
 (def l (lexer x))
 (def p (parser l))
 
@@ -599,7 +629,17 @@
 (display p)
 
 (def INSTS #[])
-(compiler-begin  p 
-                 VARIABLE_TABLE
-                 INSTS)
-(printInstructions INSTS)
+                                        ;(compiler-begin  p 
+                                        ;                 VARIABLE_TABLE
+                                        ;                 INSTS)
+(compiler "12"
+          VARIABLE_TABLE
+          INSTS
+          '()
+          '()
+          '()
+          '())
+;(display "*** FINISH COMPILATION ***")
+;(printInstructions INSTS)
+
+
