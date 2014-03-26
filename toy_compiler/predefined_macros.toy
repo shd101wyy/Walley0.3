@@ -119,5 +119,5 @@
      (cond ~@rest))])
 
 
-
+;; (defmacro list [()()] [(a) (quote (~a))] [(a . b) (cons ~a (list ~@b))])
 
