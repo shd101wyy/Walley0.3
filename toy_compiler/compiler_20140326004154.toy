@@ -128,157 +128,6 @@
 (defm get-macro-clauses [macro] (vector-ref ~macro 1))
 (defm get-macro-vt [macro] (vector-ref ~macro 2))
 
-;; check macro match
-(defn macro-match [a b]
-  (defn macro-match-iter [a b output]
-    (cond [(and (null? a) (null? b))
-           output ;; done
-           ]
-          [(or (and (null? a) (not (null? b)))
-               (and (null? b) (not (null? a))))
-           '() ;; didn't match
-           ]
-          [(and (pair? (car a))
-                (not (pair? (car b))))
-           '()]
-          [(and (pair? (car a))
-                (pair? (car b)))
-           (let [m (macro-match-iter (car a) (car b) output)]
-             (if m
-               (macro-match-iter (cdr a) (cdr b) output) ;; match so continue
-               '() ;; didn't match
-               ))]
-          [else (cond [(string=? (string-ref (car a) 0)
-                                 "#") ;; constant literal
-                       (if (string=? (string-slice (car a) 1 )
-                                     (car b))
-                         (macro-match-iter (cdr a) (cdr b) output)
-                         '())]
-                      [(string=? (car a) ".") ;; variadic
-                       (output (cadr a) b)
-                       output]
-                      [else 
-                       (output (car a) (car b))
-                       (macro-match-iter (cdr a) (cdr b) output)]) 
-           ]))
-  (def output {})
-  (macro-match-iter a b output))
-
-;;
-;;   macro_expand_for_compilation
-;;
-;;   this function is different from the function above,
-;;   it will replace also replace value which is not arg
-;;   eg:
-;;   (defm test [x] [list ~x]) will also replace "list" => (test 12) => ((0 frame_index value_index) 12)
-;;   here 0 is integer, different with string
-;;
-(defn macro-expand-with-arg-value-for-compilation [body
-                                                   t   ;; table 保存了对应的 value 
-                                                   vt
-                                                   macros
-                                                   start-flag ;; check whether is the start(head) of list
-                                                   ]
-  (cond [(null? body) '()]
-        [(string=? (car body) 'unquote) ;; unquote
-         (let [in-t? (vector-find (object-keys t) (cadr body))]
-           (if in-t? 
-             ;; is in table
-             (t (cadr body))
-             ;; it is not in table
-             (let [i (vt-find vt (cadr body))] ;; check in vt
-               (if (= (vector-ref i 0) -1)
-                 body ;; is not in vt
-                 (list 0 (vector-ref i 0) (vector-ref i 1)) ;; in vt, so get that value
-                 ))))]
-        [(and (pair? (car body))
-              (eq? (car (car body))
-                   'unquote-splice))
-         (let [in-t? (vector-find (object-keys t) (cadr (car body)))]
-           (if in-t?  ;; find in table
-             (list-append in-t? 
-                          (macro-expand-with-arg-value-for-compilation (cdr body)
-                                                                       t
-                                                                       vt
-                                                                       macros 
-                                                                       '()))
-             (cons body
-                   (macro-expand-with-arg-value-for-compilation (cdr body)
-                                                                       t
-                                                                       vt
-                                                                       macros 
-                                                                       '()))))]
-        [(pair? (car body))
-         (cons (macro-expand-with-arg-value-for-compilation (car body) t vt macros 'true)
-               (macro-expand-with-arg-value-for-compilation (cdr body) t vt macros '()))]
-        [else 
-         (let [v (car body)
-               macros-length (vector-length macros)
-               check-macro-frame (lambda [frame i]
-                                         (if (= i (vector-length frame))
-                                           '() ;; didnt find macro in current frame
-                                           (if (eq? v (get-macro-name (vector-ref frame i)))
-                                             'true ;; find macro
-                                             (check-macro-frame frame (+ i 1)))))
-               check-macros (lambda [i]
-                                    (if (= i macros-length)
-                                      '()
-                                      (let [v (check-macro-frame (vector-ref macros i) 0)]
-                                        (if v
-                                          v
-                                          (check-macros (+ i 1))))))
-               is-macro? (and start-flag  ;; check is macro
-                              (check-macros 0))]
-           (if is-macro? 
-             ;; if is macro, then dont replace
-             (cons (car body)
-                   (macro-expand-with-arg-value-for-compilation (cdr body)
-                                                                t
-                                                                vt
-                                                                macros 
-                                                                '()))
-             ;; it is not macro, so check vt
-             (let [i (vt-find vt v)]
-               (if (= (vector-ref i 0) -1) ;; didn't find
-                 (cons (car body)
-                       (macro-expand-with-arg-value-for-compilation (cdr body)
-                                                                    t 
-                                                                    vt
-                                                                    macros 
-                                                                    '()))
-                 (cons (list 0 (vector-ref i 0) (vector-ref i 1)) ;; get value
-                       (macro-expand-with-arg-value-for-compilation (cdr body)
-                                                                    t 
-                                                                    vt 
-                                                                    macros 
-                                                                    '()))))))]))
-
-;; macro expand for compilation
-(defn macro-expand-for-compilation [macro exps macros]
-  (let [clauses (get-macro-clauses macro)
-        check-match ;; check macro matches
-        (lambda [clauses]
-                '() ;; doesnt match
-                (let [match (macro-match (car (car clauses))
-                                         exps)]
-                   (if match 
-                     ;; match
-                     (macro-expand-with-arg-value-for-compilation (cadr (car clauses))
-                                                                  match
-                                                                  (get-macro-vt macro)
-                                                                  macros 
-                                                                  'true)
-                     ;; didn't match
-                     (check-match (cdr clauses)))))
-        ]
-    (if check-match
-      check-match
-      ;; error
-      (begin (display (string-append "ERROR: Macro " (get-macro-name macro) " expansion failed"))
-             (display (cons (get-macro-name macro) exps))
-             '()))))
-
-
 ;; FUNCTION_FOR_COMPILATION =======
 ;; #(param-num variadic-place start-pc vt)
 (defm get-compiled-function-param-num [f] (vector-ref ~f 0))
@@ -335,7 +184,10 @@
                                                               16))
                               (vector-push! insts (bitwise-and 0xFFFF
                                                                i))
-                              )))))]
+                              ))
+                     ))
+                  )
+                ]
                [(isFloat l)   ;; float
                 (let [f (string->float l)]
                   (if (< f 0) ;; negative number
@@ -398,10 +250,7 @@
                 ])]
         [(pair? l)
          (let [tag (car l)]
-           (cond [(and (int? tag) (= tag 0))      ;; macro get 
-                  (vector-push! (bitwise-or (bitwise-<< GET 12)
-                                            (cadr l)))
-                  (vector-push! (caddr l))]    
+           (cond [(int? tag) '()]        ;; macro get 
                  [(string=? tag "quote") ;; quote
                   (let [v (car l)]
                     (cond [(pair? v)
@@ -770,17 +619,9 @@
                                                v
                                                (check-macros (+ i 1))))))
                         is-macro (check-macros 0)]
-                    (cond [is-macro ;; is macro, so expand it and then compile
-                           (compiler (macro-expand-for-compilation is-macro
-                                                                   (cdr l)
-                                                                   macros)
-                                     vt 
-                                     insts 
-                                     macros 
-                                     function-for-compilation 
-                                     tail-call-flag 
-                                     parent-func-name)
-                           ]
+                    (cond [is-macro ;; is macro, so expand it
+                           (display "IT IS MACRO")]
+                          
                           [tail-call-flag ;; tail call
                            (let [top-frame (vector-ref vt (- (vector-length vt) 1))
                                  start-index (vector-length top-frame)
@@ -840,7 +681,7 @@
                                  move-parameters
                                  (lambda [i]
                                          (if (= i count-params)
-                                           i ;; finish move
+                                           '() ;; finish move
                                            (begin 
                                             ;; get parameter
                                             (vector-push! insts
@@ -853,84 +694,11 @@
                                             (vector-push! insts 
                                                           (bitwise-or (bitwise-<< GET 12)
                                                                       (- (vector-length vt) 1)))
-                                            (vector-push! insts 
-                                                          (+ i 2))
-                                            (move-parameters (+ i 1)))))
-                                 ;; update count-paras
-                                 count-params (compile-parameters params
-                                                                  0
-                                                                  track-index)
-                                 ;; move parameters
-                                 rest-index (move-parameters 0)
-                                 
-                                 ;; set null for rest
-                                 set-null-for-rest 
-                                 (lambda [i]
-                                         (if (= i required-function-param)
-                                           '() ;; done
-                                           (begin (vector-push! insts (bitwise-<< CONST_NULL 12))
-                                                  ;; move to target index
-                                                  (vector-push! insts 
-                                                                (bitwise-or (bitwise-<< GET 12)
-                                                                            (- (vector-length vt) 1)))
-                                                  (vector-push! insts 
-                                                                (+ i 2))
-                                                  (set-null-for-rest (+ i 1)))))
-                                 ]
-                             ;; set null for rest
-                             (if (and (= required-variadic-place -1)
-                                      (< rest-index required-function-param))
-                               (set-null-for-rest rest-index)
-                               'do-nothing)
-                             ;; jump back
-                             (vector-push! insts (bitwise-<< JMP 12))
-                             (let [jump-steps (required-start-pc (vector-length insts))]
-                               (vector-push! insts (bitwise->> (bitwise-and 0xFFFF0000 jump-steps)
-                                                               16))
-                               (vector-push! insts (bitwise-and 0xFFFF jump-steps))))]
-                          ;; not tail call
-                          [else
-                           (let [
-                                 params (cdr l)
-                                 ;; push arg
-                                 ;; return param num
-                                 push-arg (lambda [params param-num]
-                                                  (if (null? params)
-                                                    param-num
-                                                    ;; compile param
-                                                    (begin 
-                                                     (compiler (car params)
-                                                               vt 
-                                                               insts 
-                                                               macros 
-                                                               function-for-compilation 
-                                                               tail-call-flag 
-                                                               parent-func-name)
-                                                     ;; push parameters to new frame
-                                                     (vector-push! insts 
-                                                                   (bitwise-or (bitwise-<< PUSH_ARG 12)
-                                                                               (+ param-num 2)))
-                                                     (push-arg (cdr params)
-                                                               (+ param-num)))))
-                                 ;; push arg
-                                 ;; and get param-num
-                                 param-num (push-arg params 0)]
-                             
-                             ;; compile lambda
-                             (compiler func
-                                       vt
-                                       insts 
-                                       macros 
-                                       function-for-compilation 
-                                       '()
-                                       parent-func-name)
-                             ;; call function
-                             (vector-push! insts (bitwise-or (bitwise-<< CALL 12)
-                                                             (bitwise-and 0x0FFF param-num)))
-                             )
-                           ]
-                          ))]))]
-        [else 
+                                            )))
+                                 ])]))
+                  ]
+                 )])
+        [else
          (display "ERROR: compiler error")
          (display l)
          'ERROR ;; error handler

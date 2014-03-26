@@ -16,6 +16,23 @@
 	(def (add a) a)
 	(set 0 1 (param-num 1) (get 1 0)) ;; param num, get 1 0 save to accumulator
 */
+
+/*
+  #include <stdio.h>
+int main()
+{
+  long x = 0x7FFFFFFFFFFFFFFF;
+  double y = (double)0.1234;
+  long i = 0x3fbf972474538ef3;
+  double * p = (double*)&i;
+
+  printf("%ld\n\n", x);
+  printf("%lx\n\n", *(long*)&y); // hexadecimal double
+  printf("%lf\n\n", *p);        // get double from hexadecimal
+  return 0;
+}
+ */
+
 /*
 	Contruct Toy Language Data Types
 */
@@ -63,7 +80,7 @@ var Cons = function(car_, cdr_)
 var cons = function(v0, v1)
 {
     var v = new Value(); // create Value
-    v.cons = new Cons(v0, v1); 
+    v.cons = new Cons(v0, v1);
     v.type = TYPE_PAIR;
     return v;
     // return new Cons(v0, v1);
@@ -219,7 +236,7 @@ var lexer_iter = function(input_string, index)
 	    if(input_string[i] === "\"") break;
 	    i++
 	}
-	return cons(input_string.slice(index, i + 1), 
+	return cons(input_string.slice(index, i + 1),
 		    lexer_iter(input_string, i + 1));
     }
     // get number symbol
@@ -257,7 +274,7 @@ var formatQuickAccess = function(ns, keys)
 var parser_symbol_or_number = function(v){
     if(v[0] === '"') return v;
     var splitted_ = v.split(":");
-    if(v === ":"  || splitted_.length == 1 || v[0] === ":" || v[v.length-1] === ":") //  : :abc abc: 
+    if(v === ":"  || splitted_.length == 1 || v[0] === ":" || v[v.length-1] === ":") //  : :abc abc:
 	return v
     var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
     var keys = splitted_.slice(1);
@@ -382,13 +399,13 @@ var VARIABLE_TABLE = [
     ["cons", "car", "cdr", "vector", "vector-ref", "vector-set!",
      "vector-length", "vector?", "+", "-", "*", "/", "=",
      "<", ">", "<=", ">=", "eq?", "string?", "int?",
-     "float?", "pair?", "null?", 
+     "float?", "pair?", "null?",
      "string<?", "string=?", "string-ref", "string-slice", "string-length",
      "vector-slice", "acos", "acosh", "asin", "asinh", "atan", "atanh",
      "ceil", "cos", "cosh", "exp", "floor", "loge", "pow", "sin", "sinh",
      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
      "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
-     "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor", 
+     "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor",
      "string->char-code", "char-code->string", "int->string-16", "string->int", "string->float"
     ]
 ];
@@ -405,7 +422,7 @@ var ENVIRONMENT =
 	    	    return cons(stack_param[0], stack_param[1]);
 		    //return new Cons(stack_param[0], stack_param[1]);
 		}),
-	    
+
 	    bpp(function(stack_param)
 		{ // 1 car
 		    return car(stack_param[0]);
@@ -534,7 +551,7 @@ var ENVIRONMENT =
 		    if(stack_param[0].type === TYPE_NULL)
 			return make_string("true");
 		    return make_null();
-		}), 
+		}),
 	    bpp(function(stack_param){
 		// 23 string<?
 		if(stack_param[0].string < stack_param[1].string) return make_string("true");
@@ -548,7 +565,7 @@ var ENVIRONMENT =
 		// 25 string-ref
 		var v = new Value();
 		v.type = TYPE_STRING;
-		v.string = stack_param[0].string[stack_param[1].num]; 
+		v.string = stack_param[0].string[stack_param[1].num];
 		return v;
 	    }),
 	    bpp(function(stack_param){
@@ -659,8 +676,8 @@ var ENVIRONMENT =
  		var v = new Value();
 		v.type = TYPE_STRING;
 		v.string = "" + stack_param[0].num;
-	   	return v;	
-	    }), 
+	   	return v;
+	    }),
 	    bpp(function(stack_param){
 		// 51 string-append
 		var v = new Value();
@@ -723,31 +740,31 @@ var ENVIRONMENT =
 		//return Object.keys(stack_param[0].object)
 	    }),
 	    bpp(function(stack_param){
-		// 58 bitwise-and 
+		// 58 bitwise-and
 		return make_integer(stack_param[0].num & stack_param[1].num);
 	    }),
 	    bpp(function(stack_param){
-		// 59 bitwise-or 
+		// 59 bitwise-or
 		return make_integer(stack_param[0].num | stack_param[1].num);
 	    }),
 	    bpp(function(stack_param){
-		// 60 bitwise-<< 
+		// 60 bitwise-<<
 		return make_integer(stack_param[0].num << stack_param[1].num);
 	    }),
 	    bpp(function(stack_param){
-		// 61 bitwise->> 
+		// 61 bitwise->>
 		return make_integer(stack_param[0].num >> stack_param[1].num);
 	    }),
 	    bpp(function(stack_param){
-		// 62 bitwise-not 
+		// 62 bitwise-not
 		return make_integer(~stack_param[0].num);
 	    }),
 	    bpp(function(stack_param){
-		// 63 bitwise-xor 
+		// 63 bitwise-xor
 		return make_integer(stack_param[0].num ^ stack_param[1].num);
 	    }),
 	    bpp(function(stack_param){
-		// 64 string->char-code 
+		// 64 string->char-code
 		return make_integer(stack_param[0].string.charCodeAt(stack_param[1].num));
 	    }),
 	    bpp(function(stack_param){
@@ -851,17 +868,17 @@ var macro_expand_with_arg_value = function(body, t){
 	var n = cadr( car(body) );
 	if(n in t){
 	    var v = t[n];
-	    return list_append(v, 
+	    return list_append(v,
 			       macro_expand_with_arg_value(cdr(body), t));
 	}
 	return cons(body,
 		    macro_expand_with_arg_value(cdr(body), t));
     }
     else if(car(body).type === TYPE_PAIR){ // cons
-	return cons(macro_expand_with_arg_value(car(body), t), 
+	return cons(macro_expand_with_arg_value(car(body), t),
 		    macro_expand_with_arg_value(cdr(body), t));
     }
-    return cons(car(body), 
+    return cons(car(body),
 		macro_expand_with_arg_value(cdr(body), t))
 }
 var macro_expand = function(macro, exps){
@@ -878,13 +895,13 @@ var macro_expand = function(macro, exps){
     console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
     return make_null();
 }
-/* 
+/*
    macro_expand_for_compilation
 
    this function is different from the function above,
    it will replace also replace value which is not arg
    eg:
-   (defm test [x] [list ~x]) will also replace "list" => (test 12) => ((0 frame_index value_index) 12) 
+   (defm test [x] [list ~x]) will also replace "list" => (test 12) => ((0 frame_index value_index) 12)
    here 0 is integer, different with string
 */
 var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, start_flag){
@@ -903,14 +920,14 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 	var n = cadr( car(body) );
 	if(n in t){
 	    var v = t[n];
-	    return list_append(v, 
+	    return list_append(v,
 			       macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
 	}
 	return cons(body,
 		    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
     }
     else if(car(body).type === TYPE_PAIR){ // cons
-	return cons(macro_expand_with_arg_value_for_compilation(car(body), t, vt, macros, true), 
+	return cons(macro_expand_with_arg_value_for_compilation(car(body), t, vt, macros, true),
 		    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
     }
     var v = car(body);
@@ -932,7 +949,7 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 
     var i = vt_find(vt, v);
     if(i[0] === -1) // didnt find
-	return cons(car(body), 
+	return cons(car(body),
 		    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
     else{
 	return cons(
@@ -958,7 +975,7 @@ var macro_expand_for_compilation = function(macro, exps, macros){
   parent func name:
   eg (def (f n) (f 12)) when calling (f 12), its parent_func_name is "f"
   (def (f1 n) (f2 12)) when calling (f2 12), its parent_func_name is "f1"
-*/	
+*/
 var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation){
     if(l.type === TYPE_NULL){
 	INSTRUCTIONS.push(CONST_NULL); // push null
@@ -981,7 +998,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    if(i < 0){
 		return compiler(cons("-", cons("0", cons(l.slice(1), make_null()))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
 	    }
-	    
+
 	    INSTRUCTIONS.push( CONST_INTEGER );
 	    //INSTRUCTIONS.push( /*(0xFFFF000000000000 & i) >> 48*/ (i / Math.pow(2, 48) & 0xFFFF) );
 	    //INSTRUCTIONS.push( /*(0x0000FFFF00000000 & i) >> 32*/ (i / Math.pow(2, 32) & 0xFFFF) );
@@ -1153,7 +1170,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		    //INSTRUCTIONS = []; // clear instructions
 		    //console.log("ERROR: variable: "+variable_name+" already defined");
 		    //return;
-		    variable_index = j 
+		    variable_index = j
 		    variable_existed = true;
 		    break;
 		}
@@ -1216,7 +1233,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    //vt_0.push(vt[vt.length-1].slice(0));
 	    compiler_begin(cons(conseq, make_null()), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
-	  
+
 	    var index2 = INSTRUCTIONS.length;
 	    INSTRUCTIONS.push(JMP << 12) // jmp
 	    INSTRUCTIONS.push(0x0000); // jump over alternative
@@ -1231,7 +1248,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
 	    var index3 = INSTRUCTIONS.length;
 	    jump_steps = index3 - index2;
-	    
+
 	    INSTRUCTIONS[index2 + 1] = (0xFFFF0000 & jump_steps) >> 16;
 	    INSTRUCTIONS[index2 + 2] = (0xFFFF & jump_steps);
 	    return;
@@ -1341,7 +1358,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    INSTRUCTIONS.push(MAKELAMBDA << 12 | (counter << 6) | (variadic_place === -1? 0x0000 : (variadic_place << 1)) | (variadic_place === -1? 0x0000 : 0x0001));
 	    var index1 = INSTRUCTIONS.length;
 	    INSTRUCTIONS.push(0x0000); // steps that needed to jump over lambda
-	    
+
 	    // for tail call optimization
 	    var start_pc = INSTRUCTIONS.length; // get start_pc
 
@@ -1363,7 +1380,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		if(var_name === macros[macros.length - 1][i].macro_name){ // macro already exists
 		    already_defined = true;
 		    macros[macros.length - 1][i].clauses = clauses;
-		}	
+		}
 	    }
 	    if(already_defined === false){ // not defined, save macro
 		macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)));
@@ -1379,7 +1396,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		for(var j = frame.length - 1; j >= 0; j--){
 		    if(frame[j].macro_name === macro_name){
 			var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), make_null()));
-			return compiler(e, 
+			return compiler(e,
 					vt,
 					macros,
 					tail_call_flag,
@@ -1399,7 +1416,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    return;
 	}
 	// call function
-	else{ 
+	else{
 	    // check whether macro
 	    var func = car(l);
 	    if(typeof(func) === "string"){
@@ -1419,7 +1436,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    }
 	    // tail call
 	    if(tail_call_flag){
-		// so no new frame				
+		// so no new frame
 		var start_index = vt[vt.length - 1].length;
 		var track_index = start_index;
 		// compile parameters
@@ -1452,7 +1469,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 		    }
 		    track_index++;
 		}
-		// move parameters 
+		// move parameters
 		for(var i = 0; i < count_params; i++){
 		    // get value
 		    INSTRUCTIONS.push(GET << 12 | vt.length - 1); // frame index
@@ -1466,7 +1483,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 			INSTRUCTIONS.push(CONST_NULL << 12);
 			// move to target index
 			INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
-			INSTRUCTIONS.push(i + 2);         	
+			INSTRUCTIONS.push(i + 2);
 		    }
 		}
 		// jump back
@@ -1512,7 +1529,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 	    // console.log("Tail Call");
 	    compiler(car(l), vt, macros, 1, make_null(), functions_for_compilation) // tail call
 	}
-	else 
+	else
 	    compiler(car(l), vt, macros, 0, parent_func_name, functions_for_compilation) // not tail call;
 	l = cdr(l);
     }
@@ -1529,7 +1546,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 
 var VM = function(INSTRUCTIONS, env, pc)
 {
-    printInstructions(INSTRUCTIONS);
+    //printInstructions(INSTRUCTIONS);
     if(typeof(pc) === "undefined") pc = 0;
     var accumulator = make_null(); // accumulator
     var length_of_insts = INSTRUCTIONS.length;
@@ -1597,7 +1614,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 			continue;
 		    }
 		default: // null
-		    {	
+		    {
 			accumulator = make_null();
 			pc = pc + 1;
 			// console.log("NULL: ");
@@ -1703,7 +1720,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 		var required_variadic_place = lambda.variadic_place;
 		var start_pc = lambda.start_pc;
 		var new_env;
-		
+
 
 		new_env = lambda.env.slice(0);
 		new_env.push(current_frame_pointer);
@@ -1718,7 +1735,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 		    var v = make_null();
 		    for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
 			v = cons(current_frame_pointer[i], v);
-		    }	
+		    }
 		    current_frame_pointer[required_variadic_place + 2] = v;
 		}
 
@@ -1733,7 +1750,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 			current_frame_pointer[i + 2] = make_null(); // default value is null
 		    }
 		}
-		
+
 		env = new_env;         // change env pointer
 		pc = start_pc;         // begin to call function
 		frame_list = cdr(frame_list) // update frame list
@@ -1775,7 +1792,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 // var l = lexer(' (def (f n) (if (= n 0) 1 (* n (f (- n 1))))) (f 20)');
 // var l = lexer(' (def (f a . b) (+ a (car b))) (f 30 25 40)');
 // var l = lexer("(def (test a) a) (test 12)")
-// var l = lexer("(begin (def x 12) (def y 15) x)") 
+// var l = lexer("(begin (def x 12) (def y 15) x)")
 // var l = lexer("(def (test) (def a 12) (lambda [msg] (if (= msg 0) a (set! a 15)))) (def a (test)) (a 1)(a 0)")
 // var l = lexer("(def (append x y) (if (null? x) y (cons (car x) (append (cdr x) y))))")
 // var l = lexer("(def x #[1,2,3]) (vector-slice x 1 2)")
@@ -1809,7 +1826,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 // console.log(p);
 //console.log(vm(p, Environment, null));
 
-// exports to Nodejs 
+// exports to Nodejs
 if (typeof(module)!="undefined"){
     module.exports.vm_lexer = lexer;
     module.exports.vm_parser = parser ;
@@ -1819,18 +1836,3 @@ if (typeof(module)!="undefined"){
     module.exports.vm_vt = VARIABLE_TABLE;
     module.exports.vm_insts = INSTRUCTIONS;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
