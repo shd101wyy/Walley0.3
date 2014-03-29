@@ -91,4 +91,26 @@
   [(a, b) (~list-range ~a ~b 1)]
   [(a, b, c) (~list-range ~a ~b ~c)])
 
+;; begin to define assoc-list data structure
+(defn al-assoc [l key]
+  (if (null? l)
+    '()
+    (if (eq? key (car (car l)))
+      (car l)
+      (al-assoc (cdr l) key))))
+(defn al-create [] 
+  '())
+(defn al-set [l key value]
+  (if (null? l)
+    (cons (cons key value) '()) ;; doesn't exist
+    (if (eq? key (car (car l))) 
+      (cons (cons key value) (cdr l)) ;; key already exist
+      (cons (car l) (al-set (cdr l) key value)))))
 
+;; test assoc-list
+;(def x '())
+;(def x (al-set x 'a 12))
+;(def x (al-set x 'b 15))
+;(def x (al-set x 'a 16))
+;(display (al-assoc x 'a))
+;(display x)
