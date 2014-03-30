@@ -1792,6 +1792,23 @@ var VM = function(INSTRUCTIONS, env, pc)
 		    frame_list = cdr(frame_list); // pop top frame
 		    current_frame_pointer = car(frame_list) // update frame_pointer
 		    continue;
+		case TYPE_VECTOR: // vector
+		    lambda = accumulator.vector;
+		    pc = pc + 1;
+		    p0 = current_frame_pointer[2];
+		    p1 = current_frame_pointer[3];
+		    if(typeof(p1) === 'undefined'){
+			accumulator = lambda[p0.num];
+			if(typeof(accumulator) === "undefined")
+			    accumulator = make_null();
+		    }
+		    else{
+			lambda[p0.num] = p1;
+			accumulator = lambda;
+		    }
+		    frame_list = cdr(frame_list); // pop top frame
+		    current_frame_pointer = car(frame_list) // update frame_pointer
+		    continue;
 		case TYPE_STRING: // string
 		    // 目前这种情况下只有 apply
 		    lambda = current_frame_pointer[2];
@@ -1808,7 +1825,6 @@ var VM = function(INSTRUCTIONS, env, pc)
 		    current_frame_pointer = new_frame;
 		    accumulator = lambda; // redirect accumulator
 		    continue;
-		    
 		default: // user defined lambda
 		    lambda = accumulator.lambda; // user defined lambda
 		    // user defined lambda
