@@ -1410,16 +1410,30 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    return;
 	}
 	/*
+	  (for [i 10] . body)
 	  (for [i 0 10] . body)
 	  (for [i 0 10 1] . body)
 	 */
 	else if (tag === "for"){
 	    var chunk = cadr(l);
 	    var body = cddr(l);
-	    var var_name = car(chunk);
-	    var start_value = cadr(chunk);
-	    var end_value = caddr(chunk);
-	    var step = cdddr(chunk).type === TYPE_NULL? "1" : cadddr(chunk);
+	    var var_name, start_value, end_value, step;
+	    var_name = car(chunk);
+	    if(cddr(chunk).type === TYPE_NULL){
+		start_value = "0";
+		end_value = cadr(chunk);
+		step = "1";
+	    }
+	    else if (cdddr(chunk).type === TYPE_NULL){
+		start_value = cadr(chunk);
+		end_value = caddr(chunk);
+		step = "1";
+	    }
+	    else{
+		start_value = cadr(chunk);
+		end_value = caddr(chunk);
+		step = cadddr(chunk);
+	    }
 	    
 	    // init i
 	    compiler(cons("def", cons(var_name, cons(start_value, make_null()))),
