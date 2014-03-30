@@ -1421,11 +1421,6 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    var end_value = caddr(chunk);
 	    var step = cdddr(chunk).type === TYPE_NULL? "1" : cadddr(chunk);
 	    
-	    console.log(var_name)
-	    console.log(start_value)
-	    console.log(end_value)
-	    console.log(step)
-	    
 	    // init i
 	    compiler(cons("def", cons(var_name, cons(start_value, make_null()))),
 		    vt,
@@ -1447,7 +1442,13 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    // test instruction
 	    var index2 = INSTRUCTIONS.length;
 	    INSTRUCTIONS.push(TEST << 12);
+	    INSTRUCTIONS.push(0x0005);
+	    
+	    var index3 = INSTRUCTIONS.length;
+	    INSTRUCTIONS.push(JMP << 12);
 	    INSTRUCTIONS.push(0x0000);
+	    INSTRUCTIONS.push(0x0000);
+	    
 	    // compile body
 	    compiler_begin(body, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    
@@ -1466,10 +1467,11 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    INSTRUCTIONS.push((0x0000FFFF & jmp_steps));
 
 	    // set test instruction jmp steps
-	    var test_steps = INSTRUCTIONS.length - index2;
-	    INSTRUCTIONS[index2 + 1] = test_steps;
+	    var test_steps = INSTRUCTIONS.length - index3;
+	    INSTRUCTIONS[index3 + 1] = (0xFFFF0000 & test_steps) >> 16;
+	    INSTRUCTIONS[index3 + 2] = (0x0000FFFF & test_steps)
 
-	    printInstructions(INSTRUCTIONS);
+	    //printInstructions(INSTRUCTIONS);
 	    
 	    return;
 	}
@@ -1622,7 +1624,6 @@ var VM = function(INSTRUCTIONS, env, pc)
     {
 	var inst = INSTRUCTIONS[pc];
 	var opcode = (inst & 0xF000) >> 12;
-	console.log(opcode);
 	switch(opcode){
 	case CONST:
 	    {
