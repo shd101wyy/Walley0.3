@@ -406,7 +406,7 @@ var VARIABLE_TABLE = [
      "tan", "tanh", "display-string", "->int", "->float", "int->string", "float->string",
      "string-append", "lambda?", "vector-push!", "vector-pop!", "object", "object?", "object-keys",
      "bitwise-and", "bitwise-or", "bitwise-<<", "bitwise->>", "bitwise-not", "bitwise-xor",
-     "string->char-code", "char-code->string", "int->string-16", "string->int", "string->float"
+     "string->char-code", "char-code->string", "int->string-16", "string->int", "string->float", "apply"
     ]
 ];
 var MACROS = [[]]; // used to save macros
@@ -785,7 +785,8 @@ var ENVIRONMENT =
 	    bpp(function(stack_param){
 		// 68 string->float
 		return make_integer(parseFloat(stack_param[0].string));
-	    })
+	    }),
+	    make_string("apply") // 69 apply
 	]
     ];
 
@@ -1414,6 +1415,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	  (for [i 0 10] . body)
 	  (for [i 0 10 1] . body)
 	 */
+	/*
 	else if (tag === "for"){
 	    var chunk = cadr(l);
 	    var body = cddr(l);
@@ -1488,7 +1490,8 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    //printInstructions(INSTRUCTIONS);
 	    
 	    return;
-	}
+	    }
+	*/
 	/*
 	  (while [< i 10] . body)
 	 */
@@ -1763,21 +1766,16 @@ var VM = function(INSTRUCTIONS, env, pc)
 		var param_num = (0x0FFF & inst); // get param num, including return_address.
 		var lambda;
 
-		// console.log("LAMBDA:");
-		// console.log(vm_env)
-		// console.log(lambda);
-		// console.log("PARAM NUM: " + param_num);
-		// a();
-
-		if(accumulator.type === TYPE_BUILTIN_LAMBDA){ // builtin lambda
+		var type = accumulator.type;
+		switch(type){
+		case TYPE_BUILTIN_LAMBDA: // builtin lambda
 		    lambda = accumulator.builtin_lambda;
 		    pc = pc + 1;
 		    accumulator = lambda(current_frame_pointer.slice(2)); // remove saved env and pc
 		    frame_list = cdr(frame_list); // pop top frame
 		    current_frame_pointer = car(frame_list) // update frame_pointer
-		    continue;
-		}
-		if(accumulator.type === TYPE_OBJECT){ // object
+		    continue
+		case TYPE_OBJECT: // object
 		    lambda = accumulator.object;
 		    pc = pc + 1;
 		    p0 = current_frame_pointer[2];
@@ -1794,50 +1792,61 @@ var VM = function(INSTRUCTIONS, env, pc)
 		    frame_list = cdr(frame_list); // pop top frame
 		    current_frame_pointer = car(frame_list) // update frame_pointer
 		    continue;
-		}
-
-		lambda = accumulator.lambda; // user defined lambda
-		// user defined lambda
-		var required_param_num = lambda.param_num;
-		var required_variadic_place = lambda.variadic_place;
-		var start_pc = lambda.start_pc;
-		var new_env;
-
-
-		new_env = lambda.env.slice(0);
-		new_env.push(current_frame_pointer);
-		current_frame_pointer[0] = env; // save current env to new-frame
-		current_frame_pointer[1] = pc + 1; // save pc
-
-		if(required_variadic_place === -1 && param_num - 1 > required_param_num){
-		    console.log("ERROR: Too many parameters provided");
-		    return;
-		}
-		if(required_variadic_place !== -1){ // variadic value
-		    var v = make_null();
-		    for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
-			v = cons(current_frame_pointer[i], v);
+		case TYPE_STRING: // string
+		    // 目前这种情况下只有 apply
+		    lambda = current_frame_pointer[2];
+		    parameters = current_frame_pointer[3];
+		    frame_list = cdr(frame_list); // pop top frame
+		    var new_frame = [null, null]; // create new frame
+		    
+		    while(parameters.type !== TYPE_NULL){
+			new_frame.push(car(parameters));
+			parameters = cdr(parameters);
 		    }
-		    current_frame_pointer[required_variadic_place + 2] = v;
-		}
-
-		// console.log("REQUIRED_PARAM_NUM " + lambda.param_num);
-		// console.log("REQUIRED_VARIADIC_NUM " + lambda.variadic_place);
-		// console.log("START_PC " + lambda.start_pc);
-		// console.log("OLD_PC   " + (pc + 1));
-
-		if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
-		{
-		    for(var i = param_num; i < required_param_num; i++){
-			current_frame_pointer[i + 2] = make_null(); // default value is null
+		    
+		    frame_list = cons(new_frame, frame_list); // push new frame
+		    current_frame_pointer = new_frame;
+		    accumulator = lambda; // redirect accumulator
+		    continue;
+		    
+		default: // user defined lambda
+		    lambda = accumulator.lambda; // user defined lambda
+		    // user defined lambda
+		    var required_param_num = lambda.param_num;
+		    var required_variadic_place = lambda.variadic_place;
+		    var start_pc = lambda.start_pc;
+		    var new_env;
+		    
+		    
+		    new_env = lambda.env.slice(0);
+		    new_env.push(current_frame_pointer);
+		    current_frame_pointer[0] = env; // save current env to new-frame
+		    current_frame_pointer[1] = pc + 1; // save pc
+		    
+		    if(required_variadic_place === -1 && param_num - 1 > required_param_num){
+			console.log("ERROR: Too many parameters provided");
+			return;
 		    }
+		    if(required_variadic_place !== -1){ // variadic value
+			var v = make_null();
+			for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
+			    v = cons(current_frame_pointer[i], v);
+			}
+			current_frame_pointer[required_variadic_place + 2] = v;
+		    }
+		    
+		    if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
+		    {
+			for(var i = param_num; i < required_param_num; i++){
+			    current_frame_pointer[i + 2] = make_null(); // default value is null
+			}
+		    }
+		    env = new_env;         // change env pointer
+		    pc = start_pc;         // begin to call function
+		    frame_list = cdr(frame_list) // update frame list
+		    current_frame_pointer = car(frame_list);
+		    continue;
 		}
-
-		env = new_env;         // change env pointer
-		pc = start_pc;         // begin to call function
-		frame_list = cdr(frame_list) // update frame list
-		current_frame_pointer = car(frame_list);
-		continue;
 	    }
 	case NEWFRAME: // create new frame
 	    { // create new frame
