@@ -32,9 +32,9 @@
          (begin ~@body)))
 
 ;; while
-(defm while [arg . body]
-  (let [__t__ (lambda [] (if ~arg (begin ~@body (__t__))  '() ))]
-    (__t__)))
+;(defm while [arg . body]
+;  (let [__t__ (lambda [] (if ~arg (begin ~@body (__t__))  '() ))]
+;    (__t__)))
 
 ;; extend string-append so that it support variadic parameters 
 (defmacro string-append
@@ -80,24 +80,24 @@
 ;; ### list   ###
 ;; (for [i '(1 2 3)]
 ;;    (display i))
-(defm for [[i v] . body]
-  [if (pair? ~v) ;; v is pair
-   (let [for-pair (lambda [__v__]
-                      (if (null? __v__)
-                        '()
-                        (begin (def ~i (car __v__))
-                               ~@body
-                               (for-pair (cdr __v__)))))]
-     (for-pair ~v))
-   (let [v ~v
-         length (vector-length v) 
-         for-vector (lambda [__i__]
-                            (if (= __i__ length)
-                              '()
-                              (begin (def ~i (vector-ref v __i__))
-                                     ~@body
-                                     (for-vector (+ __i__ 1)))))]
-     (for-vector 0))])
+;(defm for [[i v] . body]
+;  [if (pair? ~v) ;; v is pair
+;   (let [for-pair (lambda [__v__]
+;                      (if (null? __v__)
+;                        '()
+;                        (begin (def ~i (car __v__))
+;                               ~@body
+;                               (for-pair (cdr __v__)))))]
+;     (for-pair ~v))
+;   (let [v ~v
+;         length (vector-length v) 
+;         for-vector (lambda [__i__]
+;                            (if (= __i__ length)
+;                              '()
+;                              (begin (def ~i (vector-ref v __i__))
+;                                     ~@body
+;                                     (for-vector (+ __i__ 1)))))]
+;     (for-vector 0))])
 
 
 ;; cond

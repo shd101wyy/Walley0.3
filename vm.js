@@ -1409,6 +1409,73 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    INSTRUCTIONS = [];
 	    return;
 	}
+	/*
+	  (for [i 0 10] . body)
+	  (for [i 0 10 1] . body)
+	 */
+	else if (tag === "for"){
+	    var chunk = cadr(l);
+	    var body = cddr(l);
+	    var var_name = car(chunk);
+	    var start_value = cadr(chunk);
+	    var end_value = caddr(chunk);
+	    var step = cdddr(chunk).type === TYPE_NULL? "1" : cadddr(chunk);
+	    
+	    console.log(var_name)
+	    console.log(start_value)
+	    console.log(end_value)
+	    console.log(step)
+	    
+	    // init i
+	    compiler(cons("def", cons(var_name, cons(start_value, make_null()))),
+		    vt,
+		    macros,
+		    tail_call_flag,
+		    parent_func_name,
+		    functions_for_compilation);
+	   
+	    // save index
+	    var index1 = INSTRUCTIONS.length;
+	    // check eq?
+	    compiler(cons("eq?", cons(var_name, cons(end_value, make_null()))),
+		     vt,
+		     macros,
+		     tail_call_flag,
+		     parent_func_name,
+		     functions_for_compilation);
+	    
+	    // test instruction
+	    var index2 = INSTRUCTIONS.length;
+	    INSTRUCTIONS.push(TEST << 12);
+	    INSTRUCTIONS.push(0x0000);
+	    // compile body
+	    compiler_begin(body, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+	    
+	    // increase by steps
+	    compiler(cons("set!", cons(var_name, cons(cons("+", cons(var_name, cons(step, make_null()))), make_null()))),
+		     vt,
+		     macros,
+		     tail_call_flag,
+		     parent_func_name,
+		     functions_for_compilation);
+	    
+	    // jump back
+	    var jmp_steps = index1 - INSTRUCTIONS.length;
+	    INSTRUCTIONS.push(JMP << 12);
+	    INSTRUCTIONS.push((0xFFFF0000 & jmp_steps) >> 16);
+	    INSTRUCTIONS.push((0x0000FFFF & jmp_steps));
+
+	    // set test instruction jmp steps
+	    var test_steps = INSTRUCTIONS.length - index2;
+	    INSTRUCTIONS[index2 + 1] = test_steps;
+
+	    printInstructions(INSTRUCTIONS);
+	    
+	    return;
+	}
+	/*
+	  (while [< i 10] . body)
+	 */
 	// return
 	else if (tag === "return"){
 	    compiler(cdr(l).type === TYPE_NULL? make_null() : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
@@ -1546,7 +1613,6 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 
 var VM = function(INSTRUCTIONS, env, pc)
 {
-    //printInstructions(INSTRUCTIONS);
     if(typeof(pc) === "undefined") pc = 0;
     var accumulator = make_null(); // accumulator
     var length_of_insts = INSTRUCTIONS.length;
@@ -1556,6 +1622,7 @@ var VM = function(INSTRUCTIONS, env, pc)
     {
 	var inst = INSTRUCTIONS[pc];
 	var opcode = (inst & 0xF000) >> 12;
+	console.log(opcode);
 	switch(opcode){
 	case CONST:
 	    {
