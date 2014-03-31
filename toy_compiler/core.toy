@@ -1,0 +1,80 @@
+;; core.toy
+;; some fundamental functions are here
+;; map one parameters
+;; (map1 square '(3 4)) => (9 16)
+(defn map1 [f p]
+  (if (null? p)
+    '()
+    (cons (f (car p))
+          (map1 f (cdr p)))))
+;; map variadic parameters
+;; (map + '(3 4) '(5 6)) => '(8 10)
+(defn map [f p0 . p]
+  (if (null? p0)
+    '()
+    (cons (apply f (map1 car (cons p0 p)))
+          (apply map (cons f (map1 cdr (cons p0 p)))))))
+
+;; test map1
+;;(display (map1 (lambda [x] (* x x)) '(3 4)))
+;; pass
+
+;; test mp2
+;; (display (map + '(3 4) '(5 6)))
+;; pass
+
+;; filter function
+;; eg (filter is-even '(3 4 5 6)) => '(4 6)
+;; where is-even return true or false
+;; (filter fn l)
+;; where fn must return true or false
+
+(defn filter [fn l]
+  (if (null? l)
+    '()
+    (if (fn (car l))
+      (cons (car l)
+            (filter fn (cdr l)))
+      (filter fn (cdr l)))))
+;; test filter function
+;; (display (filter (lambda [n] (if (> n 0) 'true '())) '(-1 2 -3 4 -5 6))) => (2 4 6)
+;; pass
+
+;; reduce function
+;; eg (reduce + '(3 4 5)) => (+ (+ 3 4) 5)
+;; (reduce fn l)
+;; where fn has to have two parameters
+(defn reduce [fn l param-num]
+  (set! param-num (if param-num param-num 2)) ;; default is 2
+  (defn get-num-element-list [l num] ;; eg '(3 4 5) 2 => '(3 4)
+    (if (= num 0)
+      '()
+      (if (null? l)
+        (display "ERROR: reduce function invalid parameters list")
+        (cons (car l)
+            (get-num-element-list (cdr l)
+                                  (- num 1))))))
+  (defn cdrn [l num] ;; eg '(3 4 5) 2 => '(5)
+    (if (= num 0)
+      l
+      (cdrn (cdr l) (- num 1))))
+  (defn reduce-iter [fn l param-num-1 acc]
+    (if (null? l)
+      acc
+      (reduce-iter fn 
+                 (cdrn l param-num-1)
+                 param-num-1
+                 (apply fn (cons acc (get-num-element-list l param-num-1))))))
+  (if (null? l)
+    '()
+    (reduce-iter fn (cdr l) (- param-num 1) (car l))))
+
+;; test reduce function
+;; (display (reduce + '(3 4 5 6))) => 18
+;; pass
+;; (display (reduce * '(3 4 5 6))) => 360
+;; pass
+
+
+
+

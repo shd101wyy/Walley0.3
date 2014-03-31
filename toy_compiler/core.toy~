@@ -1,0 +1,25 @@
+;; core.toy
+
+;; map one parameters
+;; (map1 square '(3 4)) => (9 16)
+(defn map1 [f p]
+  (if (null? p)
+    '()
+    (cons (f (car p))
+          (map1 f (cdr p)))))
+;; map variadic parameters
+;; (map + '(3 4) '(5 6)) => '(8 10)
+(defn map [f . p]
+  (display (map1 car p))
+  (display (cons f (map1 cdr p)))
+  (if (null? p)
+    '()
+    (cons (apply f (map1 car p))
+          (apply map (cons f (map1 cdr p))))))
+
+;; test map1
+;;(display (map1 (lambda [x] (* x x)) '(3 4)))
+;; pass
+
+;; test mp2
+(display (map + '(3 4) '(5 6)))
