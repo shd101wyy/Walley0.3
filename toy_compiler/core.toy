@@ -114,3 +114,13 @@
 ;; pass
 
 
+;; len function
+(defn len [a]
+  (cond [(vector? a)
+         (vector-length a)]
+        [(pair? a)
+         (list-length a)]
+        [(string? a)
+         (string-length a)]
+        [else
+         (error "Function len: invalid parameter type. cannot get length of it")]))

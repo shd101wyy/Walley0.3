@@ -1763,7 +1763,7 @@ var VM = function(INSTRUCTIONS, env, pc)
 	case CALL: // call function
 	    {
 		// console.log("CALL FUNCTION");
-		var param_num = (0x0FFF & inst); // get param num, including return_address.
+		var param_num = (0x0FFF & inst); // get param num
 		var lambda;
 
 		var type = accumulator.type;
@@ -1778,14 +1778,15 @@ var VM = function(INSTRUCTIONS, env, pc)
 		case TYPE_OBJECT: // object
 		    lambda = accumulator.object;
 		    pc = pc + 1;
-		    p0 = current_frame_pointer[2];
-		    p1 = current_frame_pointer[3];
-		    if(typeof(p1) === 'undefined'){
+		    if(param_num === 1){ // get 
+			var p0 = current_frame_pointer[2];
 			accumulator = lambda[p0.string];
 			if(typeof(accumulator) === "undefined")
 			    accumulator = make_null();
 		    }
-		    else{
+		    else{ // set
+			var p0 = current_frame_pointer[2];
+			var p1 = current_frame_pointer[3];
 			lambda[p0.string] = p1;
 			accumulator = lambda;
 		    }
@@ -1795,17 +1796,19 @@ var VM = function(INSTRUCTIONS, env, pc)
 		case TYPE_VECTOR: // vector
 		    lambda = accumulator.vector;
 		    pc = pc + 1;
-		    p0 = current_frame_pointer[2];
-		    p1 = current_frame_pointer[3];
-		    if(typeof(p1) === 'undefined'){
+		    if(param_num === 1){ // get 
+			var p0 = current_frame_pointer[2];
 			accumulator = lambda[p0.num];
 			if(typeof(accumulator) === "undefined")
 			    accumulator = make_null();
 		    }
-		    else{
+		    else{ // set
+			var p0 = current_frame_pointer[2];
+			var p1 = current_frame_pointer[3];
 			lambda[p0.num] = p1;
-			accumulator = lambda;
+			accumulator = lambda;	
 		    }
+
 		    frame_list = cdr(frame_list); // pop top frame
 		    current_frame_pointer = car(frame_list) // update frame_pointer
 		    continue;
