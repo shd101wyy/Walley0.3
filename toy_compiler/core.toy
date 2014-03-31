@@ -1,5 +1,7 @@
 ;; core.toy
 ;; some fundamental functions are here
+
+;;##################### map #####################
 ;; map one parameters
 ;; (map1 square '(3 4)) => (9 16)
 (defn map1 [f p]
@@ -19,10 +21,11 @@
 ;;(display (map1 (lambda [x] (* x x)) '(3 4)))
 ;; pass
 
-;; test mp2
+;; test map
 ;; (display (map + '(3 4) '(5 6)))
 ;; pass
 
+;; ##################### filter ##################
 ;; filter function
 ;; eg (filter is-even '(3 4 5 6)) => '(4 6)
 ;; where is-even return true or false
@@ -40,6 +43,7 @@
 ;; (display (filter (lambda [n] (if (> n 0) 'true '())) '(-1 2 -3 4 -5 6))) => (2 4 6)
 ;; pass
 
+;; ##################### reduce ##################
 ;; reduce function
 ;; eg (reduce + '(3 4 5)) => (+ (+ 3 4) 5)
 ;; (reduce fn l)
@@ -76,5 +80,37 @@
 ;; pass
 
 
+
+;; max function
+(defn max [a .  args]
+  (defn max-iter [l max]
+    (if (null? l)
+      max
+      (if (> (car l)
+             max)
+        (max-iter (cdr l)
+                  (car l))
+        (max-iter (cdr l)
+                  max))))
+  (max-iter args a))
+;; test max
+;; (display (max 123 3 4 5 400 2 -12))
+;; pass
+
+;; min function
+(defn min [a .  args]
+  (defn min-iter [l min]
+    (if (null? l)
+      min
+      (if (< (car l)
+             min)
+        (min-iter (cdr l)
+                  (car l))
+        (min-iter (cdr l)
+                  min))))
+  (min-iter args a))
+;; test min
+;; (display (min 3 4 5 2 3 -2 3)) => -2
+;; pass
 
 
