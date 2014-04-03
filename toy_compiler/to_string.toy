@@ -14,13 +14,13 @@
     (string-append "#str{" input-str "}")))
 
 ;; lambda->string
-(def (lambda->string a)
+(set! (lambda->string a)
   "<lambda>")
 
 ;; int->string   builtin
 ;; float->string buitlin
 ;; vector to string
-(def (vector->string v)
+(set! (vector->string v)
   (def (vector-string-iter v count output-str)
     (if (= count (vector-length v))
       (string-append output-str "]")
@@ -50,7 +50,7 @@
 ;; so here stackoverflow
 ;; need to change vm.js
 ;; list->string
-(def (list->string v)
+(set! (list->string v)
   (def (list->string-iter v output-str)
     (cond [(null? v) (string-append output-str ")")]
           [(int? v)
@@ -91,7 +91,7 @@
   (list->string-iter v "("))
 
 ;; object->string
-(def (object->string o)
+(set! (object->string o)
   (def keys (object-keys o))
   (def (object->string-iter keys output-str)
     (if (null? keys)

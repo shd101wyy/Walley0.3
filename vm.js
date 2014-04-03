@@ -977,7 +977,12 @@ var macro_expand_for_compilation = function(macro, exps, macros){
   eg (def (f n) (f 12)) when calling (f 12), its parent_func_name is "f"
   (def (f1 n) (f2 12)) when calling (f2 12), its parent_func_name is "f1"
 */
-var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation){
+var compiler = function(l, 
+			vt,
+			macros, 
+			tail_call_flag,
+			parent_func_name,
+			functions_for_compilation){
     if(l.type === TYPE_NULL){
 	INSTRUCTIONS.push(CONST_NULL); // push null
 	return;
@@ -1195,6 +1200,18 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	// set!
 	else if(tag == "set!"){
 	    var variable_name = cadr(l);
+	    if(variable_name.type === TYPE_PAIR) // it is lambda format like (set! (add a b) (+ a b))
+	    {
+		var var_name = car(variable_name);
+		var args = cdr(variable_name);
+		var lambda = cons("lambda", cons(args, cddr(l)));
+		return compiler(cons("set!", cons(var_name, cons(lambda, make_null()))),
+				vt,
+				macros,
+				tail_call_flag,
+				parent_func_name,
+				functions_for_compilation);
+	    }
 	    var variable_value = caddr(l);
 	    var index = vt_find(vt, variable_name);
 	    if(index[0] === -1)
@@ -1646,7 +1663,11 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
     }
 }
 
-var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_compilation)
+var compiler_begin = function(l, 
+			      vt,
+			      macros,
+			      parent_func_name,
+			      functions_for_compilation)
 {
     if(typeof(parent_func_name) === "undefined") parent_func_name = make_null();
     if(typeof(functions_for_compilation) === "undefined") functions_for_compilation = make_null();
@@ -1672,8 +1693,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
 }
 
 
-var VM = function(INSTRUCTIONS, env, pc)
-{
+var VM = function(INSTRUCTIONS, env, pc){
     if(typeof(pc) === "undefined") pc = 0;
     var accumulator = make_null(); // accumulator
     var length_of_insts = INSTRUCTIONS.length;
