@@ -22,8 +22,9 @@
   )
 ;; (let [a 12 b 15] (+ a b)) => ((lambda [] (def a 12) (def b 15) (+ a b)))
 ;; create new frame
-(defm let [var_vals . body]
-  ((lambda [] (defs ~@var_vals) (begin ~@body))))
+;; April 2, I rewrote it in compiler.
+;;(defm let [var_vals . body]
+;;  ((lambda [] (defs ~@var_vals) (begin ~@body))))
 
 ;; (def a 0) (let! [a 12 b 15] '()) ; a changed to 12
 ;; use current frame

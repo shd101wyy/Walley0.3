@@ -1168,9 +1168,11 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    var frame = vt[vt.length - 1];
 	    for(var j = frame.length - 1; j >= 0; j--){
 		if(variable_name === frame[j]){
-		    //INSTRUCTIONS = []; // clear instructions
-		    //console.log("ERROR: variable: "+variable_name+" already defined");
-		    //return;
+		    
+		    INSTRUCTIONS = []; // clear instructions
+		    console.log("ERROR: variable: "+variable_name+" already defined");
+		    return;
+		    
 		    variable_index = j
 		    variable_existed = true;
 		    break;
@@ -1326,6 +1328,46 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	    }
 	    return compiler(expand_clauses(cond_clauses), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	}*/
+	// (let [x 0 y 2] . body)
+	else if (tag === "let"){
+	    var chunks = cadr(l);
+	    var body = cddr(l);
+	    var var_names = [];
+	    var def_array = [];
+	    while(chunks.type !== TYPE_NULL){
+		var v = car(chunks);
+		var g = "def";
+		var existed = false;
+		for(var i = 0; i < var_names.length; i++){
+		    if(var_names[i] === v){
+			existed = true;
+			g = "set!"; // variable already defined
+		    }
+		}
+		if(!existed) // 不存在， 保存
+		    var_names.push(v);
+		
+		def_array.push(cons(g, cons(v, cons(cadr(chunks), make_null())))); // make assignment
+		
+		chunks = cddr(chunks);
+	    }
+
+	    // make assignments
+	    var assignments = make_null();
+	    for(var i = def_array.length - 1; i >=0 ; i--){
+		assignments = cons(def_array[i], assignments);
+	    }
+	 
+	    var let_ = cons(cons("lambda", cons(make_null(), list_append(assignments, body))), make_null());
+	    
+	    return compiler(let_,
+			    vt,
+			    macros,
+			    tail_call_flag,
+			    parent_func_name,
+			    functions_for_compilation);
+	    
+	}
 	// (lambda (a b) ...)
 	// (lambda (a . b) ...)
 	else if (tag === "lambda"){

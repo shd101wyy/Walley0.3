@@ -203,7 +203,7 @@ RETURN
 #### object (originally dictionary)
 ```
 Object in toy language is implemented using Hashtable( Originally AVL tree )
-(def x {'a 12 'b 15 'add (lambda [a b] (+ a b))})
+(def x {'a 12 'b 15 'add (lambda [a b] (+ a b))})  
 x:a => 12
 (x:add 3 4) => 7
 
@@ -212,3 +212,73 @@ x:a => 12
 ```
 
 ------------------------------------------------------------------
+
+我的想法
+设定一个 symbol table
+例如
+symbol id
+a       0
+b       1
+c       2
+
+(string->id "hello")
+创建symbol hello with id 3
+
+==============================
+symbol table
+定长array, like hashtable, but fixed length.
+symbol 作为 key
+
+例如
+1 17 33 49
+
+0  1  2  3
+
+size 5: 1 2 3 4     1
+size 6: 1 5 3 1     2
+size 7: 1 3 5 0     3
+
+1 15 16 29
+
+0  1  2  3
+
+size 5: 1 0 1 4
+size 6: 1 3 1 6
+size 7: 1 1 2 1
+size 8: 1 7 0 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
