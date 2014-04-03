@@ -809,6 +809,9 @@ var list_to_array = function(l) // convert list to array
     var return_array = [];
     while(l.type !== TYPE_NULL)
     {
+	//if(car(l) instanceof Value)
+	//    return_array.push(list_to_array(car(l)));
+	//else
 	return_array.push(car(l));
 	l = cdr(l);
     }
@@ -1385,6 +1388,114 @@ var compiler = function(l,
 			    functions_for_compilation);
 	    
 	}
+	// def-object
+	// see document
+	else if (tag === "def-object"){  
+	    // vector to list
+	    var vector_to_list = function(v){
+		var vector_to_list_iter = function(v, i){
+		    if(i == v.length) return make_null();
+		    else if (v[i] instanceof Array) return cons(vector_to_list(v[i]),
+								vector_to_list_iter(v, i + 1))
+		    return cons(v[i],
+			       vector_to_list_iter(v, i+1))
+		}
+		return vector_to_list_iter(v, 0);
+	    }
+	    var list_to_array_deep = function(l) // convert list to array
+	    {
+		var return_array = [];
+		while(l.type !== TYPE_NULL){
+		    if(car(l) instanceof Value)
+		        return_array.push(list_to_array_deep(car(l)));
+		    else
+			return_array.push(car(l));
+		    l = cdr(l);
+		}
+		return return_array;
+	    }
+	    var obj_name = cadr(l);
+	    var methods = caddr(l);
+	    var method_names = [];
+	    var method_lambdas = [];
+	    var method_lambdas_params = [];
+	    while(methods.type !== TYPE_NULL){
+		method_names.push(car(methods));
+		method_lambdas.push(cadr(methods));
+		method_lambdas_params.push(cadr(cadr(methods)));
+		methods = cddr(methods);
+	    }
+	    var constructor_name = obj_name + "-" + method_names[0];
+	    var constructor_lambda = method_lambdas[0];
+
+	    var vector_ = make_null(); // vector
+	    vector_ = vector_to_list([["lambda", ["v"], ["eq?", "v", obj_name]]])
+	    for(var i = method_lambdas.length - 1; i >= 1; i--){
+		vector_ = cons(method_lambdas[i], vector_);
+	    }
+	    vector_ = cons("vector", vector_);
+
+	    var constructor_lambda_content = 
+		list_append(constructor_lambda, 
+			    cons(cons("def", 
+				      cons(obj_name, 
+					   cons(vector_, 
+						make_null()))), 
+				 make_null()));
+	    
+	    var constructor = cons("def", 
+				   cons(constructor_name,
+				       cons(constructor_lambda_content, 
+					    cons(obj_name, make_null()))))
+	    
+	    var count = 0;
+	    // console.log(method_names);
+	    // console.log(list_to_array(constructor)[2][3]);
+	    
+	    //compile constructor
+	    compiler(constructor,
+		     vt,
+		     macros,
+		     tail_call_flag,
+		     parent_func_name,
+		     functions_for_compilation);
+	    
+	    for(var i = 1; i < method_names.length; i++){
+		var m_name = obj_name + "-" + method_names[i];
+		var params = method_lambdas_params[i];
+		var params_ = ["o"];
+		var call_lambda = [["vector-ref", "o", ""+count]];
+		while(params.type !== TYPE_NULL){
+		    params_.push(car(params));
+		    call_lambda.push(car(params));
+		    params = cdr(params);
+		}
+		var v = vector_to_list(["def", m_name, ["lambda", params_, call_lambda ]])
+		count++;
+
+		compiler(v,
+			 vt,
+			 macros,
+			 tail_call_flag,
+			 parent_func_name,
+			 functions_for_compilation);
+		console.log(list_to_array_deep(v)[2]);
+	    }
+	    
+	    var v = vector_to_list(["def", obj_name+"?", ["lambda", ["o"], [["vector-ref", "o", ""+count], "o"]]]);
+	    console.log(list_to_array_deep(v));
+	    
+	    // obj?
+	    compiler(v,
+		     vt,
+		     macros,
+		     tail_call_flag,
+		     parent_func_name,
+		     functions_for_compilation);
+	    
+	    return;
+	}
+	
 	// (lambda (a b) ...)
 	// (lambda (a . b) ...)
 	else if (tag === "lambda"){

@@ -225,6 +225,8 @@ c       2
 创建symbol hello with id 3
 
 ==============================
+### 以下的放弃了
+
 symbol table
 定长array, like hashtable, but fixed length.
 symbol 作为 key
@@ -246,6 +248,88 @@ size 5: 1 0 1 4
 size 6: 1 3 1 6
 size 7: 1 1 2 1
 size 8: 1 7 0 5
+===============================
+
+(struct point [x y])
+=>
+
+(lambda [x y]
+	(def _               ;; define out
+		(vector
+			(lambda [] x)             ;; get x
+			(lambda [x_] (set! x x_)) ;; set x
+			(lambda [] y)             ;; get y
+			(lambda [y_] (set! y y_)) ;; set y
+			(lambda [v] (eq? _ v))    ;; check eq?
+		)))
+(def (point-x v)
+	((vector-ref v 0)))
+(def (point-x-set! v v_)
+	((vector-ref v 1) v_))
+	...
+(def (point? v v_)
+	((vector-ref v #n) v_))
+
+
+(def x (struct-point 3 4))
+
+
+
+;; doesnt support parent yet
+(define-object Point 
+	;; methods
+	[make (lambda [x_ y_]   ;; 第一个函数是 constructor
+			(def x x_)
+			(def y y_))            
+	 x (lambda [] x)
+	 y (lambda [] y)
+	 x-set! (lambda [x_] (set! x x_))
+	 y-set! (lambda [y_] (set! y y_))])
+
+	  || 
+	  \/
+
+(def (Point-make x_ y_)
+	(def x x_)
+	(def y y_) 
+	(def Point (vector (lambda [] x)                  ;; x
+				   	   (lambda [] y)                  ;; y
+				       (lambda [x_] (set! x x_))      ;; x_
+				       (lambda [y_] (set! y y_))))    ;; y_
+				       (lambda [v] (eq? Point v))     ;; ?
+	Point)
+
+(def (Point-x o)
+	((vector-ref o 0)))
+
+...
+(def (Point? o v)
+	((vector-ref o 4) v))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
