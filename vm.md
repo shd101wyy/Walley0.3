@@ -276,7 +276,7 @@ size 8: 1 7 0 5
 
 
 ;; doesnt support parent yet
-(define-object Point 
+(def-object Point 
 	;; methods
 	[make (lambda [x_ y_]   ;; 第一个函数是 constructor
 			(def x x_)

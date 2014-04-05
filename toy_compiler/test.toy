@@ -7,20 +7,22 @@
 ;(display (> (string-length x) 2))
 ;(display (string=? (string-ref x 0) "0"))
 ;(display '())
-(def x "(def x 12) (math:add:* 3 4)")
-(def l (lexer x))
-(display l)
-(def p (parser l))
-(display p)
+;(def x "(def x 12) (math:add:* 3 4)")
+;(def l (lexer x))
+;(display l)
+;(def p (parser l))
+;(display p)
 
 
-(def a #[#["add" "Hi"]])
+;(def a #[#["add" "Hi"]])
 
-(def x (vt-find a "Hii"))
-(display x)
+;(def x (vt-find a "Hii"))
+;(display x)
 ;(display (vector-find #[1,2,3] 1))
 ;(defn square [x] (* x x))
 
-(display "====")
-(display (cond ['() 2] ['() 4] [else 5] [else 6]))
+;(display "====")
+;(display (cond ['() 2] ['() 4] [else 5] [else 6]))
 
+
+(+ 3 4)

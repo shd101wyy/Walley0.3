@@ -1,434 +1,0 @@
-TC__
-v6
-r1
-cCheck dependencies
-cCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-cLd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/C__ normal x86_64
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
-c000000005282FB5000000000000000AA
-t1384315728
-s170
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/SDKSettings.plist
-c0000000052681EE9000000000000044C
-t1382555369
-s1100
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/CoreServices/SystemVersion.plist
-c0000000052681EE900000000000001DB
-t1382555369
-s475
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/libSystem.dylib
-c0000000052681EED000000000000681C
-t1382555373
-s26652
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcache.dylib
-c0000000052681EED0000000000004734
-t1382555373
-s18228
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcommonCrypto.dylib
-c0000000052681EED000000000000FC6C
-t1382555373
-s64620
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcompiler_rt.dylib
-c0000000052681EED000000000000F6A0
-t1382555373
-s63136
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcopyfile.dylib
-c0000000052681EED0000000000006254
-t1382555373
-s25172
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcorecrypto.dylib
-c0000000052681EED000000000000E0F8
-t1382555373
-s57592
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdispatch.dylib
-c0000000052681EED000000000000D6DC
-t1382555373
-s55004
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdyld.dylib
-c0000000052681EED0000000000006308
-t1382555373
-s25352
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libkeymgr.dylib
-c0000000052681EED0000000000004050
-t1382555373
-s16464
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/liblaunch.dylib
-c0000000052681EED0000000000008570
-t1382555373
-s34160
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libmacho.dylib
-c0000000052681EED0000000000005EA0
-t1382555373
-s24224
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libquarantine.dylib
-c0000000052681EED0000000000005FAC
-t1382555373
-s24492
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libremovefile.dylib
-c0000000052681EED0000000000004440
-t1382555373
-s17472
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_asl.dylib
-c0000000052681EED000000000000AA28
-t1382555373
-s43560
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_blocks.dylib
-c0000000052681EED0000000000003E2C
-t1382555373
-s15916
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_c.dylib
-c0000000052681EED0000000000030A24
-t1382555373
-s199204
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_configuration.dylib
-c0000000052681EED0000000000005E54
-t1382555373
-s24148
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_dnssd.dylib
-c0000000052681EED0000000000006A90
-t1382555373
-s27280
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_info.dylib
-c0000000052681EED00000000000178AC
-t1382555373
-s96428
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_kernel.dylib
-c0000000052681EED000000000001ADC8
-t1382555373
-s110024
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_m.dylib
-c0000000052681EED000000000001028C
-t1382555373
-s66188
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_malloc.dylib
-c0000000052681EED0000000000008800
-t1382555373
-s34816
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_network.dylib
-c0000000052681EED0000000000011090
-t1382555373
-s69776
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_notify.dylib
-c0000000052681EED000000000000882C
-t1382555373
-s34860
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_platform.dylib
-c0000000052681EED00000000000067AC
-t1382555373
-s26540
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_pthread.dylib
-c0000000052681EED0000000000008DEC
-t1382555373
-s36332
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_sandbox.dylib
-c0000000052681EED0000000000004C08
-t1382555373
-s19464
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_stats.dylib
-c0000000052681EED00000000000023C0
-t1382555373
-s9152
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunc.dylib
-c0000000052681EED000000000000439C
-t1382555373
-s17308
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunwind.dylib
-c0000000052681EED0000000000006768
-t1382555373
-s26472
-
-N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libxpc.dylib
-c0000000052681EED00000000000172F4
-t1382555373
-s94964
-
-N/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/5.0/lib/darwin/libclang_rt.osx.a
-c0000000052681EF10000000000001750
-t1382555377
-s5968
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/C__.LinkFileList
-c0000000052FD76250000000000000212
-t1392342565
-s530
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-t1392342565
-s5388
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-t1392342671
-s11796
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-t1392342565
-s5396
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-t1392342671
-s11156
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/C__
-t2
-s0
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-c0000000052FD737900000000000005EB
-t1392341881
-s1515
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c
-c0000000052FD761F0000000000000173
-t1392342559
-s371
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c
-c0000000052FD738100000000000002D6
-t1392341889
-s726
-
-N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c
-c0000000052FD768F0000000000000D7B
-t1392342671
-s3451
-
-CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-r0
-
-CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c
-r0
-
-CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c
-r0
-
-CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c
-r0
-
-CCheck dependencies
-r0
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies18"Check dependencies77dbd10faeadb841^9f3ad20faeadb841^---0#1#1#--18"Check dependencies36"B3244497-10DB-46BF-9863-9323F800220B-
-
-CCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-s414035365.418406
-e414035365.539630
-r1
-xCompileC
-xBuild/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-xnormal
-xx86_64
-xc
-xcom.apple.compilers.llvm.clang.1_0.compiler
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection74"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c154"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o C__/data.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler65a76ba5adadb841^96258aa5adadb841^---0#0#1#-19%DVTDocumentLocation2@109"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/C__/C__/data.c0000000000000000^2617"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o C__/data.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-generated-files.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-own-target-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-all-target-headers.hmap -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-project-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.dia -c /Users/wangyiyi/百度云同步盘/Github/Wal36"84EAFE56-A190-409F-A993-A7F513EA83E4-
-b46107405-28EE-4FB1-8253-0A0B488F310F
-
-CCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-s414035471.820830
-e414035471.855067
-r1
-xCompileC
-xBuild/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c
-xnormal
-xx86_64
-xc
-xcom.apple.compilers.llvm.clang.1_0.compiler
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection74"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/main.c154"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o C__/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compilerde3bd20faeadb841^4be8da0faeadb841^---0#0#1#-19%DVTDocumentLocation2@109"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/C__/C__/main.c0000000000000000^2617"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o C__/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-generated-files.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-own-target-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-all-target-headers.hmap -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-project-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.dia -c /Users/wangyiyi/百度云同步盘/Github/Wal36"21331B70-C3E5-4D08-ADB9-533EC8B0D3BC-
-b0777B0DD-0DE3-434D-822C-893C238E8186
-
-CCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-s414035365.418711
-e414035365.539637
-r1
-xCompileC
-xBuild/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c
-xnormal
-xx86_64
-xc
-xcom.apple.compilers.llvm.clang.1_0.compiler
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection75"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c156"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o C__/ratio.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler22a76ba5adadb841^cb2c8aa5adadb841^---0#0#1#-19%DVTDocumentLocation2@110"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/C__/C__/ratio.c0000000000000000^2623"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o C__/ratio.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-generated-files.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-own-target-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-all-target-headers.hmap -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-project-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.dia -c /Users/wangyiyi/百度云同步盘/Github/Walle36"C52B0DBE-0141-474F-A90D-BA194E626E91-
-b46107405-28EE-4FB1-8253-0A0B488F310F
-
-CCompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-s414035471.820960
-e414035471.855046
-r1
-xCompileC
-xBuild/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c
-xnormal
-xx86_64
-xc
-xcom.apple.compilers.llvm.clang.1_0.compiler
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/ratio.c
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/data.c
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection79"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/C__/to_string.c164"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o C__/to_string.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compilerae4ad20faeadb841^b0e4da0faeadb841^---0#0#1#-19%DVTDocumentLocation2@114"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/C__/C__/to_string.c0000000000000000^2647"CompileC Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o C__/to_string.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__    setenv LANG en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-generated-files.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-own-target-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-all-target-headers.hmap -iquote /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/C__-project-headers.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__36"ED4160B5-2188-40C6-A1B8-2FC70BDB1628-
-b0777B0DD-0DE3-434D-822C-893C238E8186
-
-CLd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/C__ normal x86_64
-s414035471.856553
-e414035471.872031
-r0
-xLd
-x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/C__
-xnormal
-xx86_64
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/C__.LinkFileList
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/libSystem.dylib
-d/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/5.0/lib/darwin/libclang_rt.osx.a
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcache.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcommonCrypto.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcompiler_rt.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcopyfile.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcorecrypto.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdispatch.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdyld.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libkeymgr.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/liblaunch.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libmacho.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libquarantine.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libremovefile.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_asl.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_blocks.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_c.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_configuration.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_dnssd.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_info.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_kernel.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_m.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_malloc.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_network.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_notify.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_platform.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_pthread.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_sandbox.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_stats.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunc.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunwind.dylib
-d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libxpc.dylib
-oduplicate symbol _allocateObject in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _initInteger in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _initDouble in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _initString in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _cons in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_find in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_append in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_slice in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_formatString in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_formatInteger in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_formatDouble in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_formatPair in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_formatObject in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _String_debug in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.o
-oduplicate symbol _allocateObject in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-oduplicate symbol _initInteger in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-oduplicate symbol _initDouble in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-oduplicate symbol _initString in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-oduplicate symbol _cons in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.o
-oduplicate symbol _allocateObject in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-oduplicate symbol _initInteger in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-oduplicate symbol _initDouble in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-oduplicate symbol _initString in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-oduplicate symbol _cons in:
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o
-o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.o
-old: 24 duplicate symbols for architecture x86_64
-oclang: error: linker command failed with exit code 1 (use -v to see invocation)
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection85"Link /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/C__41"Ld Build/Products/Debug/C__ normal x86_646153db0faeadb841^d53cdf0faeadb841^-6949"duplicate symbol _allocateObject in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _initInteger in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _initDouble in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _initString in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _cons in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_find in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_append in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_slice in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_formatString in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_formatInteger in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_formatDouble in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_formatPair in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_formatObject in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _String_debug in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/to_string.oduplicate symbol _allocateObject in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.oduplicate symbol _initInteger in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.oduplicate symbol _initDouble in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.oduplicate symbol _initString in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.oduplicate symbol _cons in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/data.oduplicate symbol _allocateObject in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.oduplicate symbol _initInteger in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.oduplicate symbol _initDouble in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/main.o    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/ratio.oduplicate symbol _initString in:    /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x2(21%IDEActivityLogMessage2@44"24 duplicate symbols for architecture x86_64-414035471#6820#49#-0#-23%DVTTextDocumentLocation3@-0000000000000000^18446744073709551615#18446744073709551615#18446744073709551615#18446744073709551615#18446744073709551615#0#31"Apple Mach-O Linker (ld) Notice--2@65"Linker command failed with exit code 1 (use -v to see invocation)-414035471#6869#80#-2#-3@-0000000000000000^18446744073709551615#18446744073709551615#18446744073709551615#18446744073709551615#18446744073709551615#0#30"Apple Mach-O Linker (ld) Error--0#0#1#--967"Ld Build/Products/Debug/C__ normal x86_64    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__    setenv MACOSX_DEPLOYMENT_TARGET 10.9    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -L/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug -filelist /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/C__.LinkFileList -mmacosx-version-min=10.9 -Xlinker -dependency_info -Xlinker /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Intermediates/C__.build/Debug/C__.build/Objects-normal/x86_64/C___dependency_info.dat -o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/C__/Build/Products/Debug/C__36"7AD464E0-E1AD-4364-B1C3-5CF89A9D8ECC-
-b0777B0DD-0DE3-434D-822C-893C238E8186
-
