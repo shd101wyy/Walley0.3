@@ -1,6 +1,17 @@
 ;; toy language
 ;; predefined_macros.toy
 
+;; list macro
+(defmacro list 
+  [()()]
+  [(a) (cons ~a ())]
+  [(a . b) (cons ~a (list ~@b))])
+;; quasiquote macro
+(defmacro quasiquote 
+  ([(#unquote a)] ~a)
+  ([[a]] [list (quasiquote ~a)])
+  ([[a . b]] [list (quasiquote ~a) (quasiquote ~@b)])
+  ([a] (quote ~a)))
 
 ;; defm
 ;; for defining single macro
@@ -120,5 +131,4 @@
      (cond ~@rest))])
 
 
-;; (defmacro list [()()] [(a) (quote (~a))] [(a . b) (cons ~a (list ~@b))])
 
