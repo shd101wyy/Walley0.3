@@ -358,6 +358,7 @@ var CONST_INTEGER = 0x2100;
 var CONST_FLOAT   = 0x2200;
 var CONST_STRING  = 0x2300;
 var CONST_NULL    = 0x2400;
+var CONST_LOAD    = 0x2500; // load constant
 
 var MAKELAMBDA = 0x3;
 var RETURN = 0x4;
@@ -370,6 +371,8 @@ var TEST = 0x9;
 
 var INSTRUCTIONS = []; // global variables. used to save instructions
 
+var CONSTANT_TABLE = {}; // use to save string index
+var CONSTANT_TABLE_LENGTH = 0;
 
 var _4_digits_hex = function(num)
 {
@@ -518,8 +521,8 @@ var ENVIRONMENT =
 			if(stack_param[0].num === stack_param[1].num) return make_string("true");
 			return make_null();
 		    }
-		    else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
-			return stack_param[0].string === stack_param[1].string ? make_string("true"):make_null();
+		    //else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
+			//return stack_param[0].string === stack_param[1].string ? make_string("true"):make_null();
 		    return stack_param[0] === stack_param[1] ? make_string("true"):make_null();
 		}),
 	    bpp(function(stack_param)
@@ -1044,6 +1047,15 @@ var compiler = function(l,
 	// string
 	else if (l[0] === '"'){
 	    var s = eval(l);
+	    if(s in CONSTANT_TABLE){ // already defined
+	    	INSTRUCTIONS.push(CONST_LOAD); // load from table
+	    	INSTRUCTIONS.push(CONSTANT_TABLE[s]);
+	    	return;
+	    }
+	    else{ // string is not defined
+	    	CONSTANT_TABLE[s] = CONSTANT_TABLE_LENGTH;
+	    	CONSTANT_TABLE_LENGTH++;
+	    }
 	    var length = s.length;
 	    INSTRUCTIONS.push(CONST_STRING); // create string
 	    INSTRUCTIONS.push(length + 1);       // push string length
@@ -1163,6 +1175,21 @@ var compiler = function(l,
 				parent_func_name,
 				functions_for_compilation);
 	    }
+	    
+	    /*
+	    if(variable_name[0] == "#"){ // gensym
+		var new_name = "toy_" + gensym_count; // gensym variable name is toy_0 toy_1 ... 
+		gensym_table[variable_name] = new_name;
+		variable_name = new_name;
+	    }
+	    else{ // check variable_name valid
+		if(variable_name.length >= 4 && variable_name.slice(0, 4) === "toy_"){
+		    console.log("ERROR: invalid variable name : " + variable_name + "\ntoy_#num is reserved\n");
+		    INSTRUCTIONS = [];
+		    return;
+		}
+	    }
+	    */
 
 	    var variable_value;
 	    if(cddr(l).type === TYPE_NULL)
@@ -1804,7 +1831,11 @@ var compiler_begin = function(l,
 }
 
 
+// variables for VM
+var constant_table = []; // used to save constant
 var VM = function(INSTRUCTIONS, env, pc){
+	// printInstructions(INSTRUCTIONS);
+
     if(typeof(pc) === "undefined") pc = 0;
     var accumulator = make_null(); // accumulator
     var length_of_insts = INSTRUCTIONS.length;
@@ -1866,11 +1897,17 @@ var VM = function(INSTRUCTIONS, env, pc){
 			}
 			// create string
 			accumulator = make_string(created_string);
-			//accumulator = created_string;
-			// console.log("CREATED_STRING: |"+created_string+"|");
+			// push to constant table
+			constant_table.push(accumulator);
+			// increase pc
 			pc = pc + 1;
 			continue;
 		    }
+		case CONST_LOAD:
+			accumulator = constant_table[INSTRUCTIONS[pc + 1]]; // load constant
+			pc = pc + 2;
+			console.log(constant_table);
+			continue;
 		default: // null
 		    {
 			accumulator = make_null();

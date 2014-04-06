@@ -48,7 +48,11 @@ CONST 0010 0011 	;; string   n bits
 		2- length : 16
 		3- ... until reach 0x00, each char take 8 bits
 
+		after finish.
+		push to CONSTANT_TABLE
+
 CONST 0010 0100	;; nullv
+CONST GET 0010 0101 ;; get constant from constant table
 ----------------------------------------------------------------
 
 eg:
