@@ -585,7 +585,8 @@ Object *VM(int * instructions,
   Object * new_env;
   Object * (*func_ptr)(Object*, int); // function pointer
   Object * v;
-
+  Object * top_frame_pointer = vector_Get(env, 0 // top frame
+    
   while(pc != instructions_num){
     inst = instructions[pc];
     opcode = (inst & 0xF000) >> 12;
@@ -680,7 +681,7 @@ Object *VM(int * instructions,
       case RETURN:
         pc = vector_Get(vector_Get(env, vector_Length(env) - 1), 1)->data.Integer.v;
         env = vector_Get(vector_Get(env, vector_Length(env) - 1), 0);
-        
+        top_frame_pointer = vector_Get(env, vector_Length(env) - 1); // reset top_frame pointer
         Object_free(vector_Get(env, vector_Length(env) - 1)); // free top frame
         continue;
       case NEWFRAME: // create new frame
@@ -711,9 +712,9 @@ Object *VM(int * instructions,
 
             // free accumulator is necessary
             Object_free(accumulator);
-
             accumulator = (*func_ptr)(current_frame_pointer, param_num); // call function
-            
+            // free top frame
+            Object_free(current_frame_pointer);
             // pop frame
             frames->data.Vector.length -= 1;
             current_frame_pointer = frames->data.Vector.v[frames->data.Vector.length - 1];
@@ -733,6 +734,8 @@ Object *VM(int * instructions,
               default: // wrong parameters
                 printf("ERROR: Invalid vector operation\n");
                 return NULL;
+              // free top frame
+              Object_free(current_frame_pointer);
               // pop frame
               frames->data.Vector.length -= 1; // pop frame
               current_frame_pointer = frames->data.Vector.v[frames->data.Vector.length - 1];
@@ -746,6 +749,8 @@ Object *VM(int * instructions,
             new_env = copyEnvironment(env);
             new_env->data.Vector.v[new_env->data.Vector.length] = current_frame_pointer; // add frame
             new_env->data.Vector.length++;
+
+            top_frame_pointer = current_frame_pointer; // update top frame pointer
 
             vector_Get(current_frame_pointer, 0) = env; // save current env to new-frame
             vector_Get(current_frame_pointer, 1) = Object_initInteger(pc + 1); // save pc
@@ -762,8 +767,8 @@ Object *VM(int * instructions,
               vector_Get(current_frame_pointer, required_variadic_place + 2) = v;
             }
 
-            if(vector_Length(current_frame_pointer)  < required_param_num){
-              for(i = param_num; i < required_param_num; i--){
+            if(vector_Length(current_frame_pointer) - 2 < required_param_num){
+              for(i = param_num; i < required_param_num; i++){
                 vector_Get(current_frame_pointer, i+2) = GLOBAL_NULL;
               }
             }
@@ -790,7 +795,7 @@ Object *VM(int * instructions,
         pc = pc + 2;
         continue;
       case PUSH: // push to top frame
-        v = vector_Get(env, vector_Length(env) - 1); // top frame
+        v = top_frame_pointer; // top frame
         v->data.Vector.v[v->data.Vector.length] = accumulator; // set value
         accumulator->use_count++; // increase use_count
         v->data.Vector.length++; // increase length
