@@ -29,7 +29,7 @@
 
 typedef struct Object Object;
 static Object * GLOBAL_NULL;
-
+static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
 /* data types */
 typedef enum {
 	INTEGER,
@@ -493,7 +493,13 @@ Object *builtin_string_append(Object * params, int param_num){
   create frame0
 */
 Object *createFrame0(){
-  Object * frame = Object_initVector(0, GLOBAL_FRAME_SIZE);
+  // Object * frame = Object_initVector(0, GLOBAL_FRAME_SIZE);
+  Object * frame = allocateObject();
+  frame->type = VECTOR;
+  frame->data.Vector.size = GLOBAL_FRAME_SIZE;
+  frame->data.Vector.length = 0;
+  frame->data.Vector.resizable = 0;
+  frame->data.Vector.v = GLOBAL_FRAME; //(Object**)malloc(sizeof(Object*) * (size)); // array of pointers
 
   // add builtin lambda
   vector_set_builtin_lambda(frame, 0, &builtin_cons);
@@ -780,12 +786,14 @@ Object *VM(int * instructions,
   return accumulator;
 }
 
-int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
+// int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
+int insts[5] = {0x2100, 0x0000, 0x000c, 0x0000, 26};
 int main(){
   printf("Walley Language 0.3.673\n");
-  Object * o = VM(insts, 12, 0, createEnvironment());
+  Object * o = VM(insts, 5, 0, createEnvironment());
 
   printf("%d\n", o->data.Integer.v);
+  printf("%D\n", GLOBAL_FRAME[26]->data.Integer.v);
   printf("%d\n", (int)sizeof(long));
   return 0;
 }
