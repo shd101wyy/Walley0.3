@@ -68,6 +68,7 @@ struct Object {
     struct {
       char * v;
       int length;
+      char in_table; // in contant table
     } String;
     struct {
       Object * car;
@@ -233,8 +234,10 @@ void Object_free(Object * o){
         free(o);
         return;
       case STRING:
-        free(o->data.String.v);
-        free(o);
+        if(!o->data.String.in_table){ // can only free string that is not in table
+          free(o->data.String.v);
+          free(o);
+        }
         return;
       case PAIR:
         Object_free(o->data.Pair.car);
@@ -261,6 +264,9 @@ void Object_free(Object * o){
         return;
     }
   }
+  //else{
+  //  o->use_count--; // decrease use_count
+  //}
 }
 
 /*
@@ -578,7 +584,12 @@ Object *VM(int * instructions,
       case SET:
         frame_index = 0x0FFF & inst;
         value_index = instructions[pc + 1];
-        env->data.Vector.v[frame_index]->data.Vector.v[value_index] = accumulator;
+        v = vector_Get(vector_Get(env, frame_index), value_index);
+        if(value_index < vector_Length(vector_Get(env, frame_index))){ // free variable
+          v->use_count--; // decrease use_count
+          Object_free(v);
+        }
+        vector_Get(vector_Get(env, frame_index), value_index) = accumulator;
         // increase accumulator use_count
         accumulator->use_count++;
         pc = pc + 2;
@@ -631,7 +642,7 @@ Object *VM(int * instructions,
 
             // create string
             accumulator = Object_initString(created_string, string_length - 1);
-            
+            accumulator->data.String.in_table = 1;
             // push to CONSTANT_TABLE
             CONSTANT_TABLE[CONSTANT_TABLE_LENGTH] = accumulator;
             CONSTANT_TABLE_LENGTH++;
