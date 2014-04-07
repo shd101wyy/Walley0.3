@@ -12,6 +12,7 @@
 #define CONST_FLOAT 0x2200
 #define CONST_STRING 0x2300
 #define CONST_NULL 0x2400
+#define CONST_LOAD 0x2500
 
 #define MAKELAMBDA 0x3
 #define RETURN 0x4
@@ -27,6 +28,7 @@
 
 
 typedef struct Object Object;
+static Object * GLOBAL_NULL;
 
 /* data types */
 typedef enum {
@@ -176,6 +178,8 @@ Object * Object_initNull(){
   o->type = NULL_;
   return o;
 }
+
+
 /*
   initialize user defined lambda
 */ 
@@ -212,6 +216,51 @@ Object * cons(Object * car, Object * cdr){
 void addValueToEnvironment(Object * env, Object * value, int m, int n){
   Object * frame = env->data.Vector.v[m];
   frame->data.Vector.v[n] = value;
+}
+
+/*
+  free
+*/
+void Object_free(Object * o){
+  int i, length;
+  if(o->use_count == 0){
+    // free
+    switch (o->type){
+      case INTEGER:
+        free(o);
+        return;
+      case DOUBLE:
+        free(o);
+        return;
+      case STRING:
+        free(o->data.String.v);
+        free(o);
+        return;
+      case PAIR:
+        Object_free(o->data.Pair.car);
+        Object_free(o->data.Pair.cdr);
+        free(o);
+        return;
+      case USER_DEFINED_LAMBDA:
+        Object_free(o->data.User_Defined_Lambda.env);
+        free(o);
+      case BUILTIN_LAMBDA:
+        return; // cannt free builtin lambda
+      case VECTOR:
+        length = o->data.Vector.length;
+        Object ** v = o->data.Vector.v;
+        for(i = 0; i < length; i++){
+          Object_free(v[i]);
+        }
+        free(o);
+      case NULL_:
+        return; // cannot free null;
+                // null will be stored in string_table(constant_table) index0;
+      default:
+        printf("ERROR: Object_free invalid data type\n");
+        return;
+    }
+  }
 }
 
 /*
@@ -305,7 +354,7 @@ Object *builtin_vector_push(Object * params, int param_num){
       }
       else{
         printf("ERROR: Cannot change size of vector\n");
-        return Object_initNull();
+        return GLOBAL_NULL;
       }
     }
     vector_Set(vec, length, vector_Get(params, 3 + i));
@@ -331,7 +380,7 @@ Object *builtin_num_equal(Object * params, int param_num){
      param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v){
     return Object_initInteger(1);
   }
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 13 <
 Object *builtin_num_lt(Object * params, int param_num){
@@ -342,7 +391,7 @@ Object *builtin_num_lt(Object * params, int param_num){
      param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v){
     return Object_initInteger(1);
   }
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 14 <=
 Object *builtin_num_le(Object * params, int param_num){
@@ -353,7 +402,7 @@ Object *builtin_num_le(Object * params, int param_num){
      param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v){
     return Object_initInteger(1);
   }
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 15 eq?
 Object *builtin_eq(Object * params, int param_num){
@@ -362,43 +411,43 @@ Object *builtin_eq(Object * params, int param_num){
   if((param0->type == INTEGER | param0->type == DOUBLE) && (param1->type == INTEGER | param1->type == DOUBLE)){
     return builtin_num_equal(params, param_num);
   }
-  return (param0 == param1) ? Object_initInteger(1) : Object_initNull();
+  return (param0 == param1) ? Object_initInteger(1) : GLOBAL_NULL;
 }
 // 16 string?
 Object *builtin_string_type(Object * params, int param_num){
   if(vector_Get(params, 2)->type == STRING)
     return Object_initInteger(1);
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 17 int?
 Object *builtin_int_type(Object * params, int param_num){
   if(vector_Get(params, 2)->type == INTEGER)
     return Object_initInteger(1);
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 18 float?
 Object *builtin_float_type(Object * params, int param_num){
   if(vector_Get(params, 2)->type == DOUBLE)
     return Object_initInteger(1);
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 19 pair?
 Object *builtin_pair_type(Object * params, int param_num){
   if(vector_Get(params, 2)->type == PAIR)
     return Object_initInteger(1);
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 20 null?
 Object *builtin_null_type(Object * params, int param_num){
   if(vector_Get(params, 2)->type == NULL_)
     return Object_initInteger(1);
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 21 lambda?
 Object *builtin_lambda_type(Object * params, int param_num){
   if(vector_Get(params, 2)->type == USER_DEFINED_LAMBDA || vector_Get(params, 2)->type == BUILTIN_LAMBDA)
     return Object_initInteger(1);
-  return Object_initNull();
+  return GLOBAL_NULL;
 }
 // 22 strcmp  compare string
 Object *builtin_strcmp(Object * params, int param_num){
@@ -479,6 +528,8 @@ Object *createEnvironment(){
   env->data.Vector.v[0] = createFrame0();  // add frame0
   return env;
 }
+Object* CONSTANT_TABLE[1024];    
+static int CONSTANT_TABLE_LENGTH = 0;
 /*
   copy environment
 */
@@ -490,10 +541,11 @@ Object *copyEnvironment(Object * env){
   for(i = 0; i < length; i++){
     new_env->data.Vector.v[i] = env->data.Vector.v[i];
   }
+  // init NULL
+  GLOBAL_NULL = Object_initNull();
+  
   return new_env;
 }
-
-
 /*
   Walley Language Virtual Machine
  */
@@ -501,7 +553,6 @@ Object *VM(int * instructions,
 	   int instructions_num,
 	   int pc,
 	   Object * env){
-
   int i;
   int frame_index, value_index, inst, opcode;
   char param_num, variadic_place;
@@ -528,11 +579,17 @@ Object *VM(int * instructions,
         frame_index = 0x0FFF & inst;
         value_index = instructions[pc + 1];
         env->data.Vector.v[frame_index]->data.Vector.v[value_index] = accumulator;
+        // increase accumulator use_count
+        accumulator->use_count++;
         pc = pc + 2;
         continue;
       case GET:
         frame_index = 0x0FFF & inst;
         value_index = instructions[pc + 1];
+
+        // free accumulator is necessary
+        Object_free(accumulator);
+
         // 这里应该检查 accumulator, 看看是否要free掉
         accumulator = env->data.Vector.v[frame_index]->data.Vector.v[value_index];
         pc = pc + 2;
@@ -540,6 +597,8 @@ Object *VM(int * instructions,
       case CONST:
         switch(inst){         
           case CONST_INTEGER:  // 32 bit num 
+            // free accumulator is necessary
+            Object_free(accumulator);
             accumulator = Object_initInteger((int)((instructions[pc + 1] << 16) | (instructions[pc + 2])));
             pc = pc + 3; 
             continue;
@@ -567,11 +626,23 @@ Object *VM(int * instructions,
               pc = pc + 1;
             }
             created_string[i] = 0;
+            // free accumulator is necessary
+            Object_free(accumulator);
+
+            // create string
             accumulator = Object_initString(created_string, string_length - 1);
+            
+            // push to CONSTANT_TABLE
+            CONSTANT_TABLE[CONSTANT_TABLE_LENGTH] = accumulator;
+            CONSTANT_TABLE_LENGTH++;
+
             pc = pc + 1;
             continue;            
           default: // null
-            accumulator = Object_initNull();
+            // free accumulator is necessary
+            Object_free(accumulator);
+            // set null
+            accumulator = GLOBAL_NULL;
             pc = pc + 1;
             continue;
         }
@@ -581,6 +652,8 @@ Object *VM(int * instructions,
         start_pc = pc + 2;
         jump_steps = instructions[pc + 1];
 
+        // free accumulator is necessary
+        Object_free(accumulator);
         accumulator = Object_initUserDefinedLambda(param_num, variadic_place, start_pc, copyEnvironment(env));
         pc = pc + jump_steps + 1;
         continue;
@@ -611,6 +684,10 @@ Object *VM(int * instructions,
           case BUILTIN_LAMBDA: // builtin lambda
             func_ptr = accumulator->data.Builtin_Lambda.func_ptr;
             pc = pc + 1;
+
+            // free accumulator is necessary
+            Object_free(accumulator);
+
             accumulator = (*func_ptr)(current_frame_pointer, param_num); // call function
             
             // pop frame
@@ -621,6 +698,9 @@ Object *VM(int * instructions,
             pc = pc + 1;
             switch(param_num){
               case 1: // vector get
+                // free accumulator is necessary
+                Object_free(accumulator);
+
                 accumulator = vector_Get(accumulator, vector_Get(current_frame_pointer, 2)->data.Integer.v);
                 break;
               case 2: // vector set
@@ -650,7 +730,7 @@ Object *VM(int * instructions,
               return NULL;
             }
             if(required_variadic_place != -1){
-              v = Object_initNull();
+              v = GLOBAL_NULL;
               for(i = vector_Length(current_frame_pointer) - 1; i >= required_variadic_place + 2; i--){
                 v = cons(vector_Get(current_frame_pointer, i), v);
               }
@@ -659,7 +739,7 @@ Object *VM(int * instructions,
 
             if(vector_Length(current_frame_pointer)  < required_param_num){
               for(i = param_num; i < required_param_num; i--){
-                vector_Get(current_frame_pointer, i+2) = Object_initNull();
+                vector_Get(current_frame_pointer, i+2) = GLOBAL_NULL;
               }
             }
 

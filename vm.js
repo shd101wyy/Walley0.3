@@ -63,6 +63,7 @@ var make_null = function(){
     v.type = TYPE_NULL;
     return v;
 }
+var GLOBAL_NULL = make_null(); // global null
 var make_string = function(s){
     var v = new Value();
     v.type = TYPE_STRING;
@@ -206,7 +207,7 @@ var isFloat = function(n){return isNumber(n) && !(isInteger(n))}
 */
 var lexer_iter = function(input_string, index)
 {
-    if (index >= input_string.length) return  make_null();
+    if (index >= input_string.length) return  GLOBAL_NULL;
     else if (input_string[index] == "(" || input_string[index] == ")")
 	return cons(input_string[index], lexer_iter(input_string, index + 1));
     else if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",")
@@ -260,16 +261,16 @@ var lexer = function(input_string)
 /*
   simple parser
 */
-var parser_rest =  make_null();
+var parser_rest =  GLOBAL_NULL;
 var formatQuickAccess = function(ns, keys)
 {
     var formatQuickAccess_iter = function(keys, output, count)
     {
         if(count === keys.length)
             return output;
-        return formatQuickAccess_iter(keys, cons(output, cons(cons("quote", cons(keys[count],  make_null())),  make_null())), count + 1);
+        return formatQuickAccess_iter(keys, cons(output, cons(cons("quote", cons(keys[count],  GLOBAL_NULL)),  GLOBAL_NULL)), count + 1);
     }
-    return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0],  make_null())),  make_null())), 1);
+    return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0],  GLOBAL_NULL)),  GLOBAL_NULL)), 1);
 }
 var parser_symbol_or_number = function(v){
     if(v[0] === '"') return v;
@@ -294,16 +295,16 @@ var parser_special = function(l)
     l = cdr(l);
     if (car(l) === "(") // list
     {
-        return cons(tag, cons(parser_list(cdr(l)),  make_null()));
+        return cons(tag, cons(parser_list(cdr(l)),  GLOBAL_NULL));
     }
     else if (car(l) === "'" || car(l) === "~" || car(l) === "`")  // quote unquote quasiquote
     {   // here my be some errors
-        return cons(tag, cons(parser_special(l),  make_null()));
+        return cons(tag, cons(parser_special(l),  GLOBAL_NULL));
     }
     else  // symbol or number
     {
         parser_rest = cdr(l);
-        return cons(tag, cons(parser_symbol_or_number(car(l)),  make_null()));
+        return cons(tag, cons(parser_symbol_or_number(car(l)),  GLOBAL_NULL));
     }
 }
 var parser_list = function(l)
@@ -311,13 +312,13 @@ var parser_list = function(l)
     if(l.type === TYPE_NULL)
     {
 	console.log("ERROR: invalid statement. Missing )");
-	parser_rest =  make_null();
-	return  make_null();
+	parser_rest =  GLOBAL_NULL;
+	return  GLOBAL_NULL;
     }
     if(car(l) == ")") // find end
     {
 	parser_rest = cdr(l);
-	return  make_null();
+	return  GLOBAL_NULL;
     }
     else if (car(l) == "(") // another list
     {
@@ -337,7 +338,7 @@ var parser_list = function(l)
 var parser = function(l)
 {
     if(l.type === TYPE_NULL)
-	return  make_null();
+	return  GLOBAL_NULL;
     else if (car(l) == "(")
 	return cons(parser_list(cdr(l)), parser(parser_rest));
     // quote // unquote // quasiquote // unquote-splice
@@ -372,7 +373,7 @@ var TEST = 0x9;
 var INSTRUCTIONS = []; // global variables. used to save instructions
 
 var CONSTANT_TABLE = {}; // use to save string index
-var CONSTANT_TABLE_LENGTH = 0;
+var CONSTANT_TABLE_LENGTH = 0; //
 
 var _4_digits_hex = function(num)
 {
@@ -457,7 +458,7 @@ var ENVIRONMENT =
 	    bpp(function(stack_param)
 		{ // 7 vector?
 		    if(stack_param[0].type === TYPE_VECTOR) return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 8 +
@@ -487,31 +488,31 @@ var ENVIRONMENT =
 		{ // 12 = only for number
 		    if (stack_param[0].num == stack_param[1].num)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 13 < only for number
 		    if (stack_param[0].num < stack_param[1].num)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 14 > only for number
 		    if (stack_param[0].num > stack_param[1].num)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 15 <= only for number
 		    if (stack_param[0].num <= stack_param[1].num)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 16 >= only for number
 		    if (stack_param[0].num >= stack_param[1].num)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 17 eq?
@@ -519,50 +520,50 @@ var ENVIRONMENT =
 			&& (stack_param[1].type === TYPE_INTEGER || stack_param[1].type === TYPE_FLOAT))
 		    {
 			if(stack_param[0].num === stack_param[1].num) return make_string("true");
-			return make_null();
+			return GLOBAL_NULL;
 		    }
 		    //else if (stack_param[0].type === TYPE_STRING && stack_param[1].type === TYPE_STRING)
-			//return stack_param[0].string === stack_param[1].string ? make_string("true"):make_null();
-		    return stack_param[0] === stack_param[1] ? make_string("true"):make_null();
+			//return stack_param[0].string === stack_param[1].string ? make_string("true"):GLOBAL_NULL;
+		    return stack_param[0] === stack_param[1] ? make_string("true"):GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 18 string?
 		    if(stack_param[0].type === TYPE_STRING)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 19 int?
 		    if(stack_param[0].type === TYPE_INTEGER)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 20 float?
 		    if(stack_param[0].type === TYPE_FLOAT)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 21 pair?
 		    if(stack_param[0].type === TYPE_PAIR)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param)
 		{ // 22 null?
 		    if(stack_param[0].type === TYPE_NULL)
 			return make_string("true");
-		    return make_null();
+		    return GLOBAL_NULL;
 		}),
 	    bpp(function(stack_param){
 		// 23 string<?
 		if(stack_param[0].string < stack_param[1].string) return make_string("true");
-		return make_null();
+		return GLOBAL_NULL;
 	    }),
 	    bpp(function(stack_param){
 		// 24 string=?
-		if(stack_param[0].string === stack_param[1].string) return make_string("true"); return make_null();
+		if(stack_param[0].string === stack_param[1].string) return make_string("true"); return GLOBAL_NULL;
 	    }),
 	    bpp(function(stack_param){
 		// 25 string-ref
@@ -657,7 +658,7 @@ var ENVIRONMENT =
 	    bpp(function(stack_param){
 		// 46 display-string
 		console.log(stack_param[0].string);
-		return make_null();
+		return GLOBAL_NULL;
 	    }),
 	    bpp(function(stack_param){
 		// 47 ->int
@@ -692,7 +693,7 @@ var ENVIRONMENT =
 		// 52 lambda?
 		if(stack_param[0].type === TYPE_LAMBDA || stack_param[0].type === TYPE_BUILTIN_LAMBDA)
 	    	    return make_string("true");
-		return make_null();
+		return GLOBAL_NULL;
 	    }),
 	    bpp(function(stack_param){
 		// 53 vector-push!
@@ -714,7 +715,7 @@ var ENVIRONMENT =
 	    	    key = stack_param[i];
 	    	    if(stack_param[i].type !== TYPE_STRING){
 	    		console.log("ERROR: object invalid key");
-	    		return make_null();
+	    		return GLOBAL_NULL;
 	    	    }
 	    	    value = stack_param[i+1];
 	    	    output[key.string] = value;
@@ -726,12 +727,12 @@ var ENVIRONMENT =
 	    }),
 	    bpp(function(stack_param){
 		// 56 object?
-		return stack_param[0].type === TYPE_OBJECT ? make_string("true") : make_null();
+		return stack_param[0].type === TYPE_OBJECT ? make_string("true") : GLOBAL_NULL;
 	    }),
 	    bpp(function(stack_param){
 		// 57 object-keys
 		// return cons
-		var c = make_null();
+		var c = GLOBAL_NULL;
 		var keys =  Object.keys(stack_param[0].object);
 		for(var i = keys.length - 1; i >= 0; i--){
 	    	    var v_ = new Value();
@@ -864,7 +865,7 @@ var macro_match = function(a, b){
   eg (* ~x ~x) {:x 12} => (* 12 12)
 */
 var macro_expand_with_arg_value = function(body, t){
-    if(body.type === TYPE_NULL) return make_null();
+    if(body.type === TYPE_NULL) return GLOBAL_NULL;
     else if(car(body) === "unquote"){
 	if(cadr(body) in t){
 	    return t[cadr(body)];
@@ -900,7 +901,7 @@ var macro_expand = function(macro, exps){
 	}
     }
     console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
-    return make_null();
+    return GLOBAL_NULL;
 }
 /*
    macro_expand_for_compilation
@@ -912,7 +913,7 @@ var macro_expand = function(macro, exps){
    here 0 is integer, different with string
 */
 var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, start_flag){
-    if(body.type === TYPE_NULL) return make_null();
+    if(body.type === TYPE_NULL) return GLOBAL_NULL;
     else if(car(body) === "unquote"){ // this place might have problem
 	if(cadr(body) in t){
 	    return t[cadr(body)];
@@ -920,7 +921,7 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 	var i = vt_find(vt, cadr(body)); // search vt
 	if(i[0] === -1)
 	    return body;
-	return cons(0, cons(i[0], cons(i[1], make_null()))); // get that variable
+	return cons(0, cons(i[0], cons(i[1], GLOBAL_NULL))); // get that variable
 
     }
     else if ((car(body).type === TYPE_PAIR) && (car(car(body)) === "unquote-splice")){
@@ -960,7 +961,7 @@ var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, 
 		    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
     else{
 	return cons(
-	    cons(0, cons(i[0], cons(i[1], make_null()))), // get that variable
+	    cons(0, cons(i[0], cons(i[1], GLOBAL_NULL))), // get that variable
 	    macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
     }
 }
@@ -976,7 +977,7 @@ var macro_expand_for_compilation = function(macro, exps, macros){
 	}
     }
     console.log("ERROR: Macro: " + macro.macro_name + " expansion failed" );
-    return make_null();
+    return GLOBAL_NULL;
 }
 /*
   parent func name:
@@ -1008,7 +1009,7 @@ var compiler = function(l,
 	    //	return;
 	    //}
 	    if(i < 0){
-		return compiler(cons("-", cons("0", cons(l.slice(1), make_null()))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+		return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
 	    }
 
 	    INSTRUCTIONS.push( CONST_INTEGER );
@@ -1025,7 +1026,7 @@ var compiler = function(l,
 	else if(isFloat(l)){
 	    var f = parseFloat(l);
 	    if(f < 0){
-		return compiler(cons("-", cons("0", cons(l.slice(1), make_null()))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+		return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
 	    }
 	    var i = parseInt(f);
 	    INSTRUCTIONS.push(CONST_FLOAT);
@@ -1108,12 +1109,12 @@ var compiler = function(l,
 	    {
 		var quote_list = function(l)
 	        {
-	            if(l.type === TYPE_NULL) return make_null();
+	            if(l.type === TYPE_NULL) return GLOBAL_NULL;
 	            var v = car(l);
 	            //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
-	            if(v.type === TYPE_PAIR) return cons("cons", cons(/*cons(*/quote_list(v)/*, null)*/, cons(quote_list(cdr(l)), make_null())));
-	            else if (v === ".") return cons("quote", cons(cadr(l), make_null()));
-	            return cons("cons", cons(cons("quote", cons(v, make_null())),  cons(quote_list(cdr(l)), make_null())));
+	            if(v.type === TYPE_PAIR) return cons("cons", cons(/*cons(*/quote_list(v)/*, null)*/, cons(quote_list(cdr(l)), GLOBAL_NULL)));
+	            else if (v === ".") return cons("quote", cons(cadr(l), GLOBAL_NULL));
+	            return cons("cons", cons(cons("quote", cons(v, GLOBAL_NULL)),  cons(quote_list(cdr(l)), GLOBAL_NULL)));
 	        }
 	        return compiler(quote_list(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    }
@@ -1135,19 +1136,19 @@ var compiler = function(l,
 	    {
 		var quasiquote = function(l)
 	        {
-	            if(l.type === TYPE_NULL) return make_null();
+	            if(l.type === TYPE_NULL) return GLOBAL_NULL;
 	            var v = car(l);
 	            //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
 	            if(v.type === TYPE_PAIR)
 	            {
 	                if(car(v) === "unquote")
-	                    return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), make_null())));
+	                    return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
 	                else if (car(v) === "unquote-splice")
-	                    return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), make_null())));
-	                return cons("cons", cons(quasiquote(v), cons(quasiquote(cdr(l)), make_null())));
+	                    return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
+	                return cons("cons", cons(quasiquote(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
 	            }
-	            else if (v === ".") return cons("quote", cons(cadr(l), make_null()));
-	            return cons("cons", cons( cons("quote", cons(v, make_null())), cons(quasiquote(cdr(l)), make_null())));
+	            else if (v === ".") return cons("quote", cons(cadr(l), GLOBAL_NULL));
+	            return cons("cons", cons( cons("quote", cons(v, GLOBAL_NULL)), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
 	        }
 	        return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    }
@@ -1168,7 +1169,7 @@ var compiler = function(l,
 		var var_name = car(variable_name);
 		var args = cdr(variable_name);
 		var lambda = cons("lambda", cons(args, cddr(l)));
-		return compiler(cons("def", cons(var_name, cons(lambda, make_null()))),
+		return compiler(cons("def", cons(var_name, cons(lambda, GLOBAL_NULL))),
 				vt,
 				macros,
 				tail_call_flag,
@@ -1193,7 +1194,7 @@ var compiler = function(l,
 
 	    var variable_value;
 	    if(cddr(l).type === TYPE_NULL)
-		variable_value = make_null();
+		variable_value = GLOBAL_NULL;
 	    else
 		variable_value = caddr(l);
 
@@ -1235,7 +1236,7 @@ var compiler = function(l,
 		var var_name = car(variable_name);
 		var args = cdr(variable_name);
 		var lambda = cons("lambda", cons(args, cddr(l)));
-		return compiler(cons("set!", cons(var_name, cons(lambda, make_null()))),
+		return compiler(cons("set!", cons(var_name, cons(lambda, GLOBAL_NULL))),
 				vt,
 				macros,
 				tail_call_flag,
@@ -1267,7 +1268,7 @@ var compiler = function(l,
 	    var conseq = caddr(l);
 	    var alter;
 	    if(cdddr(l).type === TYPE_NULL)
-		alter = make_null();
+		alter = GLOBAL_NULL;
 	    else
 		alter = cadddr(l);
 
@@ -1281,7 +1282,7 @@ var compiler = function(l,
 	    */
 	    //var vt_0 = vt.slice(0, vt.length-1);
 	    //vt_0.push(vt[vt.length-1].slice(0));
-	    compiler_begin(cons(conseq, make_null()), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+	    compiler_begin(cons(conseq, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
 
 	    var index2 = INSTRUCTIONS.length;
@@ -1294,7 +1295,7 @@ var compiler = function(l,
 
 	    //var vt_1 = vt.slice(0, vt.length - 1);
 	    //vt_1.push(vt[vt.length-1].slice(0));
-	    compiler_begin(cons(alter, make_null()), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+	    compiler_begin(cons(alter, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
 	    var index3 = INSTRUCTIONS.length;
 	    jump_steps = index3 - index2;
@@ -1355,7 +1356,7 @@ var compiler = function(l,
 	    var cond_clauses = cdr(l);
 	    var expand_clauses = function(clauses){
 		if(clauses.type === TYPE_NULL)
-		    return make_null();
+		    return GLOBAL_NULL;
 		var first = car(clauses);
 		var rest = cdr(clauses);
 		if(car(first) === "else"){
@@ -1394,18 +1395,18 @@ var compiler = function(l,
 		if(!existed) // 不存在， 保存
 		    var_names.push(v);
 		
-		def_array.push(cons(g, cons(v, cons(cadr(chunks), make_null())))); // make assignment
+		def_array.push(cons(g, cons(v, cons(cadr(chunks), GLOBAL_NULL)))); // make assignment
 		
 		chunks = cddr(chunks);
 	    }
 
 	    // make assignments
-	    var assignments = make_null();
+	    var assignments = GLOBAL_NULL;
 	    for(var i = def_array.length - 1; i >=0 ; i--){
 		assignments = cons(def_array[i], assignments);
 	    }
 	 
-	    var let_ = cons(cons("lambda", cons(make_null(), list_append(assignments, body))), make_null());
+	    var let_ = cons(cons("lambda", cons(GLOBAL_NULL, list_append(assignments, body))), GLOBAL_NULL);
 	    
 	    return compiler(let_,
 			    vt,
@@ -1421,7 +1422,7 @@ var compiler = function(l,
 	    // vector to list
 	    var vector_to_list = function(v){
 		var vector_to_list_iter = function(v, i){
-		    if(i == v.length) return make_null();
+		    if(i == v.length) return GLOBAL_NULL;
 		    else if (v[i] instanceof Array) return cons(vector_to_list(v[i]),
 								vector_to_list_iter(v, i + 1))
 		    return cons(v[i],
@@ -1455,7 +1456,7 @@ var compiler = function(l,
 	    var constructor_name = obj_name + "-" + method_names[0];
 	    var constructor_lambda = method_lambdas[0];
 
-	    var vector_ = make_null(); // vector
+	    var vector_ = GLOBAL_NULL; // vector
 	    vector_ = vector_to_list([["lambda", ["v"], ["eq?", "v", obj_name]]])
 	    for(var i = method_lambdas.length - 1; i >= 1; i--){
 		vector_ = cons(method_lambdas[i], vector_);
@@ -1467,13 +1468,13 @@ var compiler = function(l,
 			    cons(cons("def", 
 				      cons(obj_name, 
 					   cons(vector_, 
-						make_null()))), 
-				 make_null()));
+						GLOBAL_NULL))), 
+				 GLOBAL_NULL));
 	    
 	    var constructor = cons("def", 
 				   cons(constructor_name,
 				       cons(constructor_lambda_content, 
-					    cons(obj_name, make_null()))))
+					    cons(obj_name, GLOBAL_NULL))))
 	    
 	    var count = 0;
 	    // console.log(method_names);
@@ -1534,8 +1535,8 @@ var compiler = function(l,
 	    vt_.push([])          // we add a new frame
 	    macros_.push([]);     // add new frame
 
-	    vt_[vt_.length - 1].push(make_null()); // save space for parent-env.
-	    vt_[vt_.length - 1].push(make_null()); // save space for return address.
+	    vt_[vt_.length - 1].push(GLOBAL_NULL); // save space for parent-env.
+	    vt_[vt_.length - 1].push(GLOBAL_NULL); // save space for return address.
 
 	    while(true){
 		if(params.type === TYPE_NULL) break;
@@ -1593,7 +1594,7 @@ var compiler = function(l,
 		var frame = macros[i];
 		for(var j = frame.length - 1; j >= 0; j--){
 		    if(frame[j].macro_name === macro_name){
-			var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), make_null()));
+			var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), GLOBAL_NULL));
 			return compiler(e,
 					vt,
 					macros,
@@ -1635,7 +1636,7 @@ var compiler = function(l,
 	    }
 	    
 	    // init i
-	    compiler(cons("def", cons(var_name, cons(start_value, make_null()))),
+	    compiler(cons("def", cons(var_name, cons(start_value, GLOBAL_NULL))),
 		    vt,
 		    macros,
 		    tail_call_flag,
@@ -1645,7 +1646,7 @@ var compiler = function(l,
 	    // save index
 	    var index1 = INSTRUCTIONS.length;
 	    // check eq?
-	    compiler(cons("eq?", cons(var_name, cons(end_value, make_null()))),
+	    compiler(cons("eq?", cons(var_name, cons(end_value, GLOBAL_NULL))),
 		     vt,
 		     macros,
 		     tail_call_flag,
@@ -1666,7 +1667,7 @@ var compiler = function(l,
 	    compiler_begin(body, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    
 	    // increase by steps
-	    compiler(cons("set!", cons(var_name, cons(cons("+", cons(var_name, cons(step, make_null()))), make_null()))),
+	    compiler(cons("set!", cons(var_name, cons(cons("+", cons(var_name, cons(step, GLOBAL_NULL))), GLOBAL_NULL))),
 		     vt,
 		     macros,
 		     tail_call_flag,
@@ -1694,7 +1695,7 @@ var compiler = function(l,
 	 */
 	// return
 	else if (tag === "return"){
-	    compiler(cdr(l).type === TYPE_NULL? make_null() : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+	    compiler(cdr(l).type === TYPE_NULL? GLOBAL_NULL : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 	    INSTRUCTIONS.push(RETURN << 12);
 	    return;
 	}
@@ -1733,10 +1734,10 @@ var compiler = function(l,
 		for(var i = 0; i < param_num; i++){
 		    if(i === functions_for_compilation.variadic_place){ // variadic param
 			count_params++;
-			var p = make_null();
+			var p = GLOBAL_NULL;
 			var j = param_num - 1;
 			for(; j >= i; j--){
-			    p = cons("cons", cons(params[j], cons(p, make_null())));
+			    p = cons("cons", cons(params[j], cons(p, GLOBAL_NULL)));
 			}
 			compiler(p, vt, macros, false, parent_func_name, functions_for_compilation); // each argument is not tail call
 			// set to current frame
@@ -1807,14 +1808,14 @@ var compiler_begin = function(l,
 			      parent_func_name,
 			      functions_for_compilation)
 {
-    if(typeof(parent_func_name) === "undefined") parent_func_name = make_null();
-    if(typeof(functions_for_compilation) === "undefined") functions_for_compilation = make_null();
+    if(typeof(parent_func_name) === "undefined") parent_func_name = GLOBAL_NULL;
+    if(typeof(functions_for_compilation) === "undefined") functions_for_compilation = GLOBAL_NULL;
     // console.log("parent_func_name: " + parent_func_name);
     while(l.type !== TYPE_NULL)
     {
 	if(cdr(l).type === TYPE_NULL && car(l).type === TYPE_PAIR && car(car(l)) === parent_func_name){
 	    // console.log("Tail Call");
-	    compiler(car(l), vt, macros, 1, make_null(), functions_for_compilation) // tail call
+	    compiler(car(l), vt, macros, 1, GLOBAL_NULL, functions_for_compilation) // tail call
 	}
 	else
 	    compiler(car(l), vt, macros, 0, parent_func_name, functions_for_compilation) // not tail call;
@@ -1832,15 +1833,15 @@ var compiler_begin = function(l,
 
 
 // variables for VM
-var constant_table = []; // used to save constant
+var constant_table = []; // used to save constant. 
 var VM = function(INSTRUCTIONS, env, pc){
 	// printInstructions(INSTRUCTIONS);
 
     if(typeof(pc) === "undefined") pc = 0;
-    var accumulator = make_null(); // accumulator
+    var accumulator = GLOBAL_NULL; // accumulator
     var length_of_insts = INSTRUCTIONS.length;
-    var current_frame_pointer = make_null(); // pointer that points to current new frame
-    var frame_list = cons(make_null(), make_null()); // stack used to save frames    head frame1 frame0 tail, queue
+    var current_frame_pointer = GLOBAL_NULL; // pointer that points to current new frame
+    var frame_list = cons(GLOBAL_NULL, GLOBAL_NULL); // stack used to save frames    head frame1 frame0 tail, queue
     while(pc !== length_of_insts)
     {
 	var inst = INSTRUCTIONS[pc];
@@ -1906,11 +1907,11 @@ var VM = function(INSTRUCTIONS, env, pc){
 		case CONST_LOAD:
 			accumulator = constant_table[INSTRUCTIONS[pc + 1]]; // load constant
 			pc = pc + 2;
-			console.log(constant_table);
+			//console.log(constant_table);
 			continue;
 		default: // null
 		    {
-			accumulator = make_null();
+			accumulator = GLOBAL_NULL;
 			pc = pc + 1;
 			// console.log("NULL: ");
 			continue;
@@ -1992,7 +1993,7 @@ var VM = function(INSTRUCTIONS, env, pc){
 			var p0 = current_frame_pointer[2];
 			accumulator = lambda[p0.string];
 			if(typeof(accumulator) === "undefined")
-			    accumulator = make_null();
+			    accumulator = GLOBAL_NULL;
 		    }
 		    else{ // set
 			var p0 = current_frame_pointer[2];
@@ -2010,7 +2011,7 @@ var VM = function(INSTRUCTIONS, env, pc){
 			var p0 = current_frame_pointer[2];
 			accumulator = lambda[p0.num];
 			if(typeof(accumulator) === "undefined")
-			    accumulator = make_null();
+			    accumulator = GLOBAL_NULL;
 		    }
 		    else{ // set
 			var p0 = current_frame_pointer[2];
@@ -2057,7 +2058,7 @@ var VM = function(INSTRUCTIONS, env, pc){
 			return;
 		    }
 		    if(required_variadic_place !== -1){ // variadic value
-			var v = make_null();
+			var v = GLOBAL_NULL;
 			for(var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--){
 			    v = cons(current_frame_pointer[i], v);
 			}
@@ -2067,7 +2068,7 @@ var VM = function(INSTRUCTIONS, env, pc){
 		    if(current_frame_pointer.length - 2 < required_param_num) // not enough parameters
 		    {
 			for(var i = param_num; i < required_param_num; i++){
-			    current_frame_pointer[i + 2] = make_null(); // default value is null
+			    current_frame_pointer[i + 2] = GLOBAL_NULL; // default value is null
 			}
 		    }
 		    env = new_env;         // change env pointer
@@ -2096,7 +2097,7 @@ var VM = function(INSTRUCTIONS, env, pc){
 	    }
 	default:
 	    console.log("ERROR: Invalid opcode");
-	    return make_null();
+	    return GLOBAL_NULL;
 	}
     }
     console.log("Finishing running VM");
