@@ -526,6 +526,9 @@ Object *createFrame0(){
 Object *createEnvironment(){
   Object * env = Object_initVector(1, ENV_SIZE); // create env
   env->data.Vector.v[0] = createFrame0();  // add frame0
+   // init NULL
+  GLOBAL_NULL = Object_initNull();
+
   return env;
 }
 Object* CONSTANT_TABLE[1024];    
@@ -541,9 +544,6 @@ Object *copyEnvironment(Object * env){
   for(i = 0; i < length; i++){
     new_env->data.Vector.v[i] = env->data.Vector.v[i];
   }
-  // init NULL
-  GLOBAL_NULL = Object_initNull();
-  
   return new_env;
 }
 /*
@@ -564,8 +564,8 @@ Object *VM(int * instructions,
   int s;
   char s1, s2;
 
-  Object * accumulator = NULL;
-  Object * current_frame_pointer = NULL;
+  Object * accumulator = GLOBAL_NULL;
+  Object * current_frame_pointer = GLOBAL_NULL;
   Object * frames = Object_initVector(0, MAX_STACK_SIZE); // save frames
   Object * new_env;
   Object * (*func_ptr)(Object*, int); // function pointer
@@ -660,8 +660,8 @@ Object *VM(int * instructions,
       case RETURN:
         pc = vector_Get(vector_Get(env, vector_Length(env) - 1), 1)->data.Integer.v;
         env = vector_Get(vector_Get(env, vector_Length(env) - 1), 0);
-        free(vector_Get(vector_Get(env, vector_Length(env) - 1), 1)); // free pc integer
-        // clear frame here
+        
+        Object_free(vector_Get(env, vector_Length(env) - 1)); // free top frame
         continue;
       case NEWFRAME: // create new frame
         current_frame_pointer = Object_initVector(0, 64);
