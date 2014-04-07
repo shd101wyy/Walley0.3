@@ -368,6 +368,7 @@ var PUSH_ARG = 0x6;
 var CALL = 0x7;
 var JMP = 0x8;
 var TEST = 0x9;
+var PUSH = 0xA;
 
 
 var INSTRUCTIONS = []; // global variables. used to save instructions
@@ -1224,8 +1225,9 @@ var compiler = function(l,
 	    compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
 
 	    // add instruction
-	    INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
-	    INSTRUCTIONS.push( 0x0000FFFF & ( variable_existed ? variable_index : vt[vt.length - 1].length - 1)); // value index
+	    //INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
+	    //INSTRUCTIONS.push( 0x0000FFFF & ( variable_existed ? variable_index : vt[vt.length - 1].length - 1)); // value index
+	    INSTRUCTIONS.push(PUSH << 12);
 	    return;
 	}
 	// set!
@@ -1835,8 +1837,7 @@ var compiler_begin = function(l,
 // variables for VM
 var constant_table = []; // used to save constant. 
 var VM = function(INSTRUCTIONS, env, pc){
-	// printInstructions(INSTRUCTIONS);
-
+	//printInstructions(INSTRUCTIONS);
     if(typeof(pc) === "undefined") pc = 0;
     var accumulator = GLOBAL_NULL; // accumulator
     var length_of_insts = INSTRUCTIONS.length;
@@ -2095,6 +2096,10 @@ var VM = function(INSTRUCTIONS, env, pc){
 		//current_frame_pointer = car(frame_list);
 		continue;
 	    }
+	case PUSH: // push to top frame
+		env[env.length - 1].push(accumulator);
+		pc++;
+		continue;
 	default:
 	    console.log("ERROR: Invalid opcode");
 	    return GLOBAL_NULL;

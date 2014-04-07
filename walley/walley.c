@@ -21,6 +21,8 @@
 #define CALL 0x7
 #define JMP 0x8
 #define TEST 0x9
+#define PUSH 0xA
+
 
 #define GLOBAL_FRAME_SIZE 1024
 #define ENV_SIZE 32
@@ -529,7 +531,7 @@ Object *createFrame0(){
   vector_set_builtin_lambda(frame, 24, &builtin_string_length);
   vector_set_builtin_lambda(frame, 25, &builtin_string_append);
 
-
+  frame->data.Vector.length = 26; // set length
   return frame;
 }
 /*
@@ -538,7 +540,8 @@ Object *createFrame0(){
 Object *createEnvironment(){
   Object * env = Object_initVector(1, ENV_SIZE); // create env
   env->data.Vector.v[0] = createFrame0();  // add frame0
-   // init NULL
+  env->data.Vector.length = 1;
+  // init NULL
   GLOBAL_NULL = Object_initNull();
 
   return env;
@@ -591,10 +594,10 @@ Object *VM(int * instructions,
         frame_index = 0x0FFF & inst;
         value_index = instructions[pc + 1];
         v = vector_Get(vector_Get(env, frame_index), value_index);
-        if(value_index < vector_Length(vector_Get(env, frame_index))){ // free variable
-          v->use_count--; // decrease use_count
-          Object_free(v);
-        }
+        //if(value_index < vector_Length(vector_Get(env, frame_index))){ // free variable
+        v->use_count--; // decrease use_count
+        Object_free(v);
+        //}
         vector_Get(vector_Get(env, frame_index), value_index) = accumulator;
         // increase accumulator use_count
         accumulator->use_count++;
@@ -683,6 +686,8 @@ Object *VM(int * instructions,
       case NEWFRAME: // create new frame
         current_frame_pointer = Object_initVector(0, 64);
         frames->data.Vector.v[frames->data.Vector.length] = current_frame_pointer; // add new frame
+        frames->data.Vector.length++; // increase length
+        current_frame_pointer->data.Vector.length = 2;
         if(frames->data.Vector.length == frames->data.Vector.size){ // stack overflow
           printf("ERROR: Stack Overflow\n");
           return NULL;
@@ -691,7 +696,9 @@ Object *VM(int * instructions,
         continue;
 
       case PUSH_ARG: // push arguments
-        current_frame_pointer->data.Vector.v[0x0FFF & inst] = accumulator;
+        //current_frame_pointer->data.Vector.v[0x0FFF & inst] = accumulator;
+        current_frame_pointer->data.Vector.v[current_frame_pointer->data.Vector.length] = accumulator;
+        current_frame_pointer->data.Vector.length++;
         pc = pc + 1;
         continue;
 
@@ -738,6 +745,7 @@ Object *VM(int * instructions,
             
             new_env = copyEnvironment(env);
             new_env->data.Vector.v[new_env->data.Vector.length] = current_frame_pointer; // add frame
+            new_env->data.Vector.length++;
 
             vector_Get(current_frame_pointer, 0) = env; // save current env to new-frame
             vector_Get(current_frame_pointer, 1) = Object_initInteger(pc + 1); // save pc
@@ -781,16 +789,26 @@ Object *VM(int * instructions,
         // run next
         pc = pc + 2;
         continue;
+      case PUSH: // push to top frame
+        v = vector_Get(env, vector_Length(env) - 1); // top frame
+        v->data.Vector.v[v->data.Vector.length] = accumulator; // set value
+        accumulator->use_count++; // increase use_count
+        v->data.Vector.length++; // increase length
+        pc++;
+        continue;
+      default:
+        printf("ERROR: Invalid opcode %d\n", opcode);
+        return GLOBAL_NULL;
     }
   }
   return accumulator;
 }
 
 // int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
-int insts[5] = {0x2100, 0x0000, 0x000c, 0x0000, 26};
+int insts[4] = {0x2100, 0x0000, 0x000c, (PUSH << 12)};
 int main(){
   printf("Walley Language 0.3.673\n");
-  Object * o = VM(insts, 5, 0, createEnvironment());
+  Object * o = VM(insts, 4, 0, createEnvironment());
 
   printf("%d\n", o->data.Integer.v);
   printf("%D\n", GLOBAL_FRAME[26]->data.Integer.v);
