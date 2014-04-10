@@ -216,8 +216,6 @@ Object * cons(Object * car, Object * cdr){
   o->type = PAIR; 
   o->data.Pair.car = car;
   o->data.Pair.cdr = cdr;
-  car->use_count++;
-  cdr->use_count++;
   return o;
 }
 
@@ -284,8 +282,15 @@ void Object_free(Object * o){
 */
 // 0 cons
 Object *builtin_cons(Object * params, int param_num, int start_index){
-  return cons(vector_Get(params, start_index), // params 0 1 are pc and env
-              vector_Get(params, start_index+1));
+  Object * o = allocateObject();
+  Object * car = vector_Get(params, start_index);
+  Object * cdr = vector_Get(params, start_index+1);
+  o->type = PAIR; 
+  o->data.Pair.car = car;
+  o->data.Pair.cdr = cdr;
+  car->use_count++;
+  cdr->use_count++;
+  return o;
 }
 // 1 car
 Object *builtin_car(Object * params, int param_num, int start_index){
@@ -400,9 +405,9 @@ Object *builtin_vector_pop(Object * params, int param_num, int start_index){
 Object *builtin_num_equal(Object * params, int param_num, int start_index){
   Object * param0 = vector_Get(params, start_index);
   Object * param1 = vector_Get(params, start_index+1);
-  if(param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v 
+  if((param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v) 
      == 
-     param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v){
+     (param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v)){
     return GLOBAL_TRUE;
   }
   return GLOBAL_NULL;
@@ -411,9 +416,9 @@ Object *builtin_num_equal(Object * params, int param_num, int start_index){
 Object *builtin_num_lt(Object * params, int param_num, int start_index){
   Object * param0 = vector_Get(params, start_index);
   Object * param1 = vector_Get(params, start_index+1);
-  if(param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v 
+  if((param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v)
      < 
-     param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v){
+     (param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v)){
     return GLOBAL_TRUE;
   }
   return GLOBAL_NULL;
@@ -422,9 +427,9 @@ Object *builtin_num_lt(Object * params, int param_num, int start_index){
 Object *builtin_num_le(Object * params, int param_num, int start_index){
   Object * param0 = vector_Get(params, start_index);
   Object * param1 = vector_Get(params, start_index+1);
-  if(param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v 
+  if((param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v) 
      <= 
-     param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v){
+     (param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v)){
     return GLOBAL_TRUE;
   }
   return GLOBAL_NULL;
@@ -561,6 +566,7 @@ Object *createEnvironment(){
   // init NULL
   GLOBAL_NULL = Object_initNull();
   GLOBAL_TRUE = Object_initString("true", 4);
+  GLOBAL_TRUE->data.String.in_table = 1;
   CONSTANT_TABLE[0] = GLOBAL_TRUE; // true is reserved
   return env;
 }
@@ -576,6 +582,7 @@ Object *copyEnvironment(Object * env){
   for(i = 0; i < length; i++){
     new_env->data.Vector.v[i] = env->data.Vector.v[i];
   }
+  new_env->data.Vector.length = length;
   return new_env;
 }
 /*
@@ -609,6 +616,7 @@ Object *VM(int * instructions,
   while(pc != instructions_num){
     inst = instructions[pc];
     opcode = (inst & 0xF000) >> 12;
+    //printf("%x\n", inst);
     switch(opcode){
       case SET:
         frame_index = 0x0FFF & inst;
@@ -626,7 +634,7 @@ Object *VM(int * instructions,
       case GET:
         frame_index = 0x0FFF & inst;
         value_index = instructions[pc + 1];
-
+                //printf("GET %d %d\n", frame_index, value_index);
         // free accumulator is necessary
         Object_free(accumulator);
 
@@ -638,7 +646,12 @@ Object *VM(int * instructions,
         switch(inst){         
           case CONST_INTEGER:  // 32 bit num 
             // free accumulator is necessary
+            //printf("CONST_INTEGER0\n");
+            //printf("%d\n", accumulator->use_count);
+            //if(accumulator->use_count == 0)
+            //  printf("%s\n", accumulator->data.String.v);
             Object_free(accumulator);
+            //printf("CONST_INTEGER1\n");
             accumulator = Object_initInteger((int)((instructions[pc + 1] << 16) | (instructions[pc + 2])));
             pc = pc + 3; 
             continue;
@@ -698,10 +711,24 @@ Object *VM(int * instructions,
         pc = pc + jump_steps + 1;
         continue;
       case RETURN:
-        pc = vector_Get(vector_Get(env, vector_Length(env) - 1), 1)->data.Integer.v;
-        env = vector_Get(vector_Get(env, vector_Length(env) - 1), 0);
+        //printf("RETURN, ENTER HERE %d\n", accumulator->data.Integer.v);
+        pc = vector_Get(top_frame_pointer, 1)->data.Integer.v;
+        env = vector_Get(top_frame_pointer, 0);
+        //printf("%d\n", vector_Length(vector_Get(env, 0)));
+        for(i = 2; i < vector_Length(top_frame_pointer); i++){
+          //printf("i: %d\n", i);
+          // decrement use_count
+          v = vector_Get(top_frame_pointer, i);
+          //printf("value: %d, use_count: %d\n", v->data.Integer.v, v->use_count);
+          v->use_count--;
+          //if(v->use_count == 0){
+          //  printf("FREEd\n");
+          //}
+          Object_free(v);
+        }
+        //Object_free(top_frame_pointer); // free top frame
         top_frame_pointer = vector_Get(env, vector_Length(env) - 1); // reset top_frame pointer
-        Object_free(vector_Get(env, vector_Length(env) - 1)); // free top frame
+        //printf("PC %d\n", pc);
         continue;
       case NEWFRAME: // create new frame
         switch (accumulator->type){
@@ -715,8 +742,8 @@ Object *VM(int * instructions,
               continue;
             case BUILTIN_LAMBDA: case VECTOR: // builtin lambda or vector
               current_frame_pointer = top_frame_pointer; // get top frame
-              frames_list = cons(current_frame_pointer, frames_list);
-              functions_list = cons(accumulator, functions_list);
+              frames_list = cons(current_frame_pointer, frames_list); // save to frame list
+              functions_list = cons(accumulator, functions_list); // save function to function list
               pc = pc + 1;
               continue;
             default:
@@ -725,6 +752,8 @@ Object *VM(int * instructions,
         }
       case PUSH_ARG: // push arguments
         //current_frame_pointer->data.Vector.v[0x0FFF & inst] = accumulator;
+        //printf("PUSHARG %d\n", accumulator->data.Integer.v);
+        accumulator->use_count++; // increase use count
         current_frame_pointer->data.Vector.v[current_frame_pointer->data.Vector.length] = accumulator;
         current_frame_pointer->data.Vector.length++;
         pc = pc + 1;
@@ -739,13 +768,32 @@ Object *VM(int * instructions,
             func_ptr = v->data.Builtin_Lambda.func_ptr;
             pc = pc + 1;
             accumulator = (*func_ptr)(current_frame_pointer, param_num, vector_Length(current_frame_pointer) - param_num); // call function
+            //printf("@@ %d %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v , 
+            //     vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v);
+            /*if(func_ptr == &builtin_num_equal){
+              printf("CHECK EQUAL\n");
+              printf("@@ %d %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v , 
+                   vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 2)->data.Integer.v);
+            }
+            if(func_ptr == &builtin_sub){
+              printf("SUB\n");
+              printf("@@ %d %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v , 
+                   vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 2)->data.Integer.v);
+              printf("RESULT %d\n", accumulator->data.Integer.v);
+            }
+            if(func_ptr == &builtin_mul){
+              printf("MUL\n");
+              exit(0);
+            }
+            printf("%d\n", (int)func_ptr);*/
+            //printf("GET accumulator %s\n", accumulator->data.String.v );
             // pop parameters
             for(i = 0; i < param_num; i++){
               temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1 - i);
+              temp->use_count--; // －1 因为在push的时候加1了
               Object_free(temp);
             }
             current_frame_pointer->data.Vector.length -= param_num; // decrement the length
-
             frames_list = cdr(frames_list);           // 
             current_frame_pointer = car(frames_list); // get new frame pointer
             // free lambda
@@ -758,6 +806,7 @@ Object *VM(int * instructions,
                 accumulator = vector_Get(v, vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1)->data.Integer.v);
                 // pop 1 param
                 temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1);
+                temp->use_count--;
                 Object_free(temp);
                 current_frame_pointer->data.Vector.length--; // set length
                 break;
@@ -767,9 +816,10 @@ Object *VM(int * instructions,
                 Object_free(vector_Get(v, i)); // free that original value
               
                 vector_Get(v, i) = temp;
-                temp->use_count++; // increase use count
+                //temp->use_count++; // increase use count 不用再＋＋ 因为再 PUSHARG的时候加过了
                 // pop 2 params
                 temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1);
+                temp->use_count--;
                 Object_free(temp);
                 //temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
                 //Object_free(temp);
@@ -785,12 +835,13 @@ Object *VM(int * instructions,
               Object_free(v);
               continue;
             }
-          default: // user defined function
+          case USER_DEFINED_LAMBDA: // user defined function
+
             required_param_num = v->data.User_Defined_Lambda.param_num;
             required_variadic_place = v->data.User_Defined_Lambda.variadic_place;
             start_pc = v->data.User_Defined_Lambda.start_pc;
-            
-            new_env = copyEnvironment(env);
+          
+            new_env = copyEnvironment(v->data.User_Defined_Lambda.env);
             new_env->data.Vector.v[new_env->data.Vector.length] = current_frame_pointer; // add frame
             new_env->data.Vector.length++;
 
@@ -821,6 +872,8 @@ Object *VM(int * instructions,
             env = new_env;
             pc = start_pc;
 
+            //printf("@@@@ User Defined Function %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v);
+            //printf("@@@@ new env length: %d  value: %d\n", vector_Length(env),vector_Get(vector_Get(env, 1), 2)->data.Integer.v);
             // pop frame
             frames_list = cdr(frames_list);
             current_frame_pointer = car(frames_list);
@@ -828,7 +881,10 @@ Object *VM(int * instructions,
             // free lambda
             Object_free(v);
             continue;
-        }
+          default:
+            printf("ERROR: Invalid Lambda\n");
+            return GLOBAL_NULL;
+      }
       case JMP:
         pc = pc + ((instructions[pc + 1] << 16) | instructions[pc + 2]);
         continue;
@@ -838,14 +894,15 @@ Object *VM(int * instructions,
           pc = pc + instructions[pc + 1];
           continue;
         }
+        //printf("RUN NEXT\n");
         // run next
         pc = pc + 2;
         continue;
       case PUSH: // push to top frame
-        v = top_frame_pointer; // top frame
-        v->data.Vector.v[v->data.Vector.length] = accumulator; // set value
+        //v = top_frame_pointer; // top frame
+        top_frame_pointer->data.Vector.v[top_frame_pointer->data.Vector.length] = accumulator; // set value
         accumulator->use_count++; // increase use_count
-        v->data.Vector.length++; // increase length
+        top_frame_pointer->data.Vector.length++; // increase length
         pc++;
         continue;
       default:
@@ -857,10 +914,11 @@ Object *VM(int * instructions,
 }
 
 // int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
-int insts[4] = {0x2100, 0x0000, 0x000c, (PUSH << 12)};
+//int insts[4] = {0x2100, 0x0000, 0x000c, (PUSH << 12)};
+int insts[55] = {0x3040, 0x002d, 0x1000, 0x000c, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0000, 0x6003, 0x7002, 0x9000, 0x0008, 0x2100, 0x0000, 0x0001, 0x8000, 0x0000, 0x001b, 0x1000, 0x0005, 0x5000, 0x1001, 0x0002, 0x6002, 0x1000, 0x001a, 0x5000, 0x1000, 0x0004, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0001, 0x6003, 0x7002, 0x6002, 0x7001, 0x6003, 0x7002, 0x4001, 0xa000, 0x1000, 0x001a, 0x5000, 0x2100, 0x0000, 0x000C, 0x6002, 0x7001};
 int main(){
   printf("Walley Language 0.3.673\n");
-  Object * o = VM(insts, 4, 0, createEnvironment());
+  Object * o = VM(insts, 55, 0, createEnvironment());
 
   printf("%d\n", o->data.Integer.v);
   printf("%D\n", GLOBAL_FRAME[26]->data.Integer.v);

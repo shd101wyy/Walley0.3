@@ -1878,12 +1878,13 @@ var VM = function(INSTRUCTIONS, env, pc) {
     // console.log(p);
     //console.log(vm(p, Environment, null));
     // exports to Nodejs
+    /*
 var l = lexer("(def f (lambda [n] (if (= n 0) 1 (* n (f (- n 1)))))) (f 100)");
 var o = parser(l);
 compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
 printInstructions(INSTRUCTIONS);
 VM(INSTRUCTIONS,ENVIRONMENT);
-
+*/
 if (typeof(module) != "undefined") {
     module.exports.vm_lexer = lexer;
     module.exports.vm_parser = parser;
