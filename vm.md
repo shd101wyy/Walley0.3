@@ -310,7 +310,14 @@ size 8: 1 7 0 5
 (def (Point? o v)
 	((vector-ref o 4) v))
 
-
+================================
+(+ 3 4)
+get + first,
+if it is builtin in
+set current-frame-pointer to top frame
+set current-top-frame to top frame
+save + to linked list pending_lambdas
+when meet call, get that lambda from pending_lambdas
 
 
 
