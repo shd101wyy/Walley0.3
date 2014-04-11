@@ -1,1 +1,1 @@
-(def f (table 'a 12 'b 15))(f 'a 16)
+(file-read "out.toyc")

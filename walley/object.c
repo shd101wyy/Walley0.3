@@ -148,8 +148,27 @@ int check_Collision(Table * t){
 	}
 	return cols;
 }
+char* readFile(char* filename)
+{
+    FILE* file = fopen(filename,"r");
+    if(file == NULL)
+    {
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long int size = ftell(file);
+    rewind(file);
+
+    char* content = calloc(size + 1, 1);
+
+    fread(content,1,size,file);
+
+    return content;
+}
 
 int main(){
+	/*
 	Table * t = (Table*)malloc(sizeof(Table)); // create table
 	t->size = 16;
 	t->length = 0;
@@ -176,6 +195,8 @@ int main(){
 	printf("%d\n", getval(t, "hi10"));
 	
 	printf("%d\n", getval(t, "hi10"));
+	*/
+	printf("%s\n", readFile("test.toy"));
 	return 0;
 }
 
