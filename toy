@@ -219,7 +219,7 @@ else if (argv.length == 4 && argv[2] == "compress") {
     "eq?", "string?", "int?", "float?", "pair?",
     "null?", "lambda?", "strcmp", "string-slice", "string-length",
     "string-append", "table", "table-keys", "table-delete","file-read",
-    "file-write", "sys-argv"
+    "file-write", "sys-argv", "int->string", "float->string"
         ]   
     ];
     for (var i = 3; i < end; i++) { // compile each file
@@ -241,21 +241,35 @@ else if (argv.length == 4 && argv[2] == "compress") {
     console.log("\n\n** Finish Compilation **");
     // put vm_insts to file
     var s = "";
+    var s_ = "";
     var _4_digits_hex = function(num) {
             return ("0000" + num.toString(16)).substr(-4);
         }
     for (var i = 0; i < toy_vm.vm_insts.length; i++) {
         s = s + "0x" + _4_digits_hex(toy_vm.vm_insts[i]);
-        if (i != toy_vm.vm_insts.length - 1) s += ", ";
+        s_ = s_ + _4_digits_hex(toy_vm.vm_insts[i]);
+        if (i != toy_vm.vm_insts.length - 1){
+            s += ", ";
+            s_ += " ";
+        }
     }
     console.log(s);
     console.log("length: " + toy_vm.vm_insts.length)
+
+    // 计算指令长度, 前两个16bits(32bits in total)保存长度
+    var length = toy_vm.vm_insts.length
+    s_ = _4_digits_hex((0xFFFF0000 & length) >> 16) 
+        + " "
+        +_4_digits_hex((0xFFFF & length))
+        + " "
+        + s_ + " ";
+
     // write to file
-/*fs.writeFile(output_file_name, s, function(err) {
+    fs.writeFile(output_file_name, s_, function(err) {
 	if(err) {
 	    console.log(err);
 	} else {
 	    console.log("The file was saved!");
 	}
-    });*/
+    });
 }

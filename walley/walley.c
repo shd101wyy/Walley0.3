@@ -38,6 +38,9 @@ static Object* CONSTANT_TABLE[1024];
 static int CONSTANT_TABLE_LENGTH = 1;
 static Object * SYS_ARGV;
 
+static int * INSTRUCTIONS;
+static int INSTRUCTIONS_LENGTH;
+
 void Object_free(Object * o);
 /* data types */
 typedef enum {
@@ -66,7 +69,7 @@ struct Object {
   union {
     struct {
       // long v;
-      int v;
+      int v; // 将来会只用long
     } Integer;
     struct {
       double v;
@@ -86,7 +89,7 @@ struct Object {
     struct {
       char * v;
       int length;
-      char in_table; // in contant table
+      char in_table; // in contant table. 我可能以后不用这个, 直接把use_count设置为1
     } String;
     struct {
       Object * car;
@@ -779,6 +782,55 @@ Object * builtin_file_write(Object * params, int param_num, int start_index){
   fclose(file);
   return GLOBAL_NULL;
 }
+// 31 sys-argv
+// 32 int->string
+// (int->string 12) => "12"
+// (int->string 12 "%x") => "0x3"
+Object * builtin_int_to_string(Object * params, int param_num, int start_index){
+  char *d; // format
+  char b[100];
+  char * o;
+  switch(param_num){
+    case 1:
+      sprintf(b, "%ld", (long)vector_Get(params, start_index)->data.Integer.v);
+      o = malloc(sizeof(char) * (strlen(b) + 1));
+      strcpy(o, b);
+      return Object_initString(o, strlen(o));
+    case 2:
+      d = vector_Get(params, start_index + 1)->data.String.v;
+      sprintf(b, d, vector_Get(params, start_index)->data.Integer.v);
+      o = malloc(sizeof(char) * (strlen(b) + 1));
+      strcpy(o, b);
+      return Object_initString(o, strlen(o));
+    default:
+      printf("ERROR: int->string invalid args\n");
+      return GLOBAL_NULL;
+  }
+}
+
+// 33 floag->string
+Object * builtin_float_to_string(Object * params, int param_num, int start_index){
+  char *d; // format
+  char b[100];
+  char * o;
+  switch(param_num){
+    case 1:
+      sprintf(b, "%.20f", vector_Get(params, start_index)->data.Double.v);
+      o = malloc(sizeof(char) * (strlen(b) + 1));
+      strcpy(o, b);
+      return Object_initString(o, strlen(o));
+    case 2:
+      d = vector_Get(params, start_index + 1)->data.String.v;
+      sprintf(b, d, vector_Get(params, start_index)->data.Double.v);
+      o = malloc(sizeof(char) * (strlen(b) + 1));
+      strcpy(o, b);
+      return Object_initString(o, strlen(o));
+    default:
+      printf("ERROR: float->string invalid args\n");
+      return GLOBAL_NULL;
+  }
+}
+
 /*
   create frame0
 */
@@ -825,7 +877,10 @@ Object *createFrame0(){
   vector_set_builtin_lambda(frame, 30, &builtin_file_write);
   // sys-argv
   vector_Set(frame, 31, SYS_ARGV);
-  frame->data.Vector.length = 32; // set length
+  vector_set_builtin_lambda(frame, 32, &builtin_int_to_string);
+  vector_set_builtin_lambda(frame, 33, &builtin_float_to_string);
+
+  frame->data.Vector.length = 34; // set length
   return frame;
 }
 /*
@@ -1238,6 +1293,58 @@ Object *VM(int * instructions,
   }
   return accumulator;
 }
+/* 
+  read ints and return instructions 
+  0: fail
+  1: success
+*/
+int read_ints (const char* file_name, int ** instructions, int * len)
+{
+  FILE* file = fopen (file_name, "r");
+  if(!file){
+    printf("Failed to read file\n");
+    return 0;
+  }
+  int num = 0;
+  unsigned int i = 0;
+  unsigned int length = 0;
+  while (fscanf(file, "%x ", &num) > 0)
+    {  
+      switch (i){
+        case 0:
+          length = num << 16;
+          break;
+        case 1:
+          length = length | num;
+          *len = length; // get length
+          (*instructions) = malloc(sizeof(int) * length); // init instructions
+          break;
+        default:
+          (*instructions)[i - 2] = num;
+          break;
+      }
+      i++;
+    }
+  fclose (file);  
+  return 1;      
+}
+/*
+  run compiled file
+*/
+void Run_Compiled_File(char * file_name){
+  // fetcn instructions from file
+  if(!read_ints(file_name, &INSTRUCTIONS, &INSTRUCTIONS_LENGTH)){
+    printf("Fail to Run File %s \n", file_name);
+  }
+  
+  // run instructions
+  Object * o = VM(INSTRUCTIONS, INSTRUCTIONS_LENGTH, 0, createEnvironment());
+
+  free(INSTRUCTIONS); // free instructions
+
+  // test
+  printf("%d\n", o->data.Integer.v);
+}
 
 // int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
 //int insts[4] = {0x2100, 0x0000, 0x000c, (PUSH << 12)};
@@ -1251,10 +1358,15 @@ Object *VM(int * instructions,
 //int insts[97] = {0x3080, 0x0031, 0x1000, 0x000c, 0x5000, 0x1001, 0x0003, 0x6002, 0x2100, 0x0000, 0x0000, 0x6003, 0x7002, 0x9000, 0x000c, 0x1000, 0x0001, 0x5000, 0x1001, 0x0002, 0x6002, 0x7001, 0x8000, 0x0000, 0x001b, 0x1000, 0x001d, 0x5000, 0x1000, 0x0002, 0x5000, 0x1001, 0x0002, 0x6002, 0x7001, 0x6002, 0x1000, 0x0004, 0x5000, 0x1001, 0x0003, 0x6002, 0x2100, 0x0000, 0x0001, 0x6003, 0x7002, 0x6003, 0x7002, 0x4001, 0xa000, 0x1000, 0x001d, 0x5000, 0x1000, 0x0000, 0x5000, 0x2100, 0x0000, 0x0003, 0x6002, 0x1000, 0x0000, 0x5000, 0x2100, 0x0000, 0x0004, 0x6002, 0x1000, 0x0000, 0x5000, 0x2100, 0x0000, 0x0005, 0x6002, 0x1000, 0x0000, 0x5000, 0x2100, 0x0000, 0x0006, 0x6002, 0x2400, 0x6003, 0x7002, 0x6003, 0x7002, 0x6003, 0x7002, 0x6003, 0x7002, 0x6002, 0x2100, 0x0000, 0x0002, 0x6003, 0x7002};
 //int insts[21] = {0x1000, 0x001e, 0x5000, 0x2300, 0x0009, 0x6f75, 0x742e, 0x746f, 0x7963, 0x0000, 0x6002, 0x2300, 0x000c, 0x4865, 0x6c6c, 0x6f20, 0x576f, 0x726c, 0x6400, 0x6003, 0x7002};
 //int insts[41] = {0x1000, 0x001a, 0x5000, 0x2300, 0x0004, 0x6164, 0x6400, 0x6002, 0x3080, 0x000c, 0x1000, 0x0003, 0x5000, 0x1001, 0x0002, 0x6002, 0x1001, 0x0003, 0x6003, 0x7002, 0x4001, 0x6003, 0x7002, 0xa000, 0x1000, 0x001f, 0x5000, 0x2500, 0x0001, 0x6002, 0x7001, 0x5000, 0x2100, 0x0000, 0x0003, 0x6002, 0x2100, 0x0000, 0x0004, 0x6003, 0x7002};
-int insts[8] = {0x1000, 0x001f, 0x5000, 0x2100, 0x0000, 0x0000, 0x6002, 0x7001};
+int insts[14] = {0x1000, 0x0020, 0x5000, 0x2100, 0x0000, 0x000c, 0x6002, 0x2300, 0x0006, 0x2534, 0x2e34, 0x6600, 0x6003, 0x7002};
 int main(int argc, char *argv[]){
   printf("Walley Language 0.3.673\n");
 
+  // ######################################################
+  // ######################################################
+  // ######################################################
+  // ######################################################
+  // ######################################################
   int i;
   // init sys_argv
   SYS_ARGV = Object_initVector(0, argc);
@@ -1263,15 +1375,23 @@ int main(int argc, char *argv[]){
   for(i = 0; i < argc; i++){
     vector_Set(SYS_ARGV, i, Object_initString(argv[i], strlen(argv[i])));
   }
+  // ######################################################
+  // ######################################################
+  // ######################################################
+  // ######################################################
 
 
-  Object * o = VM(insts, 8, 0, createEnvironment());
+  Run_Compiled_File("out.toyc");
+
+  /*
+  Object * o = VM(insts, 14, 0, createEnvironment());
   //printf("%d\n", getval(o, Object_initString("a", 0))->data.Integer.v);
   //printf("%d\n", o->data.Integer.v);
   printf("STRING %s\n", o->data.String.v);
   printf("STRING-LENGTH %d\n", o->data.String.length);
   printf("%D\n", GLOBAL_FRAME[26]->data.Integer.v);
   printf("%d\n", (int)sizeof(long));
+  */
   
   /*
   // check Table

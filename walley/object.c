@@ -167,6 +167,17 @@ char* readFile(char* filename)
     return content;
 }
 
+void read_ints (const char* file_name)
+{
+  FILE* file = fopen (file_name, "r");
+  int i = 0;
+
+  while (fscanf(file, "%x ", &i) > 0)
+    {  
+      printf ("%x ", i);
+    }
+  fclose (file);        
+}
 int main(){
 	/*
 	Table * t = (Table*)malloc(sizeof(Table)); // create table
@@ -196,7 +207,8 @@ int main(){
 	
 	printf("%d\n", getval(t, "hi10"));
 	*/
-	printf("%s\n", readFile("test.toy"));
+	//printf("%s\n", readFile("test.toy"));
+	read_ints("out.toyc");
 	return 0;
 }
 
