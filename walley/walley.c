@@ -36,6 +36,8 @@ static Object * GLOBAL_TRUE;
 static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
 static Object* CONSTANT_TABLE[1024];    
 static int CONSTANT_TABLE_LENGTH = 1;
+
+void Object_free(Object * o);
 /* data types */
 typedef enum {
 	INTEGER,
@@ -239,6 +241,7 @@ Object * Object_initTable(unsigned int size){
   o->data.Table.length = 0;
   o->data.Table.size = size;
   o->data.Table.vec = calloc(size, sizeof(Table_Pair*));
+  o->use_count = 0;
   return o;
 }
 unsigned int hash(char * str, unsigned int size){
@@ -332,22 +335,41 @@ void setval(Object *t, Object * key, Object * value){
     rehash(t);
   unsigned long hash_value = hash(key->data.String.v, t->data.Table.size);
   Table_Pair * table_pairs = t->data.Table.vec[hash_value];
-  Table_Pair * new_Table_Pair;
-  new_Table_Pair = malloc(sizeof(Table_Pair));
-  new_Table_Pair->key = key;
-  new_Table_Pair->value = value;
+  Table_Pair * new_table_pair;
+  Table_Pair * temp_table_pair;
+  new_table_pair = malloc(sizeof(Table_Pair));
+  new_table_pair->key = key;
+  new_table_pair->value = value;
 
   // increase use count for value and key
   key->use_count++;
   value->use_count++;
 
   if(table_pairs){ // already existed
-    new_Table_Pair->next = t->data.Table.vec[hash_value];
-    t->data.Table.vec[hash_value] = new_Table_Pair;
+    // go over to check whether already exist
+    temp_table_pair = table_pairs;
+    while(temp_table_pair){
+      if(temp_table_pair->key == key || strcmp(temp_table_pair->key->data.String.v, key->data.String.v) == 0)
+      { 
+        // key already exist
+        // free old value
+        temp_table_pair->value->use_count--;
+        Object_free(temp_table_pair->value); 
+
+        // set new value
+        temp_table_pair->value = value;
+        value->use_count++;
+        return;
+      }
+      temp_table_pair = temp_table_pair->next;
+    }
+    // add new value
+    new_table_pair->next = table_pairs;
+    t->data.Table.vec[hash_value] = new_table_pair;
   } 
   else{ // doesn't exist
-    new_Table_Pair->next = NULL;
-    t->data.Table.vec[hash_value] = new_Table_Pair;
+    new_table_pair->next = NULL;
+    t->data.Table.vec[hash_value] = new_table_pair;
   }
   t->data.Table.length++; // increase length
 }
@@ -824,6 +846,7 @@ Object *VM(int * instructions,
   Object * (*func_ptr)(Object*, int, int); // function pointer
   Object * v;
   Object * temp; // temp use
+  Object * temp2;
   Object * top_frame_pointer = vector_Get(env, 0); // top frame
     
   while(pc != instructions_num){
@@ -892,7 +915,7 @@ Object *VM(int * instructions,
               pc = pc + 1;
             }
             created_string[i] = 0;
-            // free accumulator is necessary
+            // free accumulator if necessary
             Object_free(accumulator);
 
             // create string
@@ -903,14 +926,23 @@ Object *VM(int * instructions,
             CONSTANT_TABLE_LENGTH++;
 
             pc = pc + 1;
-            continue;            
-          default: // null
-            // free accumulator is necessary
+            continue;  
+          case CONST_LOAD:
+            // free accumulator if necessary  
+            Object_free(accumulator);
+            accumulator = CONSTANT_TABLE[instructions[pc + 1]]; // load constant
+            pc = pc + 2;
+            continue;
+          case CONST_NULL: // null
+            // free accumulator if necessary
             Object_free(accumulator);
             // set null
             accumulator = GLOBAL_NULL;
             pc = pc + 1;
             continue;
+          default:
+            printf("ERROR: Invalid constant\n");
+            return GLOBAL_NULL;
         }
       case MAKELAMBDA: // make lambda
         param_num = (0x0FC0 & inst) >> 6;
@@ -1029,9 +1061,10 @@ Object *VM(int * instructions,
                 Object_free(vector_Get(v, i)); // free that original value
               
                 vector_Get(v, i) = temp;
+                accumulator = v;
                 //temp->use_count++; // increase use count 不用再＋＋ 因为再 PUSHARG的时候加过了
                 // pop 2 params
-                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1);
+                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
                 temp->use_count--;
                 Object_free(temp);
                 //temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
@@ -1040,14 +1073,57 @@ Object *VM(int * instructions,
                 break;
               default: // wrong parameters
                 printf("ERROR: Invalid vector operation\n");
-                return NULL;
-
-              frames_list = cdr(frames_list);           // 
-              current_frame_pointer = car(frames_list); // get new frame pointer
-              // free lambda
-              Object_free(v);
-              continue;
+                return GLOBAL_NULL;
             }
+            frames_list = cdr(frames_list);           // 
+            current_frame_pointer = car(frames_list); // get new frame pointer
+            // free lambda
+            Object_free(v);
+            continue;
+          case TABLE: // table
+            pc = pc + 1;
+            switch(param_num){
+              case 1: // table get
+                // get key
+                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1);
+                accumulator = getval(v, 
+                                     temp);
+                
+                printf("%d\n", accumulator->data.Integer.v);
+
+                // pop 1 param
+                temp->use_count--;
+                Object_free(temp);
+                current_frame_pointer->data.Vector.length -= 1; // set length
+                break;
+              case 2: // object set
+                // get key
+                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
+                // get value
+                temp2 = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1); // set value
+                temp2->use_count--; // 因为在setval的时候会++
+                // Object_free(getval(v, i)); // free that original value 不用运行这个, 在setval的时候会自动free
+              
+                setval(v, temp, temp2); 
+                accumulator = v;
+                //temp->use_count++; // increase use count 不用再＋＋ 因为再 PUSHARG的时候加过了
+                // pop 2 params
+                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
+                temp->use_count--;
+                Object_free(temp);
+                //temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
+                //Object_free(temp);
+                current_frame_pointer->data.Vector.length -= 2; // set length
+                break;
+              default: // wrong parameters
+                printf("ERROR: Invalid table operation\n");
+                return GLOBAL_NULL;
+            }
+            frames_list = cdr(frames_list);           // 
+            current_frame_pointer = car(frames_list); // get new frame pointer
+            // free lambda
+            Object_free(v);
+            continue;
           case USER_DEFINED_LAMBDA: // user defined function
 
             required_param_num = v->data.User_Defined_Lambda.param_num;
@@ -1128,13 +1204,18 @@ Object *VM(int * instructions,
 
 // int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
 //int insts[4] = {0x2100, 0x0000, 0x000c, (PUSH << 12)};
-int insts[55] = {0x3040, 0x002d, 0x1000, 0x000c, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0000, 0x6003, 0x7002, 0x9000, 0x0008, 0x2100, 0x0000, 0x0001, 0x8000, 0x0000, 0x001b, 0x1000, 0x0005, 0x5000, 0x1001, 0x0002, 0x6002, 0x1000, 0x001d, 0x5000, 0x1000, 0x0004, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0001, 0x6003, 0x7002, 0x6002, 0x7001, 0x6003, 0x7002, 0x4001, 0xa000, 0x1000, 0x001d, 0x5000, 0x2100, 0x0000, 0x000a, 0x6002, 0x7001};
+//int insts[55] = {0x3040, 0x002d, 0x1000, 0x000c, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0000, 0x6003, 0x7002, 0x9000, 0x0008, 0x2100, 0x0000, 0x0001, 0x8000, 0x0000, 0x001b, 0x1000, 0x0005, 0x5000, 0x1001, 0x0002, 0x6002, 0x1000, 0x001d, 0x5000, 0x1000, 0x0004, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0001, 0x6003, 0x7002, 0x6002, 0x7001, 0x6003, 0x7002, 0x4001, 0xa000, 0x1000, 0x001d, 0x5000, 0x2100, 0x0000, 0x000a, 0x6002, 0x7001};
+//(def f (table 'a 12 'b 15))
+//int insts[21] = {0x1000, 0x001a, 0x5000, 0x2300, 0x0002, 0x6100, 0x6002, 0x2100, 0x0000, 0x000c, 0x6003, 0x2300, 0x0002, 0x6200, 0x6004, 0x2100, 0x0000, 0x000f, 0x6005, 0x7004, 0xa000};
+int insts[32] = {0x1000, 0x001a, 0x5000, 0x2300, 0x0002, 0x6100, 0x6002, 0x2100, 0x0000, 0x000c, 0x6003, 0x2300, 0x0002, 0x6200, 0x6004, 0x2100, 0x0000, 0x000f, 0x6005, 0x7004, 0xa000, 0x1000, 0x001d, 0x5000, 0x2500, 0x0001, 0x6002, 0x2100, 0x0000, 0x0010, 0x6003, 0x7002};
+//int insts[28] = {0x1000, 0x001a, 0x5000, 0x2300, 0x0002, 0x6100, 0x6002, 0x2100, 0x0000, 0x000c, 0x6003, 0x2300, 0x0002, 0x6200, 0x6004, 0x2100, 0x0000, 0x000f, 0x6005, 0x7004, 0xa000, 0x1000, 0x001d, 0x5000, 0x2500, 0x0001, 0x6002, 0x7001};
 int main(int argc, char *argv[]){
   
   printf("Walley Language 0.3.673\n");
-  Object * o = VM(insts, 55, 0, createEnvironment());
+  Object * o = VM(insts, 32, 0, createEnvironment());
 
-  printf("%d\n", o->data.Integer.v);
+  printf("%d\n", getval(o, Object_initString("a", 0))->data.Integer.v);
+  //printf("%d\n", o->data.Integer.v);
   printf("%D\n", GLOBAL_FRAME[26]->data.Integer.v);
   printf("%d\n", (int)sizeof(long));
   
