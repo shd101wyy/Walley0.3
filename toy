@@ -218,7 +218,8 @@ else if (argv.length == 4 && argv[2] == "compress") {
     "vector-push!", "vector-pop!", "=", "<", "<=", 
     "eq?", "string?", "int?", "float?", "pair?",
     "null?", "lambda?", "strcmp", "string-slice", "string-length",
-    "string-append", "table", "table-keys", "table-delete","file-read"
+    "string-append", "table", "table-keys", "table-delete","file-read",
+    "file-write"
         ]   
     ];
     for (var i = 3; i < end; i++) { // compile each file

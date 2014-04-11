@@ -1,1 +1,1 @@
-(file-read "out.toyc")
+(file-write "out.toyc" "Hello World")
