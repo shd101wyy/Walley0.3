@@ -314,12 +314,12 @@ void rehash(Object * t){
 */
 Object * getval(Object * t, Object * key){
   unsigned long hash_value = hash(key->data.String.v, t->data.Table.size); // get hash value
-  Table_Pair * Table_Pairs = t->data.Table.vec[hash_value]; // get pairs
-  while(Table_Pairs!=NULL){
-    if( Table_Pairs->key == key || strcmp(key->data.String.v, Table_Pairs->key->data.String.v) == 0){
-      return Table_Pairs->value;
+  Table_Pair * table_pairs = t->data.Table.vec[hash_value]; // get pairs
+  while(table_pairs!=NULL){
+    if( table_pairs->key == key || strcmp(key->data.String.v, table_pairs->key->data.String.v) == 0){
+      return table_pairs->value;
     }
-    Table_Pairs = Table_Pairs->next;
+    table_pairs = table_pairs->next;
   }
   // didnt find
   return GLOBAL_NULL;
@@ -331,7 +331,7 @@ void setval(Object *t, Object * key, Object * value){
   if(t->data.Table.length / (double)t->data.Table.size >= 0.7) // rehash
     rehash(t);
   unsigned long hash_value = hash(key->data.String.v, t->data.Table.size);
-  Table_Pair * Table_Pairs = t->data.Table.vec[hash_value];
+  Table_Pair * table_pairs = t->data.Table.vec[hash_value];
   Table_Pair * new_Table_Pair;
   new_Table_Pair = malloc(sizeof(Table_Pair));
   new_Table_Pair->key = key;
@@ -341,7 +341,7 @@ void setval(Object *t, Object * key, Object * value){
   key->use_count++;
   value->use_count++;
 
-  if(Table_Pairs){ // already existed
+  if(table_pairs){ // already existed
     new_Table_Pair->next = t->data.Table.vec[hash_value];
     t->data.Table.vec[hash_value] = new_Table_Pair;
   } 
@@ -700,6 +700,29 @@ Object *builtin_make_table(Object * params, int param_num, int start_index){
     setval(table, params->data.Vector.v[i + start_index], params->data.Vector.v[i + start_index + 1]);
   }
   return table;
+}
+// 27 table-keys
+Object *builtin_table_keys(Object * params, int param_num, int start_index){
+  Object * table = vector_Get(params, start_index);
+  return table_getKeys(table);
+}
+// 28 table-delete
+Object *builtin_table_delete(Object * params, int param_num, int start_index){
+  Object * table = vector_Get(params, start_index);
+  Object * key = vector_Get(params, start_index + 1);
+  unsigned int hash_value = hash(key->data.String.v, table->data.Table.size);
+  Table_Pair * table_pairs = table->data.Table.vec[hash_value]; // get pairs
+  while(table_pairs!=NULL){
+    if( table_pairs->key == key || strcmp(key->data.String.v, table_pairs->key->data.String.v) == 0){
+      table_pairs->value->use_count--;
+      Object_free(table_pairs->value);
+      table_pairs->value = GLOBAL_NULL;
+      return GLOBAL_TRUE;
+    }
+    table_pairs = table_pairs->next;
+  }
+  // didnt find
+  return GLOBAL_NULL;
 }
 /*
   create frame0
