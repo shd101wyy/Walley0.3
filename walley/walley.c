@@ -28,6 +28,7 @@
 #define ENV_SIZE 32
 #define MAX_STACK_SIZE 1024
 
+#define DEBUG 0 // if debug, set it to 1; 
 
 typedef struct Object Object;
 typedef struct Table_Pair Table_Pair;
@@ -830,7 +831,22 @@ Object * builtin_float_to_string(Object * params, int param_num, int start_index
       return GLOBAL_NULL;
   }
 }
-
+// 34 input
+// (def x (input)) return string
+Object * builtin_input(Object * params, int param_num, int start_index){
+  if(param_num == 1){
+    printf("%s", vector_Get(params, start_index)->data.String.v);
+  }
+  char * buffer = (char*)malloc(sizeof(char) * 512);
+  fgets(buffer, 512, stdin);
+  return Object_initString(buffer, strlen(buffer) - 1  // 我测试了下貌似得减1要不然length错了
+    ); 
+}
+// 35 display-string
+Object * builtin_display_string(Object * params, int param_num, int start_index){
+  printf("%s", vector_Get(params, start_index)->data.String.v);
+  return GLOBAL_NULL;
+}
 /*
   create frame0
 */
@@ -842,7 +858,7 @@ Object *createFrame0(){
   frame->data.Vector.length = 0;
   frame->data.Vector.resizable = 0;
   frame->data.Vector.v = GLOBAL_FRAME; //(Object**)malloc(sizeof(Object*) * (size)); // array of pointers
-
+  frame->use_count = 1;
   // add builtin lambda
   vector_set_builtin_lambda(frame, 0, &builtin_cons);
   vector_set_builtin_lambda(frame, 1, &builtin_car);
@@ -879,8 +895,10 @@ Object *createFrame0(){
   vector_Set(frame, 31, SYS_ARGV);
   vector_set_builtin_lambda(frame, 32, &builtin_int_to_string);
   vector_set_builtin_lambda(frame, 33, &builtin_float_to_string);
+  vector_set_builtin_lambda(frame, 34, &builtin_input);
+  vector_set_builtin_lambda(frame, 35, &builtin_display_string);
 
-  frame->data.Vector.length = 34; // set length
+  frame->data.Vector.length = 36; // set length
   return frame;
 }
 /*
@@ -890,6 +908,7 @@ Object *createEnvironment(){
   Object * env = Object_initVector(1, ENV_SIZE); // create env
   env->data.Vector.v[0] = createFrame0();  // add frame0
   env->data.Vector.length = 1;
+  env->use_count = 1;
   // init NULL
   GLOBAL_NULL = Object_initNull();
   GLOBAL_TRUE = Object_initString("true", 4);
@@ -910,6 +929,7 @@ Object *copyEnvironment(Object * env){
     new_env->data.Vector.v[i] = env->data.Vector.v[i];
   }
   new_env->data.Vector.length = length;
+  new_env->use_count = 1;
   return new_env;
 }
 /*
@@ -1336,14 +1356,18 @@ void Run_Compiled_File(char * file_name){
   if(!read_ints(file_name, &INSTRUCTIONS, &INSTRUCTIONS_LENGTH)){
     printf("Fail to Run File %s \n", file_name);
   }
-  
+  // printf("Begin to Run %d\n", INSTRUCTIONS_LENGTH);
   // run instructions
   Object * o = VM(INSTRUCTIONS, INSTRUCTIONS_LENGTH, 0, createEnvironment());
 
   free(INSTRUCTIONS); // free instructions
 
+  #if DEBUG
   // test
-  printf("%d\n", o->data.Integer.v);
+  //printf("%d\n", o->data.Integer.v);
+  printf("STRING %s\n", o->data.String.v);
+  printf("STRING-LENGTH %d\n", o->data.String.length);
+  #endif
 }
 
 // int insts[12] = {0x2400, 0x9000, 0x0008, 0x2100, 0x0000, 0x0002, 0x8000, 0x0000, 0x0006, 0x2100, 0x0000, 0x0003};
@@ -1360,7 +1384,7 @@ void Run_Compiled_File(char * file_name){
 //int insts[41] = {0x1000, 0x001a, 0x5000, 0x2300, 0x0004, 0x6164, 0x6400, 0x6002, 0x3080, 0x000c, 0x1000, 0x0003, 0x5000, 0x1001, 0x0002, 0x6002, 0x1001, 0x0003, 0x6003, 0x7002, 0x4001, 0x6003, 0x7002, 0xa000, 0x1000, 0x001f, 0x5000, 0x2500, 0x0001, 0x6002, 0x7001, 0x5000, 0x2100, 0x0000, 0x0003, 0x6002, 0x2100, 0x0000, 0x0004, 0x6003, 0x7002};
 int insts[14] = {0x1000, 0x0020, 0x5000, 0x2100, 0x0000, 0x000c, 0x6002, 0x2300, 0x0006, 0x2534, 0x2e34, 0x6600, 0x6003, 0x7002};
 int main(int argc, char *argv[]){
-  printf("Walley Language 0.3.673\n");
+  printf("Walley Language 0.3.745\n");
 
   // ######################################################
   // ######################################################
