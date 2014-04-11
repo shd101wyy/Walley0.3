@@ -30,6 +30,7 @@
 
 
 typedef struct Object Object;
+typedef struct Table_Pair Table_Pair;
 static Object * GLOBAL_NULL;
 static Object * GLOBAL_TRUE;
 static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
@@ -45,10 +46,14 @@ typedef enum {
 	USER_DEFINED_LAMBDA,
 	BUILTIN_LAMBDA,
 	VECTOR,
-  NULL_
-	// DICTIONARY
+  NULL_,
+	TABLE
 } DataType;
-
+struct  Table_Pair{ // used for table
+  Object * key;          // key
+  Object * value;        // value
+  Table_Pair * next;     // next
+};
 /*
 	several data types
 */
@@ -70,6 +75,11 @@ struct Object {
       long numer;
       } Ratio;
     */
+    struct {
+      unsigned int size;
+      unsigned int length;
+      Table_Pair **vec; // array to save Table_Pairs
+    } Table;
     struct {
       char * v;
       int length;
@@ -218,6 +228,148 @@ Object * cons(Object * car, Object * cdr){
   o->data.Pair.cdr = cdr;
   return o;
 }
+/*
+ * HashTable functions
+ * quick hash function 
+ * djb2
+ */
+Object * Object_initTable(unsigned int size){
+  Object * o = allocateObject();
+  o->type = TABLE;
+  o->data.Table.length = 0;
+  o->data.Table.size = size;
+  o->data.Table.vec = calloc(size, sizeof(Table_Pair*));
+  return o;
+}
+unsigned int hash(char * str, unsigned int size){
+    unsigned long hash = 0;
+    while (*(str)){
+        hash = ((hash << 5) + hash) + *(str); // hash * 33 + c 
+      str++;
+    }
+    if(hash >= size)
+      return hash % size;
+    return hash;
+} 
+
+/*
+  rehash function
+*/
+void rehash(Object * t){
+  // make space to save keys
+  unsigned long i = 0;
+  unsigned long j = 0;
+  unsigned int original_size = t->data.Table.size;
+  Object * key;
+  Object * value;
+  unsigned long hash_value;
+  Table_Pair * p;
+  Table_Pair * temp;
+  Object * keys[original_size];
+  Object * values[original_size];
+  Table_Pair * new_Table_Pair;
+
+  for(i = 0; i < original_size; i++){
+    p = t->data.Table.vec[i]; // get Table_Pair;
+    if(p){
+      while(p != NULL){
+        keys[j] = p->key;     // save keys
+        values[j] = p->value; // save values;
+        temp = p;
+        p = p->next;
+        free(temp); // free that Table_Pair
+        j++;
+      }
+    }
+  }
+  // free vec
+  free(t->data.Table.vec);
+  t->data.Table.size = t->data.Table.size * 2; // double size
+  //t->vec = malloc(sizeof(Table_Pair*) * t->size); // realloc
+  t->data.Table.vec = calloc(t->data.Table.size, sizeof(Table_Pair*)); // realloc
+
+  // rehash
+  for(i = 0; i < j; i++){
+    key = keys[i];
+    value = values[i];    
+    // create new Table_Pair
+    new_Table_Pair = malloc(sizeof(Table_Pair));
+    new_Table_Pair->key = key;
+    new_Table_Pair->value = value;
+
+    hash_value = hash(key->data.String.v, t->data.Table.size); // rehash
+    if(t->data.Table.vec[hash_value] != NULL){ // already exist
+      new_Table_Pair->next = t->data.Table.vec[hash_value];
+      t->data.Table.vec[hash_value] = new_Table_Pair;
+    }
+    else{ // doesn't exist
+      new_Table_Pair->next = NULL;
+      t->data.Table.vec[hash_value] = new_Table_Pair;
+    }
+  }
+}
+
+/*
+  getval
+*/
+Object * getval(Object * t, Object * key){
+  unsigned long hash_value = hash(key->data.String.v, t->data.Table.size); // get hash value
+  Table_Pair * Table_Pairs = t->data.Table.vec[hash_value]; // get pairs
+  while(Table_Pairs!=NULL){
+    if( Table_Pairs->key == key || strcmp(key->data.String.v, Table_Pairs->key->data.String.v) == 0){
+      return Table_Pairs->value;
+    }
+    Table_Pairs = Table_Pairs->next;
+  }
+  // didnt find
+  return GLOBAL_NULL;
+}
+/*
+  setval
+*/
+void setval(Object *t, Object * key, Object * value){
+  if(t->data.Table.length / (double)t->data.Table.size >= 0.7) // rehash
+    rehash(t);
+  unsigned long hash_value = hash(key->data.String.v, t->data.Table.size);
+  Table_Pair * Table_Pairs = t->data.Table.vec[hash_value];
+  Table_Pair * new_Table_Pair;
+  new_Table_Pair = malloc(sizeof(Table_Pair));
+  new_Table_Pair->key = key;
+  new_Table_Pair->value = value;
+
+  // increase use count for value and key
+  key->use_count++;
+  value->use_count++;
+
+  if(Table_Pairs){ // already existed
+    new_Table_Pair->next = t->data.Table.vec[hash_value];
+    t->data.Table.vec[hash_value] = new_Table_Pair;
+  } 
+  else{ // doesn't exist
+    new_Table_Pair->next = NULL;
+    t->data.Table.vec[hash_value] = new_Table_Pair;
+  }
+  t->data.Table.length++; // increase length
+}
+/*
+  return keys as list
+*/
+Object * table_getKeys(Object * t){
+  Object * keys = GLOBAL_NULL;
+  unsigned int i = 0;
+  Table_Pair * p;
+  for(i = 0; i < t->data.Table.size; i++){
+    p = t->data.Table.vec[i]; // get table pair
+    if(p){
+      while(p != NULL){
+        keys = cons(p->key, keys);
+        p->key->use_count++; // increase use count
+        p=p->next;
+      }
+    }
+  }
+  return keys;
+}
 
 /*
   add value to environment
@@ -231,7 +383,9 @@ void addValueToEnvironment(Object * env, Object * value, int m, int n){
   free
 */
 void Object_free(Object * o){
-  int i, length;
+  unsigned int i, length, size;
+  Table_Pair * temp;
+  Table_Pair * p;
   if(o->use_count == 0){
     // free
     switch (o->type){
@@ -261,9 +415,30 @@ void Object_free(Object * o){
         length = o->data.Vector.length;
         Object ** v = o->data.Vector.v;
         for(i = 0; i < length; i++){
+          v[i]->use_count--; // decrease use count
           Object_free(v[i]);
         }
         free(o);
+      case TABLE:
+        size = o->data.Table.size;
+        length = o->data.Table.length;
+        for(i = 0; i < size; i++){
+          if(o->data.Table.vec[i]){ // exist
+            p = o->data.Table.vec[i]; // get Table_Pair;
+            while(p != NULL){
+              p->key->use_count--;     // decrease use_count
+              Object_free(p->key);     // free key
+              p->value->use_count--;   // decrease use_count
+              Object_free(p->value);   // free value
+              temp = p;
+              p = p->next;
+              free(temp); // free that Table_Pair
+            }
+          }
+        }
+        free(o->data.Table.vec); // free table vector
+        free(o);
+        return;
       case NULL_:
         return; // cannot free null;
                 // null will be stored in string_table(constant_table) index0;
@@ -345,6 +520,7 @@ Object *builtin_vector(Object * params, int param_num, int start_index){
   for(; i < param_num; i++){
     temp = vector_Get(params, i + start_index);
     vector_Get(v, i) = temp;
+    // increase temp use_count
     temp->use_count++;
   }
   v->data.Vector.length = param_num;
@@ -390,16 +566,18 @@ Object *builtin_vector_push(Object * params, int param_num, int start_index){
     temp->use_count++; // increase use count
     length++;
   }
-  vector_Get(params, start_index)->data.Vector.length = length;
+  vec->data.Vector.length = length;
   return vector_Get(params, start_index);
 }
 // 11 vector-pop!
 Object *builtin_vector_pop(Object * params, int param_num, int start_index){
     Object * vec = vector_Get(params, start_index);
     int length = vector_Length(vec);
+    Object *return_out = vector_Get(vec, length - 1); // get pop value
+    vector_Get(vec, length - 1) = GLOBAL_NULL; // clear that variable
     length = length - 1;
-    vec->data.Vector.length = length;
-    return vector_Get(vec, length);
+    vec->data.Vector.length = length; // reset length
+    return return_out;
 }
 // 12 =
 Object *builtin_num_equal(Object * params, int param_num, int start_index){
@@ -512,6 +690,16 @@ Object *builtin_string_append(Object * params, int param_num, int start_index){
   strcat(out, s2->data.String.v);
   out[sum_length] = 0;
   return Object_initString(out, sum_length);
+}
+// 26 table
+// (table 'a 12 'b 16)
+Object *builtin_make_table(Object * params, int param_num, int start_index){
+  Object * table = Object_initTable((int)param_num/0.6);
+  unsigned int i = 0;
+  for(; i < param_num; i = i + 2){
+    setval(table, params->data.Vector.v[i + start_index], params->data.Vector.v[i + start_index + 1]);
+  }
+  return table;
 }
 /*
   create frame0
@@ -917,12 +1105,41 @@ Object *VM(int * instructions,
 //int insts[4] = {0x2100, 0x0000, 0x000c, (PUSH << 12)};
 int insts[55] = {0x3040, 0x002d, 0x1000, 0x000c, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0000, 0x6003, 0x7002, 0x9000, 0x0008, 0x2100, 0x0000, 0x0001, 0x8000, 0x0000, 0x001b, 0x1000, 0x0005, 0x5000, 0x1001, 0x0002, 0x6002, 0x1000, 0x001a, 0x5000, 0x1000, 0x0004, 0x5000, 0x1001, 0x0002, 0x6002, 0x2100, 0x0000, 0x0001, 0x6003, 0x7002, 0x6002, 0x7001, 0x6003, 0x7002, 0x4001, 0xa000, 0x1000, 0x001a, 0x5000, 0x2100, 0x0000, 0x000C, 0x6002, 0x7001};
 int main(){
+  
   printf("Walley Language 0.3.673\n");
   Object * o = VM(insts, 55, 0, createEnvironment());
 
   printf("%d\n", o->data.Integer.v);
   printf("%D\n", GLOBAL_FRAME[26]->data.Integer.v);
   printf("%d\n", (int)sizeof(long));
+  
+  /*
+  // check Table
+  Object * t = Object_initTable(16);
+  char * hi;
+  int i = 0;
+  int LEN = 1024;
+  for(i = 0; i < LEN; i++){
+    hi = malloc(sizeof(char)*100);
+    sprintf(hi, "hi%d", i);
+    //printf("%s\n", hi);
+    setval(t, Object_initString(hi, 10), Object_initInteger(i));
+  }
+
+  printf("SIZE:   %d\n", t->data.Table.size );
+  printf("LENGTH: %d\n", t->data.Table.length );
+  printf("%d\n", getval(t, Object_initString("hi102", 4))->data.Integer.v);
+  
+  // test table_getKeys
+  int c = 0;
+  Object * p = table_getKeys(t);
+  while(p != GLOBAL_NULL){
+    printf("%s\n", p->data.Pair.car->data.String.v);
+    p = cdr(p);
+    c++;
+  }
+  printf("C %d\n", c);
+  */
   return 0;
 }
 
