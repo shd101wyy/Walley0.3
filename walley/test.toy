@@ -1,1 +1,1 @@
-(def x (input)) (display-string x)
+(+ 3 (string->int (input)))

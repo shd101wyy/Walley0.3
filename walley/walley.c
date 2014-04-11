@@ -28,7 +28,7 @@
 #define ENV_SIZE 32
 #define MAX_STACK_SIZE 1024
 
-#define DEBUG 0 // if debug, set it to 1; 
+#define DEBUG 1 // if debug, set it to 1; 
 
 typedef struct Object Object;
 typedef struct Table_Pair Table_Pair;
@@ -847,6 +847,15 @@ Object * builtin_display_string(Object * params, int param_num, int start_index)
   printf("%s", vector_Get(params, start_index)->data.String.v);
   return GLOBAL_NULL;
 }
+// 36 string->int
+Object * builtin_string_to_int(Object * params, int param_num, int start_index){
+  // 以后用atol
+  return Object_initInteger(atoi(vector_Get(params, start_index)->data.String.v));
+}
+// 37 string->float
+Object * builtin_string_to_float(Object * params, int param_num, int start_index){
+  return Object_initInteger(atof(vector_Get(params, start_index)->data.String.v));
+}
 /*
   create frame0
 */
@@ -897,8 +906,10 @@ Object *createFrame0(){
   vector_set_builtin_lambda(frame, 33, &builtin_float_to_string);
   vector_set_builtin_lambda(frame, 34, &builtin_input);
   vector_set_builtin_lambda(frame, 35, &builtin_display_string);
+  vector_set_builtin_lambda(frame, 36, &builtin_string_to_int);
+  vector_set_builtin_lambda(frame, 37, &builtin_string_to_float);
 
-  frame->data.Vector.length = 36; // set length
+  frame->data.Vector.length = 38; // set length
   return frame;
 }
 /*
@@ -1364,9 +1375,9 @@ void Run_Compiled_File(char * file_name){
 
   #if DEBUG
   // test
-  //printf("%d\n", o->data.Integer.v);
-  printf("STRING %s\n", o->data.String.v);
-  printf("STRING-LENGTH %d\n", o->data.String.length);
+  printf("%d\n", o->data.Integer.v);
+  //printf("STRING %s\n", o->data.String.v);
+  //printf("STRING-LENGTH %d\n", o->data.String.length);
   #endif
 }
 

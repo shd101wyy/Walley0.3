@@ -220,7 +220,7 @@ else if (argv.length == 4 && argv[2] == "compress") {
     "null?", "lambda?", "strcmp", "string-slice", "string-length",
     "string-append", "table", "table-keys", "table-delete","file-read",
     "file-write", "sys-argv", "int->string", "float->string", "input",
-    "display-string"    ]   
+    "display-string", "string->int", "string->float"    ]   
     ];
     for (var i = 3; i < end; i++) { // compile each file
         var file_name = argv[i]
