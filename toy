@@ -1,259 +1,256 @@
 #!/usr/bin/env node --stack-size=65500
-// change stack size 
 
-var fs=require("fs")
+// change stack size 
+var fs = require("fs")
 // var toy=require("./toy.js")
 var toy = require("./another_another_toy.js")
-var vm=require("vm")
-var util=require("util")
+var vm = require("vm")
+var util = require("util")
 var readline = require('readline')
 var argv = process.argv
 var toy_vm = require("./vm.js")
 console.log(argv)
-
 // REPL
-if (argv.length==2){
-	
-	console.log("Interactive mode");
-	console.log("Press Ctrl + C to quit\n");
-
-	var input_str=""
-
-	var rl = readline.createInterface({
-	  input: process.stdin,
-	  output: process.stdout
-	})
-
-	rl.setPrompt('toy> ')
-	rl.prompt()
-	rl.on('line', function(line) {
-		var l = toy.lexer(line);
-		var p = toy.parser(l);
-		var o =  toy.eval_begin(p, toy.env);
-		// console.log("compile to ==> "+o);
-		toy.display(o);
-		// toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )
-		rl.setPrompt('toy> ')
-		rl.prompt()
-	})
-
-	rl.on('close', function() {
-	  console.log('Quit walley')
-	  process.exit(0)
-	});
-	
-}
-else if (argv.length === 3 && argv[2] === "vm"){ // test vm
-	console.log("Interactive mode for VM");
-	console.log("Press Ctrl + C to quit\n");
-
-	var input_str=""
-
-	var rl = readline.createInterface({
-	  input: process.stdin,
-	  output: process.stdout
-	})
-
-	rl.setPrompt('toy> ')
-	rl.prompt()
-	var pc = 0;
-	var macros = [[]]
-	rl.on('line', function(line) {
-		var l = toy_vm.vm_lexer(line);
-		var p = toy_vm.vm_parser(l);
-		var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
-		var e = toy_vm.vm(toy_vm.vm_insts , toy_vm.vm_env, pc);
-		pc = toy_vm.vm_insts.length;
-		// console.log("compile to ==> "+o);
-		//toy.display(o);
-		// toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )
-		rl.setPrompt('toy> ')
-		rl.prompt()
-	})
-
-	rl.on('close', function() {
-	  console.log('Quit walley')
-	  process.exit(0)
-	});
+if (argv.length == 2) {
+    console.log("Interactive mode");
+    console.log("Press Ctrl + C to quit\n");
+    var input_str = ""
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+    rl.setPrompt('toy> ')
+    rl.prompt()
+    rl.on('line', function(line) {
+        var l = toy.lexer(line);
+        var p = toy.parser(l);
+        var o = toy.eval_begin(p, toy.env);
+        // console.log("compile to ==> "+o);
+        toy.display(o);
+        // toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )
+        rl.setPrompt('toy> ')
+        rl.prompt()
+    })
+    rl.on('close', function() {
+        console.log('Quit walley')
+        process.exit(0)
+    });
+} else if (argv.length === 3 && argv[2] === "vm") { // test vm
+    console.log("Interactive mode for VM");
+    console.log("Press Ctrl + C to quit\n");
+    var input_str = ""
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+    rl.setPrompt('toy> ')
+    rl.prompt()
+    var pc = 0;
+    var macros = [
+        []
+    ]
+    rl.on('line', function(line) {
+        var l = toy_vm.vm_lexer(line);
+        var p = toy_vm.vm_parser(l);
+        var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
+        var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env, pc);
+        pc = toy_vm.vm_insts.length;
+        // console.log("compile to ==> "+o);
+        //toy.display(o);
+        // toy.display( toy.TOY_Eval(line,toy.ENV_LIST,"") )
+        rl.setPrompt('toy> ')
+        rl.prompt()
+    })
+    rl.on('close', function() {
+        console.log('Quit walley')
+        process.exit(0)
+    });
 }
 // run file
-else if (argv.length==3){
-	var file_name = argv[2]
-	if (typeof(file_name)=="undefined"){
-		console.log("No input file..")
-		process.exit(0)
-	}
-	// get content of file
-	var content_in_file=fs.readFileSync(file_name,"utf8")
-
-	var l = toy.lexer(content_in_file);
-	var p = toy.parser(l);
-	toy.resolveDirectory(file_name);
-	var o =  toy.eval_begin(p, toy.env);
+else if (argv.length == 3) {
+    var file_name = argv[2]
+    if (typeof(file_name) == "undefined") {
+        console.log("No input file..")
+        process.exit(0)
+    }
+    // get content of file
+    var content_in_file = fs.readFileSync(file_name, "utf8")
+    var l = toy.lexer(content_in_file);
+    var p = toy.parser(l);
+    toy.resolveDirectory(file_name);
+    var o = toy.eval_begin(p, toy.env);
 }
 // vm run file
-else if (argv.length === 4  && argv[2] === "vm"){
-	var file_name = argv[3]
-	if (typeof(file_name)=="undefined"){
-		console.log("No input file..")
-		process.exit(0)
-	}
-	// get content of file
-	var content_in_file=fs.readFileSync(file_name,"utf8")
-
-	// check compiled vs uncompiled
-	if(file_name.length >= 5 && file_name.slice(file_name.length - 5) === ".toyc"){
-		// compiled
-		var insts = content_in_file.split(" ");
-		for(var i = 0; i < insts.length; i++){
-			insts[i] = parseInt(insts[i], 16);
-		}
-		toy_vm.vm(insts, toy_vm.vm_env );
-		return;
-	}
-	var l = toy_vm.vm_lexer(content_in_file);
-	var p = toy_vm.vm_parser(l);
-	var macros = [[]]
-	var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
-	var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env );
+else if (argv.length === 4 && argv[2] === "vm") {
+    var file_name = argv[3]
+    if (typeof(file_name) == "undefined") {
+        console.log("No input file..")
+        process.exit(0)
+    }
+    // get content of file
+    var content_in_file = fs.readFileSync(file_name, "utf8")
+    // check compiled vs uncompiled
+    if (file_name.length >= 5 && file_name.slice(file_name.length - 5) === ".toyc") {
+        // compiled
+        var insts = content_in_file.split(" ");
+        for (var i = 0; i < insts.length; i++) {
+            insts[i] = parseInt(insts[i], 16);
+        }
+        toy_vm.vm(insts, toy_vm.vm_env);
+        return;
+    }
+    var l = toy_vm.vm_lexer(content_in_file);
+    var p = toy_vm.vm_parser(l);
+    var macros = [
+        []
+    ]
+    var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
+    var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env);
 }
 // compile file
-else if (argv.length === 4  && argv[2] === "compile"){
-	var file_name = argv[3]
-	var i = file_name.length - 1;
-
-	if (typeof(file_name)=="undefined"){
-		console.log("No input file..")
-		process.exit(0)
-	}
-	// get content of file
-	var content_in_file=fs.readFileSync(file_name,"utf8")
-
-	var l = toy_vm.vm_lexer(content_in_file);
-	var p = toy_vm.vm_parser(l);
-	var macros = [[]]
-	var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
-	// put vm_insts to file
-	var s = "";
-	var _4_digits_hex = function(num)
-	{
-		return ("0000" + num.toString(16)).substr(-4);
-	}
-	for(var i = 0; i < toy_vm.vm_insts.length; i++){
-		s += _4_digits_hex(toy_vm.vm_insts[i]);
-		if(i != toy_vm.vm_insts.length -1)
-			s += " ";
-	}
-	// write to file
-	fs.writeFile("./out.toyc", s, function(err) {
-	    if(err) {
-	        console.log(err);
-	    } else {
-	        console.log("The file was saved!");
-	    }
-	});
+else if (argv.length === 4 && argv[2] === "compile") {
+    var file_name = argv[3]
+    var i = file_name.length - 1;
+    if (typeof(file_name) == "undefined") {
+        console.log("No input file..")
+        process.exit(0)
+    }
+    // get content of file
+    var content_in_file = fs.readFileSync(file_name, "utf8")
+    var l = toy_vm.vm_lexer(content_in_file);
+    var p = toy_vm.vm_parser(l);
+    var macros = [
+        []
+    ]
+    var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
+    // put vm_insts to file
+    var s = "";
+    var _4_digits_hex = function(num) {
+            return ("0000" + num.toString(16)).substr(-4);
+        }
+    for (var i = 0; i < toy_vm.vm_insts.length; i++) {
+        s += _4_digits_hex(toy_vm.vm_insts[i]);
+        if (i != toy_vm.vm_insts.length - 1) s += " ";
+    }
+    // write to file
+    fs.writeFile("./out.toyc", s, function(err) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log("The file was saved!");
+        }
+    });
 }
 // COMPRESS
-else if (argv.length == 4 && argv[2] == "compress"){
-	var file_name = argv[3]
-	var content_in_file = fs.readFileSync(file_name,"utf8")
-	console.log(content_in_file)
-	console.log("\n\n\n\n            ========\n\n\n\n")
-	// var l = toy.lexer("(def #t ())");
-	var l = toy.lexer(content_in_file);
-	var p = toy.parser(l);
-	// console.log(p)
-	toy.display(p);
-	console.log("\n\n Done...")
-}
-else if (argv[2] === "compile"){ // compile multiple files
-    var macros = [[]]; // macros for lisp
+else if (argv.length == 4 && argv[2] == "compress") {
+    var file_name = argv[3]
+    var content_in_file = fs.readFileSync(file_name, "utf8")
+    console.log(content_in_file)
+    console.log("\n\n\n\n            ========\n\n\n\n")
+    // var l = toy.lexer("(def #t ())");
+    var l = toy.lexer(content_in_file);
+    var p = toy.parser(l);
+    // console.log(p)
+    toy.display(p);
+    console.log("\n\n Done...")
+} else if (argv[2] === "compile") { // compile multiple files
+    var macros = [
+        []
+    ]; // macros for lisp
     var index_of_o = argv.indexOf("-o");
     var end = argv.length;
     var output_file_name = "./out.toyc"
-    if(index_of_o !== -1){
-	end = index_of_o;
-	output_file_name = "./" + argv[index_of_o + 1];
+    if (index_of_o !== -1) {
+        end = index_of_o;
+        output_file_name = "./" + argv[index_of_o + 1];
     }
     console.log("Begin to compile: \n");
-    for(var i = 3; i < end; i++){ // compile each file
-	var file_name = argv[i]
-	console.log("*  " + file_name);
-	if (typeof(file_name)=="undefined"){
-	    console.log("No input file..")
-	    process.exit(0)
-	}
-	// get content of file
-	var content_in_file=fs.readFileSync(file_name,"utf8")
-	// console.log(content_in_file);
-	var l = toy_vm.vm_lexer(content_in_file);
-	// console.log("finish running lexer");
-	var p = toy_vm.vm_parser(l);
-	// console.log("finish running parser");
-	var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
+    for (var i = 3; i < end; i++) { // compile each file
+        var file_name = argv[i]
+        console.log("*  " + file_name);
+        if (typeof(file_name) == "undefined") {
+            console.log("No input file..")
+            process.exit(0)
+        }
+        // get content of file
+        var content_in_file = fs.readFileSync(file_name, "utf8")
+        // console.log(content_in_file);
+        var l = toy_vm.vm_lexer(content_in_file);
+        // console.log("finish running lexer");
+        var p = toy_vm.vm_parser(l);
+        // console.log("finish running parser");
+        var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
     }
     console.log("\n\n** Finish Compilation **");
     // put vm_insts to file
     var s = "";
-    var _4_digits_hex = function(num){
-	return ("0000" + num.toString(16)).substr(-4);
-    }
-    for(var i = 0; i < toy_vm.vm_insts.length; i++){
-	s += _4_digits_hex(toy_vm.vm_insts[i]);
-	if(i != toy_vm.vm_insts.length -1)
-	    s += " ";
+    var _4_digits_hex = function(num) {
+            return ("0000" + num.toString(16)).substr(-4);
+        }
+    for (var i = 0; i < toy_vm.vm_insts.length; i++) {
+        s += _4_digits_hex(toy_vm.vm_insts[i]);
+        if (i != toy_vm.vm_insts.length - 1) s += " ";
     }
     // write to file
     fs.writeFile(output_file_name, s, function(err) {
-	if(err) {
-	    console.log(err);
-	} else {
-	    console.log("The file was saved!");
-	}
+        if (err) {
+            console.log(err);
+        } else {
+            console.log("The file was saved!");
+        }
     });
-}
-
-else if (argv[2] === "compilec"){ // compile multiple files for C language
-    var macros = [[]]; // macros for lisp
+} else if (argv[2] === "compilec") { // compile multiple files for C language
+    var macros = [
+        []
+    ]; // macros for lisp
     var index_of_o = argv.indexOf("-o");
     var end = argv.length;
     var output_file_name = "./out.toyc"
-    if(index_of_o !== -1){
-	end = index_of_o;
-	output_file_name = "./" + argv[index_of_o + 1];
+    if (index_of_o !== -1) {
+        end = index_of_o;
+        output_file_name = "./" + argv[index_of_o + 1];
     }
-    console.log("Begin to compile: \n");
-    for(var i = 3; i < end; i++){ // compile each file
-	var file_name = argv[i]
-	console.log("*  " + file_name);
-	if (typeof(file_name)=="undefined"){
-	    console.log("No input file..")
-	    process.exit(0)
-	}
-	// get content of file
-	var content_in_file=fs.readFileSync(file_name,"utf8")
-	// console.log(content_in_file);
-	var l = toy_vm.vm_lexer(content_in_file);
-	// console.log("finish running lexer");
-	var p = toy_vm.vm_parser(l);
-	// console.log("finish running parser");
-	var o =  toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
+    console.log("Begin to compile for C language Virtual Machine: \n");
+    // reset toy_vm.vm_vt
+    toy_vm.vm_vt = [
+    ["cons", "car", "cdr", "+", "-",
+     "*", "/", "vector!", "vector", "vector-length",
+    "vector-push!", "vector-pop!", "=", "<", "<=", 
+    "eq?", "string?", "int?", "float?", "pair?",
+    "null?", "lambda?", "strcmp", "string-slice", "string-length",
+    "string-append", "table", "table-keys", "table-delete"
+        ]   
+    ];
+    for (var i = 3; i < end; i++) { // compile each file
+        var file_name = argv[i]
+        console.log("*  " + file_name);
+        if (typeof(file_name) == "undefined") {
+            console.log("No input file..")
+            process.exit(0)
+        }
+        // get content of file
+        var content_in_file = fs.readFileSync(file_name, "utf8")
+        // console.log(content_in_file);
+        var l = toy_vm.vm_lexer(content_in_file);
+        // console.log("finish running lexer");
+        var p = toy_vm.vm_parser(l);
+        // console.log("finish running parser");
+        var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
     }
     console.log("\n\n** Finish Compilation **");
     // put vm_insts to file
     var s = "";
-    var _4_digits_hex = function(num){
-	return ("0000" + num.toString(16)).substr(-4);
-    }
-    for(var i = 0; i < toy_vm.vm_insts.length; i++){
-	s = s +"0x"+_4_digits_hex(toy_vm.vm_insts[i]);
-	if(i != toy_vm.vm_insts.length -1)
-	    s += ", ";
+    var _4_digits_hex = function(num) {
+            return ("0000" + num.toString(16)).substr(-4);
+        }
+    for (var i = 0; i < toy_vm.vm_insts.length; i++) {
+        s = s + "0x" + _4_digits_hex(toy_vm.vm_insts[i]);
+        if (i != toy_vm.vm_insts.length - 1) s += ", ";
     }
     console.log(s);
     console.log("length: " + toy_vm.vm_insts.length)
     // write to file
-    /*fs.writeFile(output_file_name, s, function(err) {
+/*fs.writeFile(output_file_name, s, function(err) {
 	if(err) {
 	    console.log(err);
 	} else {
@@ -261,9 +258,3 @@ else if (argv[2] === "compilec"){ // compile multiple files for C language
 	}
     });*/
 }
-
-
-
-
-
-

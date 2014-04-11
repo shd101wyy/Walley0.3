@@ -1691,25 +1691,28 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         frame_list = cdr(frame_list); // pop top frame
                         current_frame_pointer = car(frame_list) // update frame_pointer
                         continue
-                        /*
                     case TYPE_OBJECT: // doesn't support object anymore
                         // object
-                        //lambda = accumulator.object;
+                        lambda = lambda.object;
                         pc = pc + 1;
                         if (param_num === 1) { // get 
-                            var p0 = current_frame_pointer[2];
+                            var p0 = current_frame_pointer[current_frame_pointer.length - 1];
                             accumulator = lambda[p0.string];
+                            current_frame_pointer.pop(); // pop parameters
                             if (typeof(accumulator) === "undefined") accumulator = GLOBAL_NULL;
                         } else { // set
-                            var p0 = current_frame_pointer[2];
-                            var p1 = current_frame_pointer[3];
+                            var p0 = current_frame_pointer[current_frame_pointer.length - 2];
+                            var p1 = current_frame_pointer[current_frame_pointer.length - 1];
                             lambda[p0.string] = p1;
                             accumulator = lambda;
+                            // pop parameters
+                            current_frame_pointer.pop();
+                            current_frame_pointer.pop();
                         }
                         frame_list = cdr(frame_list); // pop top frame
                         current_frame_pointer = car(frame_list) // update frame_pointer
                         continue;
-                        */
+
                     case TYPE_VECTOR: 
                         // vector
                         lambda = lambda.vector;
@@ -1725,6 +1728,9 @@ var VM = function(INSTRUCTIONS, env, pc) {
                             current_frame_pointer.pop();current_frame_pointer.pop(); // pop parameters
                             lambda[p0.num] = p1;
                             accumulator = lambda;
+                            // pop parameters
+                            current_frame_pointer.pop();
+                            current_frame_pointer.pop();
                         }
                         frame_list = cdr(frame_list); // pop top frame
                         current_frame_pointer = car(frame_list) // update frame_pointer
@@ -1794,7 +1800,7 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         functions_list = cons(accumulator, functions_list);
                         pc = pc + 1;
                         continue;
-                    case TYPE_BUILTIN_LAMBDA: case TYPE_VECTOR:
+                    case TYPE_BUILTIN_LAMBDA: case TYPE_VECTOR: case TYPE_OBJECT:
                         current_frame_pointer = env[env.length - 1]; // get top frame
                         frame_list = cons(current_frame_pointer, frame_list);
                         functions_list = cons(accumulator, functions_list);
