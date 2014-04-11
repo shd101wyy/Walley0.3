@@ -219,7 +219,7 @@ else if (argv.length == 4 && argv[2] == "compress") {
     "eq?", "string?", "int?", "float?", "pair?",
     "null?", "lambda?", "strcmp", "string-slice", "string-length",
     "string-append", "table", "table-keys", "table-delete","file-read",
-    "file-write"
+    "file-write", "sys-argv"
         ]   
     ];
     for (var i = 3; i < end; i++) { // compile each file

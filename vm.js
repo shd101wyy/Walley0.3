@@ -1536,7 +1536,6 @@ var VM = function(INSTRUCTIONS, env, pc) {
         var frame_list = cons(GLOBAL_NULL, GLOBAL_NULL); // stack used to save frames    head frame1 frame0 tail, queue
         var functions_list = GLOBAL_NULL; // used to save functions 
         while (pc !== length_of_insts) {
-
             var inst = INSTRUCTIONS[pc];
             var opcode = (inst & 0xF000) >> 12;
             switch (opcode) {

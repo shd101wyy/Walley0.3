@@ -1,1 +1,1 @@
-(file-write "out.toyc" "Hello World")
+(sys-argv 0)
