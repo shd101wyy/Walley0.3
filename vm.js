@@ -239,11 +239,18 @@ var lexer_iter = function(input_string, index) {
         }
         // get number symbol
         var end = index;
+        var s_;
         while (true) {
             if (end === input_string.length || input_string[end] === " " || input_string[end] === "\n" || input_string[end] === "\t" || input_string[end] === "," || input_string[end] === ")" || input_string[end] === "(" || input_string[end] === "]" || input_string[end] === "[" || input_string[end] === "{" || input_string[end] === "}" || input_string[end] === "'" || input_string[end] === "`" || input_string[end] === "~" || input_string[end] === ";") break;
             end += 1;
         }
-        return cons(input_string.slice(index, end), lexer_iter(input_string, end));
+        s_ = input_string.slice(index, end);
+        
+        // (add 3 4) <=> add[3,4]
+        if(end !== input_string.length && input_string[end] === "[" && (s_!== "lambda" || s_!== "let" || s_!=="def" || s_ !== "set!" || s_ !== "let")) 
+            return cons("(", cons(s_, lexer_iter(input_string, end + 1)));
+        else
+            return cons(s_, lexer_iter(input_string, end));
     }
 var lexer = function(input_string) {
         return lexer_iter(input_string, 0);

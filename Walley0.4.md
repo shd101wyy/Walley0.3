@@ -1,5 +1,5 @@
 ;;; Walley Language 0.4 by Yiyi Wang
-;;; a language that is actually lisp
+;;; a language that is actually lisp with beautiful syntax sugar
 
 def x 12  ;; <=> (def x 12)
 def y 16
@@ -178,6 +178,77 @@ def abs lambda (a)
         0 
     end
 end
+
+;; two ways of defining factorial
+def factorial lambda (n)
+    if (= n 0)
+        1 
+    else
+        (* n factorial[(- n 1)])
+    end
+end
+
+def factorial lambda (n)
+    def factorial-iter lambda (n result)
+        if (= n 0)
+            result 
+        else 
+            factorial-iter[(- n 1)
+                           (* result n)]
+        end
+    end
+end
+
+def fib lambda [n]
+    if (= n 0)
+        0
+    elif (= n 1)
+        1
+    else
+        (+  fib[(- n 1)]
+            fib[(- n 2)])
+    end 
+end 
+
+defm defn [name args . body]
+    def ~name lambda ~args 
+        ~@body end
+end 
+
+defn expt (a b)
+    if (= b 0)
+        a 
+    else 
+        (* a expt[a (- b 1)])
+    end
+end
+
+
+;; sicp 2.1
+def x cons[12 14]
+def n car[x]
+def b cdr[x]
+defn make-rat [a b]
+    cons[a, b]
+end
+
+defn numer [n] car[n] end
+defn denom [n] cdr[n] end
+def one-half make-rat[1 2]
+defn add-rat [a b] 
+    make-rat[(+ (* numer[x] denom[y])
+                (* numer[y] denom[x])), 
+             (* denom[x] denom[y])]
+end
+
+;; 2.2
+def x list[1, 2, 3, 4]
+def y list[:a 12 :b 15]
+
+
+
+
+
 
 
 
