@@ -1752,7 +1752,6 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         } else { // set
                             var p0 = current_frame_pointer[current_frame_pointer.length - 2];
                             var p1 = current_frame_pointer[current_frame_pointer.length - 1];
-                            current_frame_pointer.pop();current_frame_pointer.pop(); // pop parameters
                             lambda[p0.num] = p1;
                             accumulator = lambda;
                             // pop parameters
