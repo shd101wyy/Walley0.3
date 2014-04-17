@@ -252,7 +252,7 @@ var lexer_iter = function(input_string, index, ahead_is_parenthesis) {
             return cons(")", lexer_iter(input_string, end, false)); 
         }
         // def 和 set! 不需要 end
-        if(ahead_is_parenthesis === false && (/*s_ === "def" || s_ === "set!" ||*/ s_ === "lambda" || s_ === "let" )){ // def x lambda (a b) (+ a b) end, will support others in future
+        if(ahead_is_parenthesis === false && (/*s_ === "def" || s_ === "set!" ||*/ s_ === "lambda" || s_ === "let" || s_ === "if")){ // def x lambda (a b) (+ a b) end, will support others in future
             return cons("(", cons(s_, lexer_iter(input_string, end, false)));
         }
         // (add 3 4) <=> add[3,4]
