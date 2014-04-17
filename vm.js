@@ -206,25 +206,26 @@ var isFloat = function(n) {
 /*
   suppose list, number, symbol
   */
-var lexer_iter = function(input_string, index) {
+var lexer_iter = function(input_string, index, ahead_is_parenthesis) {
         if (index >= input_string.length) return GLOBAL_NULL;
-        else if (input_string[index] == "(" || input_string[index] == ")") return cons(input_string[index], lexer_iter(input_string, index + 1));
-        else if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",") return lexer_iter(input_string, index + 1);
+        else if (input_string[index] == "(") return cons(input_string[index], lexer_iter(input_string, index + 1, true));
+        else if (input_string[index] == ")") return cons(input_string[index], lexer_iter(input_string, index + 1, false));
+        else if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",") return lexer_iter(input_string, index + 1, false);
         else if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
-        return cons("(", cons("vector", lexer_iter(input_string, index + 2)));
+        return cons("(", cons("vector", lexer_iter(input_string, index + 2, false)));
         else if (input_string[index] == "{") // object
-        return cons("(", cons("object", lexer_iter(input_string, index + 1)));
-        else if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1));
-        else if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1));
-        else if (input_string[index] == "~" && input_string[index + 1] == "@") return cons("~@", lexer_iter(input_string, index + 2));
-        else if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~") return cons(input_string[index], lexer_iter(input_string, index + 1));
+        return cons("(", cons("object", lexer_iter(input_string, index + 1, false)));
+        else if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1, false));
+        else if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1, false));
+        else if (input_string[index] == "~" && input_string[index + 1] == "@") return cons("~@", lexer_iter(input_string, index + 2, false));
+        else if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~") return cons(input_string[index], lexer_iter(input_string, index + 1, false));
         else if (input_string[index] == ";") { // comment
             var i = index;
             while (i != input_string.length) {
                 if (input_string[i] == "\n") break;
                 i++;
             }
-            return lexer_iter(input_string, i);
+            return lexer_iter(input_string, i, false);
         } else if (input_string[index] === '"') {
             var i = index + 1;
             while (i != input_string.length) {
@@ -235,7 +236,7 @@ var lexer_iter = function(input_string, index) {
                 if (input_string[i] === "\"") break;
                 i++
             }
-            return cons(input_string.slice(index, i + 1), lexer_iter(input_string, i + 1));
+            return cons(input_string.slice(index, i + 1), lexer_iter(input_string, i + 1, false));
         }
         // get number symbol
         var end = index;
@@ -245,15 +246,23 @@ var lexer_iter = function(input_string, index) {
             end += 1;
         }
         s_ = input_string.slice(index, end);
-        
+        //if(s_ === "def" && ahead_is_parenthesis === false){ 
+        //}
+        if(s_ === "end"){
+            return cons(")", lexer_iter(input_string, end, false)); 
+        }
+        // def 和 set! 不需要 end
+        if(ahead_is_parenthesis === false && (/*s_ === "def" || s_ === "set!" ||*/ s_ === "lambda" || s_ === "let" )){ // def x lambda (a b) (+ a b) end, will support others in future
+            return cons("(", cons(s_, lexer_iter(input_string, end, false)));
+        }
         // (add 3 4) <=> add[3,4]
         if(end !== input_string.length && input_string[end] === "[" && (s_!== "lambda" || s_!== "let" || s_!=="def" || s_ !== "set!" || s_ !== "let")) 
-            return cons("(", cons(s_, lexer_iter(input_string, end + 1)));
+            return cons("(", cons(s_, lexer_iter(input_string, end + 1, false)));
         else
-            return cons(s_, lexer_iter(input_string, end));
+            return cons(s_, lexer_iter(input_string, end, false));
     }
 var lexer = function(input_string) {
-        return lexer_iter(input_string, 0);
+        return lexer_iter(input_string, 0, false);
     }
 /*
   simple parser
@@ -321,8 +330,20 @@ var parser = function(l) {
         else if (car(l) == "(") return cons(parser_list(cdr(l)), parser(parser_rest));
         // quote // unquote // quasiquote // unquote-splice
         else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@") return cons(parser_special(l), parser(parser_rest));
-        else // symbol number
-        return cons(parser_symbol_or_number(car(l)), parser(cdr(l)));
+        else{ // symbol number
+        // def x 12
+        // def y 15
+            if(car(l) === "def" || car(l) === "set!"){
+                var val_start = caddr(l);
+                if(val_start === "(") // def add lambda (a b) (+ a b) end
+                    return cons(cons(car(l), cons(cadr(l), cons(parser_list(cdddr(l)), GLOBAL_NULL))), parser(parser_rest));
+                else if (val_start === "'" || val_start === "~" || val_start === "`" || val_start === "~@")  // def x '(a b)
+                    return cons(parser_special(cddr(l)), parser(parser_rest));
+                else  // def x 12  def y 15
+                    return cons(cons(car(l), cons(cadr(l), cons(caddr(l), GLOBAL_NULL))), parser(cdddr(l)));
+            }
+            return cons(parser_symbol_or_number(car(l)), parser(cdr(l)));
+        }
     }
 /*
   Opcode
