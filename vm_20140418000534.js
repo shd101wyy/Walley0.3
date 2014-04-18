@@ -248,25 +248,50 @@ var lexer_iter = function(input_string, index, ahead_is_parenthesis) {
         s_ = input_string.slice(index, end);
         //if(s_ === "def" && ahead_is_parenthesis === false){ 
         //}
-        /*
         if(s_ === "end"){
             return cons(")", lexer_iter(input_string, end, false)); 
         }
         // def 和 set! 不需要 end
-        if(ahead_is_parenthesis === false && (s_ === "lambda" || s_ === "let" || s_ === "if")){ // def x lambda (a b) (+ a b) end, will support others in future
+        if(ahead_is_parenthesis === false && (/*s_ === "def" || s_ === "set!" ||*/ s_ === "lambda" || s_ === "let" || s_ === "if")){ // def x lambda (a b) (+ a b) end, will support others in future
             return cons("(", cons(s_, lexer_iter(input_string, end, false)));
         }
         // (add 3 4) <=> add[3,4]
         if(end !== input_string.length && input_string[end] === "[" && (s_!== "lambda" || s_!== "let" || s_!=="def" || s_ !== "set!" || s_ !== "let")) 
             return cons("(", cons(s_, lexer_iter(input_string, end + 1, false)));
         else
-        */
             return cons(s_, lexer_iter(input_string, end, false));
     }
 var lexer = function(input_string) {
         return lexer_iter(input_string, 0, false);
     }
 
+var new_lexer = function(input_string){
+    var i = 0;
+    var string_length = input_string.length;
+    var ahead_is_parenthesis = false;
+    var output_list = [];
+    for(i = 0; i < string_length; i++){
+        if(input_string[i] === "("){
+            ahead_is_parenthesis = true;
+            output_list.push("(");
+        }
+        else if (input_string[i] === ")"){
+            ahead_is_parenthesis = false;
+            output_list.push(")");
+        }
+        else if (input_string[i] == " " || input_string[i] == "\n" || input_string[i] == "\t" || input_string[i] == ","){
+            ahead_is_parenthesis = false;
+            continue;
+        }
+        else if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
+        {
+            ahead_is_parenthesis = false;
+            output_list.push("(");
+            output_list.push("vector");
+        }
+
+    }
+}
 /*
   simple parser
   */
@@ -336,7 +361,6 @@ var parser = function(l) {
         else{ // symbol number
         // def x 12
         // def y 15
-        /*
             if(car(l) === "def" || car(l) === "set!"){
                 var val_start = caddr(l);
                 if(val_start === "(") // def add lambda (a b) (+ a b) end
@@ -346,195 +370,9 @@ var parser = function(l) {
                 else  // def x 12  def y 15
                     return cons(cons(car(l), cons(cadr(l), cons(caddr(l), GLOBAL_NULL))), parser(cdddr(l)));
             }
-            */
             return cons(parser_symbol_or_number(car(l)), parser(cdr(l)));
         }
     }
-
-// new lexer in order to support (add 3 4) <=> add[3, 4]
-var new_lexer = function(input_string){
-    var i = 0;
-    var string_length = input_string.length;
-    var output_list = [];
-    for(i = 0; i < string_length; i++){
-        if(input_string[i] === "("){
-            output_list.push("(");
-        }
-        else if (input_string[i] === ")"){
-            output_list.push(")");
-        }
-        else if (input_string[i] == " " || input_string[i] == "\n" || input_string[i] == "\t" || input_string[i] == ","){
-            continue;
-        }
-        else if (input_string[i] == "#" && (input_string[i + 1] == "[" || input_string[i + 1] == "(")) // vector
-        {
-            output_list.push("(");
-            output_list.push("vector");
-            i++;
-        }
-        else if (input_string[i] == "{"){
-            output_list.push("(");
-            output_list.push("object");
-        }
-        else if (input_string[i] == "{"){
-            output_list.push("{");
-        }
-        else if (input_string[i] == "["){
-            if(i!== 0 && 
-             (input_string[i - 1] != " " || input_string[i - 1] != "\n"  || input_string[i - 1] != "\t")){
-                if(output_list[output_list.length - 1]!==")"){
-                    var t = output_list[output_list.length - 1];
-                    output_list[output_list.length - 1] = "(";
-                    output_list.push(t);
-                }
-                else{ // ahead is )
-                    var count = 1;
-                    var start_index = 0;
-                    for(var j = output_list.length - 2; j >= 0; j--){
-                        if(input_string[j] == ")"){
-                            count++ ;
-                        }
-                        else if(input_string[j] == "("){
-                            count--;
-                            if(count == 0){
-                                start_index = j;
-                                break;
-                            }
-                        }
-                    }
-                    output_list.push(output_list[output_list.length - 1]); // save last 
-                    for(var j = output_list.length - 2; j != start_index; j--){
-                        output_list[j] = output_list[j - 1]; // move elements back
-                    }
-                    output_list[j] = "(";
-                }
-            }
-            else{
-                output_list.push("(");
-            }
-        }
-        else if (input_string[i] == "]" || input_string[i] == "}"){
-            output_list.push(")")
-        }
-        else if (input_string[i] == "~" && input_string[i + 1] == "@"){
-            output_list.push("~@")
-            i++;
-        }
-        else if (input_string[i] == "'" || input_string[i] == "`" || input_string[i] == "~"){
-            output_list.push(input_string[i]);
-        }
-        else if (input_string[i] == ";") { // comment
-            while (i != input_string.length) {
-                if (input_string[i] == "\n") break;
-                i++;
-            }
-        } 
-        else if (input_string[i] === '"') {
-            var a = index + 1;
-            while (a != input_string.length) {
-                if (input_string[a] === "\\") {
-                    a = a + 2;
-                    continue;
-                }
-                if (input_string[a] === "\"") break;
-                a++
-            }
-            output_list.push(input_string.slice(i, a + 1))
-        }
-        else{
-            var end = i;
-            var s_;
-            while (true) {
-                if (end === input_string.length || input_string[end] === " " || input_string[end] === "\n" || input_string[end] === "\t" || input_string[end] === "," || input_string[end] === ")" || input_string[end] === "(" || input_string[end] === "]" || input_string[end] === "[" || input_string[end] === "{" || input_string[end] === "}" || input_string[end] === "'" || input_string[end] === "`" || input_string[end] === "~" || input_string[end] === ";") break;
-                end += 1;
-            }
-            s_ = input_string.slice(i, end);
-            output_list.push(s_);
-            i = end - 1;
-        }
-    }
-    return output_list;
-}
-
-var new_parser_get_tag = function(i){
-    var tag;
-    if (l[i] === "'") tag = "quote"
-    else if (l[i] === "~") tag = "unquote"
-    else if (l[i] === "~@") tag = "unquote-splice"
-    else tag = 'quasiquote';
-    return tag;
-}
-var new_parser = function(l){
-    var current_list_pointer = GLOBAL_NULL;
-    var lists = cons(GLOBAL_NULL, GLOBAL_NULL);
-    var temp;
-    for(var i = l.length - 1; i >= 0; i--){
-        console.log(i);
-        if(l[i] === ")"){
-            current_list_pointer = GLOBAL_NULL; // reset current_list_pointer
-            lists = cons(current_list_pointer, lists); // save current lists
-        }
-        else if (l[i] === "("){
-            lists = cdr(lists); // pop top pointer
-            if(i!==0 && 
-                (l[i-1] === "~@" || l[i-1] === "'" || l[i-1] === "~" || l[i-1] === "`")){
-                temp = cons(cons(new_parser_get_tag(l[i-1]), 
-                                        cons(current_list_pointer, GLOBAL_NULL))
-                                   ,car(lists));
-                lists = cons(temp, cdr(lists)); // update
-                i--;
-            }
-            else{
-                temp = cons(current_list_pointer, car(lists)); // append list
-                lists = cons(temp, cdr(lists));
-            }
-            current_list_pointer = car(lists); // restore current_list_pointer
-        }
-        else{
-            // check Math:add like (Math 'add)
-            if (l[i][0] === '"') temp = l[i];
-            var splitted_ = l[i].split(":");
-            if (l[i] === ":" || splitted_.length == 1 || l[i][0] === ":" || l[i][l[i].length - 1] === ":") //  : :abc abc:
-                temp = l[i];
-            else{
-                var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
-                var keys = splitted_.slice(1);
-                var formatted_ = formatQuickAccess(ns, keys); // eg x:a => (x :a)
-                temp = formatted_;
-            }
-            if(i!==0 && 
-                (l[i-1] === "~@" || l[i-1] === "'" || l[i-1] === "~" || l[i-1] === "`")){
-                current_list_pointer = cons(cons(new_parser_get_tag(l[i - 1]), 
-                                                cons(temp,
-                                                     GLOBAL_NULL)),
-                                            current_list_pointer);
-                i--;
-            }
-            else{
-                current_list_pointer = cons(temp, current_list_pointer);
-            }
-        }
-    }
-    return car(lists);
-}
-
-// print list
-var new_parser_debug = function(p){
-    var output_string = "(";
-    while(p!==GLOBAL_NULL){
-        if(car(p).type === TYPE_PAIR){
-            output_string += new_parser_debug(car(p));
-        }
-        else{
-            output_string += car(p);
-        }
-        output_string += " ";
-        p = cdr(p);
-    }
-    output_string+=")";
-    return output_string;
-}
-
 /*
   Opcode
   */
@@ -2107,16 +1945,6 @@ compiler_begin(o, VARIABLE_TABLE, MACROS, null, null);
 printInstructions(INSTRUCTIONS);
 VM(INSTRUCTIONS,ENVIRONMENT);
 */
-
-
-// test new lexer
-var v = "(def x Math:add)"
-var l = new_lexer(v);
-console.log(l);
-var p = new_parser(l)
-console.log(p);
-console.log(new_parser_debug(p));
-
 if (typeof(module) != "undefined") {
     module.exports.vm_lexer = lexer;
     module.exports.vm_parser = parser;
