@@ -381,7 +381,7 @@ var new_lexer = function(input_string){
         }
         else if (input_string[i] == "["){
             if(i!== 0 && 
-             (input_string[i - 1] != " " || input_string[i - 1] != "\n"  || input_string[i - 1] != "\t")){
+             (input_string[i - 1] != " " && input_string[i - 1] != "\n"  && input_string[i - 1] != "\t")){
                 if(output_list[output_list.length - 1]!==")"){
                     var t = output_list[output_list.length - 1];
                     output_list[output_list.length - 1] = "(";
@@ -458,9 +458,9 @@ var new_lexer = function(input_string){
 
 var new_parser_get_tag = function(i){
     var tag;
-    if (l[i] === "'") tag = "quote"
-    else if (l[i] === "~") tag = "unquote"
-    else if (l[i] === "~@") tag = "unquote-splice"
+    if (i === "'") tag = "quote"
+    else if (i === "~") tag = "unquote"
+    else if (i === "~@") tag = "unquote-splice"
     else tag = 'quasiquote';
     return tag;
 }
@@ -469,26 +469,25 @@ var new_parser = function(l){
     var lists = cons(GLOBAL_NULL, GLOBAL_NULL);
     var temp;
     for(var i = l.length - 1; i >= 0; i--){
-        console.log(i);
         if(l[i] === ")"){
-            current_list_pointer = GLOBAL_NULL; // reset current_list_pointer
             lists = cons(current_list_pointer, lists); // save current lists
+            current_list_pointer = GLOBAL_NULL; // reset current_list_pointer
         }
         else if (l[i] === "("){
-            lists = cdr(lists); // pop top pointer
+            //lists = cdr(lists); // pop top pointer
             if(i!==0 && 
                 (l[i-1] === "~@" || l[i-1] === "'" || l[i-1] === "~" || l[i-1] === "`")){
                 temp = cons(cons(new_parser_get_tag(l[i-1]), 
                                         cons(current_list_pointer, GLOBAL_NULL))
                                    ,car(lists));
-                lists = cons(temp, cdr(lists)); // update
+                current_list_pointer = temp;
                 i--;
             }
             else{
                 temp = cons(current_list_pointer, car(lists)); // append list
-                lists = cons(temp, cdr(lists));
+                current_list_pointer = temp;
             }
-            current_list_pointer = car(lists); // restore current_list_pointer
+            lists = cdr(lists);
         }
         else{
             // check Math:add like (Math 'add)
@@ -515,14 +514,15 @@ var new_parser = function(l){
             }
         }
     }
-    return car(lists);
+    return current_list_pointer;
+    // return car(lists);
 }
 
 // print list
 var new_parser_debug = function(p){
     var output_string = "(";
     while(p!==GLOBAL_NULL){
-        if(car(p).type === TYPE_PAIR){
+        if(car(p).type === TYPE_PAIR || car(p) === GLOBAL_NULL){
             output_string += new_parser_debug(car(p));
         }
         else{
@@ -2110,16 +2110,17 @@ VM(INSTRUCTIONS,ENVIRONMENT);
 
 
 // test new lexer
-var v = "(def x Math:add)"
+/*
+var v = "(def x '(1 2 ~x))"
 var l = new_lexer(v);
 console.log(l);
 var p = new_parser(l)
 console.log(p);
 console.log(new_parser_debug(p));
-
+*/
 if (typeof(module) != "undefined") {
-    module.exports.vm_lexer = lexer;
-    module.exports.vm_parser = parser;
+    module.exports.vm_lexer = new_lexer;
+    module.exports.vm_parser = new_parser;
     module.exports.vm_compiler_begin = compiler_begin;
     module.exports.vm = VM;
     module.exports.vm_env = ENVIRONMENT;
