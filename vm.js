@@ -1951,26 +1951,7 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         frame_list = cdr(frame_list); // pop top frame
                         current_frame_pointer = car(frame_list) // update frame_pointer
                         continue;
-                        /*
-                    case TYPE_STRING:
-                        // string
-                        // 目前这种情况下只有 apply
-                        lambda = current_frame_pointer[current_frame_pointer.length - 2];
-                        parameters = current_frame_pointer[current_frame_pointer.length - 1];
-
-                        frame_list = cdr(frame_list); // pop top frame
-                        var new_frame = [null, null]; // create new frame
-                        while (parameters.type !== TYPE_NULL) {
-                            new_frame.push(car(parameters));
-                            parameters = cdr(parameters);
-                        }
-                        current_frame_pointer.pop(); // pop parameters
-                        frame_list = cons(new_frame, frame_list); // push new frame
-                        current_frame_pointer = new_frame;
-                        accumulator = lambda; // redirect accumulator
-                        continue;
-                        */ // doesn't support apply yet
-                    default:
+                    case TYPE_LAMBDA:
                         // user defined lambda
                         lambda = lambda.lambda; // user defined lambda
                         // user defined lambda
@@ -2004,6 +1985,74 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         frame_list = cdr(frame_list) // update frame list
                         current_frame_pointer = car(frame_list);
                         continue;
+                    default: // apply
+                        var lambda = current_frame_pointer[current_frame_pointer.length - param_num];
+                        if(lambda.type === TYPE_BUILTIN_LAMBDA){
+                            var func = lambda.builtin_lambda;  
+                            var args_list = current_frame_pointer[current_frame_pointer.length - param_num + 1];
+                            var args = []; // get args
+                            while(args_list !== GLOBAL_NULL){
+                                args.push(car(args_list));
+                                args_list = cdr(args_list);
+                            }
+                            pc = pc + 1;
+                            accumulator = func(args, 0);
+                            for(var i = 0; i < param_num; i++){
+                                current_frame_pointer.pop(); // pop params
+                            }
+                            frame_list = cdr(frame_list); // pop top frame
+                            current_frame_pointer = car(frame_list) // update frame_pointer
+                            continue
+                        }
+                        else{ // user defined , cant be object and vector
+                            // user defined lambda
+                            lambda = lambda.lambda; // user defined lambda
+                            // =============================
+                            // 只有这里不同
+                            var args_list = current_frame_pointer[current_frame_pointer.length - param_num + 1];
+                            // restore stack
+                            for(var i = 0; i < param_num; i++){
+                                current_frame_pointer.pop(); // pop params
+                            }
+                            current_frame_pointer = [null, null] // reset current_frame_pointer
+                            while(args_list !== GLOBAL_NULL){
+                                current_frame_pointer.push(car(args_list));
+                                args_list = cdr(args_list);
+                            }
+                            // =============================
+
+                            // user defined lambda
+                            var required_param_num = lambda.param_num;
+                            var required_variadic_place = lambda.variadic_place;
+                            var start_pc = lambda.start_pc;
+                            var new_env;
+                            new_env = lambda.env.slice(0);
+                            new_env.push(current_frame_pointer);
+                            current_frame_pointer[0] = env; // save current env to new-frame
+                            current_frame_pointer[1] = pc + 1; // save pc
+                            if (required_variadic_place === -1 && param_num - 1 > required_param_num) {
+                                console.log("ERROR: Too many parameters provided");
+                                return;
+                            }
+                            if (required_variadic_place !== -1) { // variadic value
+                                var v = GLOBAL_NULL;
+                                for (var i = current_frame_pointer.length - 1; i >= required_variadic_place + 2; i--) {
+                                    v = cons(current_frame_pointer[i], v);
+                                }
+                                current_frame_pointer[required_variadic_place + 2] = v;
+                            }
+                            if (current_frame_pointer.length - 2 < required_param_num) // not enough parameters
+                            {
+                                for (var i = param_num; i < required_param_num; i++) {
+                                    current_frame_pointer[i + 2] = GLOBAL_NULL; // default value is null
+                                }
+                            }
+                            env = new_env; // change env pointer
+                            pc = start_pc; // begin to call function
+                            frame_list = cdr(frame_list) // update frame list
+                            current_frame_pointer = car(frame_list);
+                            continue;
+                        }
                     }
                 }
             case NEWFRAME:
@@ -2022,10 +2071,15 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         functions_list = cons(accumulator, functions_list);
                         pc = pc + 1;
                         continue;
-                    default:
-                        console.log("ERROR: NEWFRAME error");
-                        console.log(accumulator);
-                        return null;
+                    default: // apply function
+                        current_frame_pointer = env[env.length - 1]; // get top frame
+                        frame_list = cons(current_frame_pointer, frame_list);
+                        functions_list = cons(accumulator, functions_list);
+                        pc = pc + 1;
+                        continue;
+                        //console.log("ERROR: NEWFRAME error");
+                        //console.log(accumulator);
+                        //return null;
                 }
                 // create new frame
                 { // create new frame
