@@ -52,8 +52,8 @@ if (argv.length == 2) {
     rl.on('line', function(line) {
         var l = toy_vm.vm_lexer(line);
         var p = toy_vm.vm_parser(l);
-        var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
-        var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env, pc);
+        var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros, null, null, toy_vm.vm_env);
+        // var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env, pc);
         pc = toy_vm.vm_insts.length;
         // console.log("compile to ==> "+o);
         //toy.display(o);
@@ -104,8 +104,8 @@ else if (argv.length === 4 && argv[2] === "vm") {
     var macros = [
         []
     ]
-    var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros);
-    var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env);
+    var o = toy_vm.vm_compiler_begin(p, toy_vm.vm_vt, macros, null, null, toy_vm.vm_env);
+    //var e = toy_vm.vm(toy_vm.vm_insts, toy_vm.vm_env);
 }
 // compile file
 else if (argv.length === 4 && argv[2] === "compile") {
