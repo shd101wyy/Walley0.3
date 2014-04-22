@@ -136,11 +136,11 @@ var make_float = function(num) {
         return v;
     }
 var Macro = function(macro_name, clauses, variable_table
-    /*, env*/) {
+    , env) {
         this.macro_name = macro_name;
         this.clauses = clauses;
         this.vt = variable_table;
-        //this.env = env;
+        this.env = env;
     }
 /*
   注意。这里的environmen以
@@ -834,59 +834,7 @@ var macro_expand = function(macro, exps) {
         console.log("ERROR: Macro: " + macro.macro_name + " expansion failed");
         return GLOBAL_NULL;
     }
-/*
-   macro_expand_for_compilation
 
-   this function is different from the function above,
-   it will replace also replace value which is not arg
-   eg:
-   (defm test [x] [list ~x]) will also replace "list" => (test 12) => ((0 frame_index value_index) 12)
-   here 0 is integer, different with string
-   */
-var macro_expand_with_arg_value_for_compilation = function(body, t, vt, macros, start_flag) {
-        if (body.type === TYPE_NULL) return GLOBAL_NULL;
-        else if (car(body) === "unquote") { // this place might have problem
-            if (cadr(body) in t) {
-                return t[cadr(body)];
-            }
-            var i = vt_find(vt, cadr(body)); // search vt
-            if (i[0] === -1) return body;
-            return cons(0, cons(i[0], cons(i[1], GLOBAL_NULL))); // get that variable
-        } else if ((car(body).type === TYPE_PAIR) && (car(car(body)) === "unquote-splice")) {
-            var n = cadr(car(body));
-            if (n in t) {
-                var v = t[n];
-                return list_append(v, macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
-            }
-            return cons(body, macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
-        } else if (car(body).type === TYPE_PAIR) { // cons
-            return cons(macro_expand_with_arg_value_for_compilation(car(body), t, vt, macros, true), macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
-        }
-        var v = car(body);
-        // check v in macro, if v in macro, then
-        if ( /*&v[0] !== "#" &&*/ start_flag) {
-            for (var i = macros.length - 1; i >= 0; i--) {
-                var frame = macros[i];
-                for (var j = frame.length - 1; j >= 0; j--) {
-                    if (frame[j].macro_name === v) { // find macro
-                        return cons(car(body), // so dont replace
-                        macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
-                    }
-                }
-            }
-        }
-        //if(v[0] === "#" && start_flag){ // # means this is not macro.
-        //	v = v.slice(1);
-        //}
-        var i = vt_find(vt, v);
-        if (i[0] === -1) // didnt find
-        return cons(car(body), macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
-        else {
-            return cons(
-            cons(0, cons(i[0], cons(i[1], GLOBAL_NULL))), // get that variable
-            macro_expand_with_arg_value_for_compilation(cdr(body), t, vt, macros, false));
-        }
-    }
 var macro_expand_for_compilation = function(macro, exps, macros) {
         var clauses = macro.clauses;
         while (clauses.type !== TYPE_NULL) {
@@ -899,9 +847,7 @@ var macro_expand_for_compilation = function(macro, exps, macros) {
                     eg (defm square [x] `(* ~x ~x)) (square 12)
                     在macro_match之后得到了 match {x: 12}
                 */
-                /*
                 var expanded_value;
-                var start = INSTRUCTIONS_PC;
                 var new_vt = macro.vt.slice(0);
                 var new_env = macro.env.slice(0);
                 var new_vt_frame = [];
@@ -910,20 +856,8 @@ var macro_expand_for_compilation = function(macro, exps, macros) {
                 new_env.push(new_env_frame);
                 for(i in match){
                     new_vt_frame.push(i);
-                    // compile value(params)
-                    compiler(cons("quote", cons(match[i], GLOBAL_NULL)),  // compile instructions
-                         new_vt, 
-                         macros,
-                         false,
-                         null,
-                         null,
-                         new_env);
-                    new_env_frame.push(VM(INSTRUCTIONS, new_env, INSTRUCTIONS_PC));
-                    INSTRUCTIONS_PC = INSTRUCTIONS.length;
+                    new_env_frame.push(match[i]);
                 }
-                INSTRUCTIONS = INSTRUCTIONS.slice(0, start);
-                INSTRUCTIONS_PC = start;
-                console.log(cadr(car(clauses)));
                 compiler(cadr(car(clauses)),  // compile instructions
                          new_vt, 
                          macros,
@@ -931,14 +865,10 @@ var macro_expand_for_compilation = function(macro, exps, macros) {
                          null,
                          null,
                          new_env);
-                printInstructions(INSTRUCTIONS);
+                // printInstructions(INSTRUCTIONS);
                 expanded_value = VM(INSTRUCTIONS, new_env, INSTRUCTIONS_PC);
-                console.log("Expanded Value ");
-                console.log(expanded_value);
                 INSTRUCTIONS = INSTRUCTIONS.slice(0, INSTRUCTIONS_PC); 
-                printInstructions(INSTRUCTIONS);
-                return expanded_value;*/
-                return macro_expand_with_arg_value_for_compilation(cadr(car(clauses)), match, macro.vt, macros, true);
+                return expanded_value;
             }
         }
         console.log("ERROR: Macro: " + macro.macro_name + " expansion failed");
@@ -959,8 +889,8 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 INSTRUCTIONS.push(CONST_NULL); // push null
                 return;
             case TYPE_STRING:
-                if(l[0] === '"'){ // string
-                    var s = eval(l);
+                if(l.string[0] === '"'){ // string
+                    var s = eval(l.string);
                     if (s in CONSTANT_TABLE) { // already defined
                         INSTRUCTIONS.push(CONST_LOAD); // load from table
                         INSTRUCTIONS.push(CONSTANT_TABLE[s]);
@@ -1032,7 +962,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 if(tag === "quote"){
                     var v = cadr(l);
                     // check integer float string null
-                    if (v.type === TYPE_NULL || v.type === TYPE_INTEGER || v.type === TYPE_FLOAT || v.type === TYPE_STRING) return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    if (v.type === TYPE_NULL || v.type === TYPE_INTEGER || v.type === TYPE_FLOAT /*|| v.type === TYPE_STRING*/) return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     else if (v.type === TYPE_PAIR) // pair
                     {
                         var quote_list = function(l) {
@@ -1049,13 +979,13 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                         v = make_string('"' + v.string + '"')
                         return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     }
-                    return;
+                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);;
                 }
                 else if (tag === "quasiquote"){
                     var v = cadr(l);
                     // check integer
                     // check integer float string null
-                    if(v.type === TYPE_NULL || v.type === TYPE_INTEGER || v.type === TYPE_FLOAT || v.type === TYPE_STRING) return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    if(v.type === TYPE_NULL || v.type === TYPE_INTEGER || v.type === TYPE_FLOAT /*|| v.type === TYPE_STRING*/) return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     else if (v.type === TYPE_PAIR) // pair
                     {
                         var quasiquote = function(l) {
@@ -1076,7 +1006,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                         v = make_string('"' + v.string + '"')
                         return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     }
-                    return;
+                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);;
 
                 }
                 // (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
@@ -1270,7 +1200,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                         }
                     }
                     if (already_defined === false) { // not defined, save macro
-                        macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)/*, env.slice(0)*/));
+                        macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0), env.slice(0)));
                     }
                     return;
                 }
@@ -1283,7 +1213,9 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                             var frame = macros[i];
                             for (var j = frame.length - 1; j >= 0; j--) {
                                 if (frame[j].macro_name === func.string) {
-                                    return compiler(macro_expand_for_compilation(frame[j], cdr(l), macros), /*frame[j].vt,*/ vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
+                                    var expand = macro_expand_for_compilation(frame[j], cdr(l), macros);
+                                    console.log(expand);   
+                                    return compiler(expand, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
                                 }
                             }
                         }
@@ -1415,16 +1347,13 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
                 run instructions 
                 我可能以后会添加一些flag， 例如在编译模式下就不运行，但是macro会有错
             */ 
-            /*
+            
             if(vt.length == 1){
-                console.log("Run");
                 acc = VM(INSTRUCTIONS, env, INSTRUCTIONS_PC); // run instructions
                 INSTRUCTIONS_PC = INSTRUCTIONS.length;  // update instruction pc
-                console.log("Finish running VM");
+                console.log("****** Finish running VM ******");
                 console.log(acc);
             }
-            */
-
         }
         return;
     }
@@ -1795,8 +1724,8 @@ var VM = function(INSTRUCTIONS, env, pc) {
                 return GLOBAL_NULL;
             }
         }
-        console.log("Finishing running VM");
-        console.log(accumulator);
+        //console.log("Finishing running VM");
+        //console.log(accumulator);
         return accumulator;
     }
     // var l = lexer("((lambda [x] (+ x 1)) 12)")
@@ -1839,11 +1768,11 @@ var VM = function(INSTRUCTIONS, env, pc) {
     // console.log(p);
     //console.log(vm(p, Environment, null));
     // exports to Nodejs
-    //var l = lexer("(defmacro square ([x] (* x x))) (square 12)");
-    //var o = parser(l);
-    //var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null, ENVIRONMENT);
-
-
+    /*
+    var l = new_lexer("(defmacro square ([x] `(* ~x ~x))) (square 12)"); // (defmacro square ([x] `(* ~x ~x))) (square 12)
+    var o = new_parser(l);
+    var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null, ENVIRONMENT);
+*/
     /*
 var l = lexer("(def f (lambda [n] (if (= n 0) 1 (* n (f (- n 1)))))) (f 100)");
 var o = parser(l);
@@ -1862,11 +1791,12 @@ var p = new_parser(l)
 console.log(p);
 console.log(new_parser_debug(p));
 */
+/*
 var v = "(def x '(1 2 3)) (a:b:c)"
 var l = new_lexer(v);
 var p = new_parser(l);
-
 console.log(new_parser_debug(p));
+*/
 
 if (typeof(module) != "undefined") {
     module.exports.vm_lexer = new_lexer;
