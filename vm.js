@@ -783,15 +783,15 @@ var macro_match = function(a, b) {
                     return macro_match_iter(cdr(a), cdr(b), output);
                 } else if (car(a).type === TYPE_PAIR && !(car(b).type === TYPE_PAIR)) return false;
                 else {
-                    if (car(a)[0] === "#") { // constant
-                        if (car(a).slice(1) === car(b)) return macro_match_iter(cdr(a), cdr(b), output);
+                    if (car(a).string[0] === "#") { // constant
+                        if (car(a).string.slice(1) === car(b).string) return macro_match_iter(cdr(a), cdr(b), output);
                         else return false;
                     }
-                    if (car(a) === ".") {
-                        output[cadr(a)] = b;
+                    if (car(a).string === ".") {
+                        output[cadr(a).string] = b;
                         return output;
                     }
-                    output[car(a)] = car(b);
+                    output[car(a).string] = car(b);
                     return macro_match_iter(cdr(a), cdr(b), output);
                 }
             }
@@ -803,13 +803,13 @@ var macro_match = function(a, b) {
   */
 var macro_expand_with_arg_value = function(body, t) {
         if (body.type === TYPE_NULL) return GLOBAL_NULL;
-        else if (car(body) === "unquote") {
-            if (cadr(body) in t) {
+        else if (car(body).string === "unquote") {
+            if (cadr(body).string in t) {
                 return t[cadr(body)];
             }
             return body;
-        } else if ((car(body).type === TYPE_PAIR) && (car(car(body)) === "unquote-splice")) {
-            var n = cadr(car(body));
+        } else if ((car(body).type === TYPE_PAIR) && (car(car(body)).string === "unquote-splice")) {
+            var n = cadr(car(body)).string;
             if (n in t) {
                 var v = t[n];
                 return list_append(v, macro_expand_with_arg_value(cdr(body), t));
@@ -950,708 +950,449 @@ var macro_expand_for_compilation = function(macro, exps, macros) {
   (def (f1 n) (f2 12)) when calling (f2 12), its parent_func_name is "f1"
   */
 var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env) {
-        if (l.type === TYPE_NULL) {
-            INSTRUCTIONS.push(CONST_NULL); // push null
+        if(typeof(l) === "string"){
+            console.log("COMPILER L ERROR");
             return;
         }
-        //if (typeof(l) === "string") {
-        if (l.type == TYPE_STRING){
-            if (l.type === TYPE_NULL) {
-                INSTRUCTIONS.push(CONST_NULL);
+        switch(l.type){
+            case TYPE_NULL:
+                INSTRUCTIONS.push(CONST_NULL); // push null
                 return;
-            }
-            // check number
-            else if (isInteger(l)) // 32 bit integer
-            {
-                var i = parseInt(l);
-                //if(i > 0x7FFFFFFF){
-                //	console.log("ERROR: Integer too big");
-                // 	INSTRUCTIONS = [];
-                //	return;
-                //}
+            case TYPE_STRING:
+                if(l[0] === '"'){ // string
+                    var s = eval(l);
+                    if (s in CONSTANT_TABLE) { // already defined
+                        INSTRUCTIONS.push(CONST_LOAD); // load from table
+                        INSTRUCTIONS.push(CONSTANT_TABLE[s]);
+                        return;
+                    } else { // string is not defined
+                        CONSTANT_TABLE[s] = CONSTANT_TABLE_LENGTH;
+                        CONSTANT_TABLE_LENGTH++;
+                    }
+                    var length = s.length;
+                    INSTRUCTIONS.push(CONST_STRING); // create string
+                    INSTRUCTIONS.push(length + 1); // push string length
+                    var find_end = false;
+                    for (var i = 0; i < length; i = i + 2) {
+                        if (i + 1 === length) {
+                            INSTRUCTIONS.push(s.charCodeAt(i) << 8 & 0xFF00);
+                            find_end = true;
+                            break;
+                        } else {
+                            INSTRUCTIONS.push(s.charCodeAt(i) << 8 | s.charCodeAt(i + 1));
+                        }
+                    }
+                    if (find_end === false) {
+                        INSTRUCTIONS.push(0x0000); // add end
+                    }
+                    return;
+                }
+                else{
+                    // it is not number
+                    // get variable index
+                    var index = vt_find(vt, l.string);
+                    if (index[0] == -1) {
+                        INSTRUCTIONS = []; // clear instructions
+                        console.log("ERROR: undefined variable: " + l.string);
+                        return;
+                    }
+                    INSTRUCTIONS.push(GET << 12 | index[0]); // frame index
+                    INSTRUCTIONS.push(index[1]); // value index
+                    return;
+                }
+            case TYPE_INTEGER: // integer
+                var i = l.num;
                 if (i < 0) {
-                    return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
+                    return compiler(cons(make_string("-"), 
+                                         cons(make_integer(0), cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
                 }
                 INSTRUCTIONS.push(CONST_INTEGER);
-                //INSTRUCTIONS.push( /*(0xFFFF000000000000 & i) >> 48*/ (i / Math.pow(2, 48) & 0xFFFF) );
-                //INSTRUCTIONS.push( /*(0x0000FFFF00000000 & i) >> 32*/ (i / Math.pow(2, 32) & 0xFFFF) );
                 INSTRUCTIONS.push((0xFFFF0000 & i) >> 16);
                 INSTRUCTIONS.push(0xFFFF & i);
                 return;
-            }
-/*
-	  First 16 bits: integer
-	  Second 16 bits: float
-	  */
-            else if (isFloat(l)) {
-                var f = parseFloat(l);
+                /*
+                First 16 bits: integer
+                Second 16 bits: float
+                */
+            case TYPE_FLOAT: // float
+                var f = l.num;
                 if (f < 0) {
-                    return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
+                    return compiler(cons(make_string("-"), cons(make_integer(0), cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
                 }
                 var i = parseInt(f);
                 INSTRUCTIONS.push(CONST_FLOAT);
-                //INSTRUCTIONS.push((i >> 16) & 0x0000FFFF);
                 INSTRUCTIONS.push(i & 0x0000FFFF);
                 // decimals 10 digits
                 // 10 ^ 10
                 var d = parseInt((f - i) * /*Math.pow(10, 9) 1000000000*/ 10000);
-                //INSTRUCTIONS.push((d >> 16) & 0x0000FFFF);
                 INSTRUCTIONS.push(d & 0x0000FFFF);
-                // if(i > 0xFFFF | d > 0xFFFF){
-                //	console.log("ERROR: Float so big");
-                //	INSTRUCTIONS = [];
-                //	return;
-                //}
                 return;
-            }
-            // string
-            else if (l[0] === '"') {
-                var s = eval(l);
-                if (s in CONSTANT_TABLE) { // already defined
-                    INSTRUCTIONS.push(CONST_LOAD); // load from table
-                    INSTRUCTIONS.push(CONSTANT_TABLE[s]);
-                    return;
-                } else { // string is not defined
-                    CONSTANT_TABLE[s] = CONSTANT_TABLE_LENGTH;
-                    CONSTANT_TABLE_LENGTH++;
-                }
-                var length = s.length;
-                INSTRUCTIONS.push(CONST_STRING); // create string
-                INSTRUCTIONS.push(length + 1); // push string length
-                var find_end = false;
-                for (var i = 0; i < length; i = i + 2) {
-                    if (i + 1 === length) {
-                        INSTRUCTIONS.push(s.charCodeAt(i) << 8 & 0xFF00);
-                        find_end = true;
-                        break;
-                    } else {
-                        INSTRUCTIONS.push(s.charCodeAt(i) << 8 | s.charCodeAt(i + 1));
+            case TYPE_PAIR:
+                var tag = car(l).string;
+                if(tag === "quote"){
+                    var v = cadr(l);
+                    // check integer float string null
+                    if (v.type === TYPE_NULL || v.type === TYPE_INTEGER || v.type === TYPE_FLOAT || v.type === TYPE_STRING) return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    else if (v.type === TYPE_PAIR) // pair
+                    {
+                        var quote_list = function(l) {
+                                if (l.type === TYPE_NULL) return GLOBAL_NULL;
+                                var v = car(l);
+                                if (v.type === TYPE_PAIR) return cons(make_string("cons"), cons( /*cons(*/ quote_list(v) /*, null)*/ , cons(quote_list(cdr(l)), GLOBAL_NULL)));
+                                else if (v.type === TYPE_STRING && v.string === ".") return cons(make_string("quote"), cons(cadr(l), GLOBAL_NULL));
+                                return cons(make_string("cons"), cons(cons(make_string("quote"), cons(v, GLOBAL_NULL)), cons(quote_list(cdr(l)), GLOBAL_NULL)));
+                            }
+                        return compiler(quote_list(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     }
-                }
-                if (find_end === false) {
-                    INSTRUCTIONS.push(0x0000); // add end
-                }
-                return;
-            } else {
-                // it is not number
-                // get variable index
-                var index = vt_find(vt, l);
-                if (index[0] == -1) {
-                    INSTRUCTIONS = []; // clear instructions
-                    console.log("ERROR: undefined variable: " + l);
-                    return;
-                }
-                INSTRUCTIONS.push(GET << 12 | index[0]); // frame index
-                INSTRUCTIONS.push(index[1]); // value index
-                return;
-            }
-        } else if (l.type === TYPE_PAIR) {
-            var tag = car(l);
-            if (typeof(tag) === "number" && tag === 0) { // get for macro
-                INSTRUCTIONS.push(GET << 12 | cadr(l));
-                INSTRUCTIONS.push(caddr(l));
-                return;
-            }
-            // quote
-            if (tag === "quote") {
-                var v = cadr(l);
-                // check integer float string null
-                if (v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"') return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                else if (v.type === TYPE_PAIR) // pair
-                {
-                    var quote_list = function(l) {
-                            if (l.type === TYPE_NULL) return GLOBAL_NULL;
-                            var v = car(l);
-                            //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
-                            if (v.type === TYPE_PAIR) return cons("cons", cons( /*cons(*/ quote_list(v) /*, null)*/ , cons(quote_list(cdr(l)), GLOBAL_NULL)));
-                            else if (v === ".") return cons("quote", cons(cadr(l), GLOBAL_NULL));
-                            return cons("cons", cons(cons("quote", cons(v, GLOBAL_NULL)), cons(quote_list(cdr(l)), GLOBAL_NULL)));
-                        }
-                    return compiler(quote_list(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                }
-                // symbol/string
-                else if (v[0] != '"') {
-                    v = '"' + v + '"'
-                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                }
-                return;
-            } else if (tag == "quasiquote") { // add quasiquote
-                var v = cadr(l);
-                // check integer
-                // check integer float string null
-                if (v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"') return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                else if (v.type === TYPE_PAIR) // pair
-                {
-                    var quasiquote = function(l) {
-                            if (l.type === TYPE_NULL) return GLOBAL_NULL;
-                            var v = car(l);
-                            //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
-                            if (v.type === TYPE_PAIR) {
-                                if (car(v) === "unquote") return cons("cons", cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
-                                else if (car(v) === "unquote-splice") return cons("append", cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
-                                return cons("cons", cons(quasiquote(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
-                            } else if (v === ".") return cons("quote", cons(cadr(l), GLOBAL_NULL));
-                            return cons("cons", cons(cons("quote", cons(v, GLOBAL_NULL)), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
-                        }
-                    return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                }
-                // symbol/string
-                else if (v[0] != '"') {
-                    v = '"' + v + '"'
-                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                }
-                return;
-            }
-            // (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
-            else if (tag == "def") {
-                var variable_name = cadr(l);
-                if (variable_name.type === TYPE_PAIR) // it is lambda format like (def (add a b) (+ a b))
-                {
-                    var var_name = car(variable_name);
-                    var args = cdr(variable_name);
-                    var lambda = cons("lambda", cons(args, cddr(l)));
-                    return compiler(cons("def", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                }
-/*
-	    if(variable_name[0] == "#"){ // gensym
-		var new_name = "toy_" + gensym_count; // gensym variable name is toy_0 toy_1 ... 
-		gensym_table[variable_name] = new_name;
-		variable_name = new_name;
-	    }
-	    else{ // check variable_name valid
-		if(variable_name.length >= 4 && variable_name.slice(0, 4) === "toy_"){
-		    console.log("ERROR: invalid variable name : " + variable_name + "\ntoy_#num is reserved\n");
-		    INSTRUCTIONS = [];
-		    return;
-		}
-	    }
-	    */
-                var variable_value;
-                if (cddr(l).type === TYPE_NULL) variable_value = GLOBAL_NULL;
-                else variable_value = caddr(l);
-                // check whether variable already defined
-                var variable_existed = false;
-                var variable_index = -1;
-                var frame = vt[vt.length - 1];
-                for (var j = frame.length - 1; j >= 0; j--) {
-                    if (variable_name === frame[j]) {
-                        INSTRUCTIONS = []; // clear instructions
-                        console.log("ERROR: variable: " + variable_name + " already defined");
-                        return;
-                        variable_index = j
-                        variable_existed = true;
-                        break;
+                    // symbol/string
+                    else if (v.string[0] != '"') {
+                        v = make_string('"' + v.string + '"')
+                        return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     }
-                }
-                if (variable_existed === false) vt[vt.length - 1].push(variable_name); // add var name to variable table
-                if (variable_value.type === TYPE_PAIR && car(variable_value) === "lambda") {
-                    parent_func_name = variable_name; // set parent_func_name
-                }
-                // compile value
-                compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                // add instruction
-                //INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
-                //INSTRUCTIONS.push( 0x0000FFFF & ( variable_existed ? variable_index : vt[vt.length - 1].length - 1)); // value index
-                INSTRUCTIONS.push(PUSH << 12);
-                return;
-            }
-            // set!
-            else if (tag == "set!") {
-                var variable_name = cadr(l);
-                if (variable_name.type === TYPE_PAIR) // it is lambda format like (set! (add a b) (+ a b))
-                {
-                    var var_name = car(variable_name);
-                    var args = cdr(variable_name);
-                    var lambda = cons("lambda", cons(args, cddr(l)));
-                    return compiler(cons("set!", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                }
-                var variable_value = caddr(l);
-                var index = vt_find(vt, variable_name);
-                if (index[0] === -1) {
-                    // set! error
-                    console.log("SET! ERROR");
                     return;
-                } else {
-                    if (variable_value.type === TYPE_PAIR && car(variable_value) === "lambda") {
+                }
+                else if (tag === "quasiquote"){
+                    var v = cadr(l);
+                    // check integer
+                    // check integer float string null
+                    if(v.type === TYPE_NULL || v.type === TYPE_INTEGER || v.type === TYPE_FLOAT || v.type === TYPE_STRING) return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    else if (v.type === TYPE_PAIR) // pair
+                    {
+                        var quasiquote = function(l) {
+                                if (l.type === TYPE_NULL) return GLOBAL_NULL;
+                                var v = car(l);
+                                //if(typeof(v) === "string" && v[0] === '"') v = eval(v);
+                                if (v.type === TYPE_PAIR) {
+                                    if (car(v).type == TYPE_STRING && car(v).string === "unquote") return cons(make_string("cons"), cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
+                                    else if (car(v).type == TYPE_STRING && car(v) === "unquote-splice") return cons(make_string("append"), cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
+                                    return cons(make_string("cons"), cons(quasiquote(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
+                                } else if (v.type === TYPE_STRING && v === ".") return cons(make_string("quote"), cons(cadr(l), GLOBAL_NULL));
+                                return cons(make_string("cons"), cons(cons(make_string("quote"), cons(v, GLOBAL_NULL)), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
+                            }
+                        return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    }
+                    // symbol/string
+                    else if (v.string[0] != '"') {
+                        v = make_string('"' + v.string + '"')
+                        return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    }
+                    return;
+
+                }
+                // (def x 12) (def (add a b) (+ a b)) => (def add (lambda [a b] (+ a b)))
+                else if (tag === "def"){
+                    var variable_name = cadr(l);
+                    if (variable_name.type === TYPE_PAIR) // it is lambda format like (def (add a b) (+ a b))
+                    {
+                        var var_name = car(variable_name);
+                        var args = cdr(variable_name);
+                        var lambda = cons(make_string("lambda"), cons(args, cddr(l)));
+                        return compiler(cons(make_string("def"), cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    }
+                    else{
+                        variable_name = variable_name.string;
+                    }
+                    var variable_value;
+                    if (cddr(l).type === TYPE_NULL) variable_value = GLOBAL_NULL;
+                    else variable_value = caddr(l);
+                    // check whether variable already defined
+                    var variable_existed = false;
+                    var variable_index = -1;
+                    var frame = vt[vt.length - 1];
+                    for (var j = frame.length - 1; j >= 0; j--) {
+                        if (variable_name === frame[j]) {
+                            INSTRUCTIONS = []; // clear instructions
+                            console.log("ERROR: variable: " + variable_name + " already defined");
+                            return;
+                            variable_index = j
+                            variable_existed = true;
+                            break;
+                        }
+                    }
+                    if (variable_existed === false) vt[vt.length - 1].push(variable_name); // add var name to variable table
+                    if (variable_value.type === TYPE_PAIR && car(variable_value).string === "lambda") {
                         parent_func_name = variable_name; // set parent_func_name
                     }
-                    compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env) // compile value
-                    INSTRUCTIONS.push(SET << 12 | (0x0FFF & index[0])); // frame index
-                    INSTRUCTIONS.push(0x0000FFFF & index[1]); // value index
+                    // compile value
+                    compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    // add instruction
+                    INSTRUCTIONS.push(PUSH << 12);
                     return;
                 }
-            }
-            // (if test conseq alter)
-            else if (tag === "if") {
-                var test = cadr(l);
-                var conseq = caddr(l);
-                var alter;
-                if (cdddr(l).type === TYPE_NULL) alter = GLOBAL_NULL;
-                else alter = cadddr(l);
-                compiler(test, vt, macros, false, parent_func_name, functions_for_compilation, env); // compile test, the test is not tail call
-                // push test, but now we don't know jump steps
-                INSTRUCTIONS.push(TEST << 12); // jump over consequence
-                var index1 = INSTRUCTIONS.length;
-                INSTRUCTIONS.push(0x0000); // jump steps
-/*
-	      I changed this to compiler_begin for tail_call optimization
-	      */
-                //var vt_0 = vt.slice(0, vt.length-1);
-                //vt_0.push(vt[vt.length-1].slice(0));
-                compiler_begin(cons(conseq, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
-                var index2 = INSTRUCTIONS.length;
-                INSTRUCTIONS.push(JMP << 12) // jmp
-                INSTRUCTIONS.push(0x0000); // jump over alternative
-                INSTRUCTIONS.push(0x0000);
-                var jump_steps = index2 - index1 + 4;
-                INSTRUCTIONS[index1] = jump_steps;
-                //var vt_1 = vt.slice(0, vt.length - 1);
-                //vt_1.push(vt[vt.length-1].slice(0));
-                compiler_begin(cons(alter, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
-                var index3 = INSTRUCTIONS.length;
-                jump_steps = index3 - index2;
-                INSTRUCTIONS[index2 + 1] = (0xFFFF0000 & jump_steps) >> 16;
-                INSTRUCTIONS[index2 + 2] = (0xFFFF & jump_steps);
-                return;
-            } else if (tag === "begin") { // begin
-                compiler_begin(cdr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                return;
-            }
-            // (let [a 1 b 2] body)
-/*
-	  else if (tag === "let")
-	  {
-	  var vt_ = vt.slice(0);
-	  vt_[vt_.length - 1] = vt_[vt_.length - 1].slice(0);
-	  var body = cddr(l);
-	  var vs = cadr(l);
-	  var start_index = vt_[vt_.length - 1].length;
-
-	  // compile values
-	  while(vs!==null)
-	  {
-	  var var_name = car(vs);
-	  var var_val = cadr(vs);
-	  var already_defined = false;
-	  var var_index = -1;
-	  for(var i = start_index; i < vt_[vt_.length - 1].length; i++){
-	  if(vt_[vt_.length - 1][i] === var_name){ // already defined
-	  already_defined = true;
-	  var_index = i;
-	  break;
-	  }
-	  }
-	  if(!already_defined){
-	  var_index = vt_[vt_.length - 1].length;
-	  vt_[vt_.length - 1].push(var_name);
-	  compiler(var_val, vt_, macros, tail_call_flag, parent_func_name);
-	  INSTRUCTIONS.push( SET << 12 | (0x0FFF & vt_.length - 1)); // frame index
-	  INSTRUCTIONS.push(0x0000FFFF & var_index); // value index
-	  }
-	  else{ // var already defined
-	  compiler(var_val, vt_, macros, tail_call_flag, parent_func_name);
-	  INSTRUCTIONS.push( SET << 12 | (0x0FFF & vt_.length - 1)); // frame index
-	  INSTRUCTIONS.push(0x0000FFFF & var_index); // value index
-	  }
-	  vs = cdr(cdr(vs));
-	  }
-
-	  // compile body
-	  compiler_begin(body, vt_, macros, parent_func_name);
-	}*/
-            // cond
-            // (cond (t0 body0) (t1 body1) ... (else ))
-/*else if (tag === "cond"){
-	    var cond_clauses = cdr(l);
-	    var expand_clauses = function(clauses){
-		if(clauses.type === TYPE_NULL)
-		    return GLOBAL_NULL;
-		var first = car(clauses);
-		var rest = cdr(clauses);
-		if(car(first) === "else"){
-		    if(rest.type === TYPE_NULL){
-			return cons("begin", cdr(first));
-		    }
-		    else{
-			console.log("ERROR: else clause isn't the last\n");
-			INSTRUCTIONS = [];
-			return;
-		    }
-		}
-		else{
-		    var body = cons("begin", cdr(first));
-		    return cons("if", cons(car(first), cons(body, cons(expand_clauses(rest), null))));
-		}
-	    }
-	    return compiler(expand_clauses(cond_clauses), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
-	}*/
-            // (let [x 0 y 2] . body)
-            else if (tag === "let") {
-                var chunks = cadr(l);
-                var body = cddr(l);
-                var var_names = [];
-                var def_array = [];
-                while (chunks.type !== TYPE_NULL) {
-                    var v = car(chunks);
-                    var g = "def";
-                    var existed = false;
-                    for (var i = 0; i < var_names.length; i++) {
-                        if (var_names[i] === v) {
-                            existed = true;
-                            g = "set!"; // variable already defined
-                        }
-                    }
-                    if (!existed) // 不存在， 保存
-                    var_names.push(v);
-                    def_array.push(cons(g, cons(v, cons(cadr(chunks), GLOBAL_NULL)))); // make assignment
-                    chunks = cddr(chunks);
-                }
-                // make assignments
-                var assignments = GLOBAL_NULL;
-                for (var i = def_array.length - 1; i >= 0; i--) {
-                    assignments = cons(def_array[i], assignments);
-                }
-                var let_ = cons(cons("lambda", cons(GLOBAL_NULL, list_append(assignments, body))), GLOBAL_NULL);
-                return compiler(let_, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-            }
-            // def-object
-            // see document
-            /*
-            else if (tag === "def-object") {
-                // vector to list
-                var vector_to_list = function(v) {
-                        var vector_to_list_iter = function(v, i) {
-                                if (i == v.length) return GLOBAL_NULL;
-                                else if (v[i] instanceof Array) return cons(vector_to_list(v[i]), vector_to_list_iter(v, i + 1))
-                                return cons(v[i], vector_to_list_iter(v, i + 1))
-                            }
-                        return vector_to_list_iter(v, 0);
-                    }
-                var list_to_array_deep = function(l) // convert list to array
+                else if (tag === "set!"){
+                    var variable_name = cadr(l);
+                    if (variable_name.type === TYPE_PAIR) // it is lambda format like (set! (add a b) (+ a b))
                     {
-                        var return_array = [];
-                        while (l.type !== TYPE_NULL) {
-                            if (car(l) instanceof Value) return_array.push(list_to_array_deep(car(l)));
-                            else return_array.push(car(l));
-                            l = cdr(l);
-                        }
-                        return return_array;
+                        var var_name = car(variable_name);
+                        var args = cdr(variable_name);
+                        var lambda = cons("lambda", cons(args, cddr(l)));
+                        return compiler(cons("set!", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     }
-                var obj_name = cadr(l);
-                var methods = caddr(l);
-                var method_names = [];
-                var method_lambdas = [];
-                var method_lambdas_params = [];
-                while (methods.type !== TYPE_NULL) {
-                    method_names.push(car(methods));
-                    method_lambdas.push(cadr(methods));
-                    method_lambdas_params.push(cadr(cadr(methods)));
-                    methods = cddr(methods);
+                    else{
+                        variable_name = variable_name.string;
+                    }
+                    var variable_value = caddr(l);
+                    var index = vt_find(vt, variable_name);
+                    if (index[0] === -1) {
+                        // set! error
+                        console.log("SET! ERROR");
+                        return;
+                    } else {
+                        if (variable_value.type === TYPE_PAIR && car(variable_value).string === "lambda") {
+                            parent_func_name = variable_name; // set parent_func_name
+                        }
+                        compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env) // compile value
+                        INSTRUCTIONS.push(SET << 12 | (0x0FFF & index[0])); // frame index
+                        INSTRUCTIONS.push(0x0000FFFF & index[1]); // value index
+                        return;
+                    }
                 }
-                var constructor_name = obj_name + "-" + method_names[0];
-                var constructor_lambda = method_lambdas[0];
-                var vector_ = GLOBAL_NULL; // vector
-                vector_ = vector_to_list([
-                    ["lambda", ["v"],
-                        ["eq?", "v", obj_name]
-                    ]
-                ])
-                for (var i = method_lambdas.length - 1; i >= 1; i--) {
-                    vector_ = cons(method_lambdas[i], vector_);
+                 // (if test conseq alter)
+                else if (tag === "if") {
+                    var test = cadr(l);
+                    var conseq = caddr(l);
+                    var alter;
+                    if (cdddr(l).type === TYPE_NULL) alter = GLOBAL_NULL;
+                    else alter = cadddr(l);
+                    compiler(test, vt, macros, false, parent_func_name, functions_for_compilation, env); // compile test, the test is not tail call
+                    // push test, but now we don't know jump steps
+                    INSTRUCTIONS.push(TEST << 12); // jump over consequence
+                    var index1 = INSTRUCTIONS.length;
+                    INSTRUCTIONS.push(0x0000); // jump steps
+                /*
+                  I changed this to compiler_begin for tail_call optimization
+                */
+                    //var vt_0 = vt.slice(0, vt.length-1);
+                    //vt_0.push(vt[vt.length-1].slice(0));
+                    compiler_begin(cons(conseq, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
+                    var index2 = INSTRUCTIONS.length;
+                    INSTRUCTIONS.push(JMP << 12) // jmp
+                    INSTRUCTIONS.push(0x0000); // jump over alternative
+                    INSTRUCTIONS.push(0x0000);
+                    var jump_steps = index2 - index1 + 4;
+                    INSTRUCTIONS[index1] = jump_steps;
+                    //var vt_1 = vt.slice(0, vt.length - 1);
+                    //vt_1.push(vt[vt.length-1].slice(0));
+                    compiler_begin(cons(alter, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
+                    var index3 = INSTRUCTIONS.length;
+                    jump_steps = index3 - index2;
+                    INSTRUCTIONS[index2 + 1] = (0xFFFF0000 & jump_steps) >> 16;
+                    INSTRUCTIONS[index2 + 2] = (0xFFFF & jump_steps);
+                    return;
                 }
-                vector_ = cons("vector", vector_);
-                var constructor_lambda_content = list_append(constructor_lambda, cons(cons("def", cons(obj_name, cons(vector_, GLOBAL_NULL))), GLOBAL_NULL));
-                var constructor = cons("def", cons(constructor_name, cons(constructor_lambda_content, cons(obj_name, GLOBAL_NULL))))
-                var count = 0;
-                // console.log(method_names);
-                // console.log(list_to_array(constructor)[2][3]);
-                //compile constructor
-                compiler(constructor, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                for (var i = 1; i < method_names.length; i++) {
-                    var m_name = obj_name + "-" + method_names[i];
-                    var params = method_lambdas_params[i];
-                    var params_ = ["o"];
-                    var call_lambda = [
-                        ["vector-ref", "o", "" + count]
-                    ];
-                    while (params.type !== TYPE_NULL) {
-                        params_.push(car(params));
-                        call_lambda.push(car(params));
+                else if (tag === "begin") { // begin
+                    compiler_begin(cdr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    return;
+                }
+                // (let [x 0 y 2] . body)
+                else if (tag === "let") {
+                    var chunks = cadr(l);
+                    var body = cddr(l);
+                    var var_names = [];
+                    var def_array = [];
+                    while (chunks.type !== TYPE_NULL) {
+                        var v = car(chunks).string;
+                        var g = make_string("def");
+                        var existed = false;
+                        for (var i = 0; i < var_names.length; i++) {
+                            if (var_names[i] === v) {
+                                existed = true;
+                                g = make_string("set!"); // variable already defined
+                            }
+                        }
+                        if (!existed) // 不存在， 保存
+                            var_names.push(v);
+                        def_array.push(cons(g, cons(make_string(v), cons(cadr(chunks), GLOBAL_NULL)))); // make assignment
+                        chunks = cddr(chunks);
+                    }
+                    // make assignments
+                    var assignments = GLOBAL_NULL;
+                    for (var i = def_array.length - 1; i >= 0; i--) {
+                        assignments = cons(def_array[i], assignments);
+                    }
+                    var let_ = cons(cons(make_string("lambda"), cons(GLOBAL_NULL, list_append(assignments, body))), GLOBAL_NULL);
+                    return compiler(let_, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                }
+                // (lambda (a b) ...)
+                // (lambda (a . b) ...)
+                else if (tag === "lambda") {
+                    var params = cadr(l); // get parameters
+                    var variadic_place = -1; // variadic place
+                    var counter = 0; // count of parameter num
+                    var vt_ = vt.slice(0); // new variable table
+                    var macros_ = macros.slice(0); // new macro table
+                    vt_.push([]) // we add a new frame
+                    macros_.push([]); // add new frame
+                    vt_[vt_.length - 1].push(GLOBAL_NULL); // save space for parent-env.
+                    vt_[vt_.length - 1].push(GLOBAL_NULL); // save space for return address.
+                    while (true) {
+                        if (params.type === TYPE_NULL) break;
+                        if(car(params).type !== TYPE_STRING){
+                            console.log("ERROR: Invalid Function Parameter type");
+                            return;
+                        }
+                        if (car(params).string === ".") // variadic
+                        {
+                            variadic_place = counter;
+                            vt_[vt_.length - 1].push(cadr(params).string);
+                            counter += 1; // means no parameters requirement
+                            break;
+                        }
+                        vt_[vt_.length - 1].push(car(params).string);
+                        counter += 1;
                         params = cdr(params);
                     }
-                    var v = vector_to_list(["def", m_name, ["lambda", params_, call_lambda]])
-                    count++;
-                    compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                    console.log(list_to_array_deep(v)[2]);
+                    // make lambda
+                    INSTRUCTIONS.push(MAKELAMBDA << 12 | (counter << 6) | (variadic_place === -1 ? 0x0000 : (variadic_place << 1)) | (variadic_place === -1 ? 0x0000 : 0x0001));
+                    var index1 = INSTRUCTIONS.length;
+                    INSTRUCTIONS.push(0x0000); // steps that needed to jump over lambda
+                    // for tail call optimization
+                    var start_pc = INSTRUCTIONS.length; // get start_pc
+                    // compile_body
+                    var c_body = compiler_begin(cddr(l), vt_, macros_, parent_func_name, new Lambda_for_Compilation(counter, variadic_place, start_pc, vt_), env); // set parent_func_name to null
+                    // return
+                    INSTRUCTIONS.push(RETURN << 12 | 0x0001); // return and flag(see documentation)
+                    var index2 = INSTRUCTIONS.length;
+                    INSTRUCTIONS[index1] = index2 - index1; // set jump steps
+                    return;
                 }
-                var v = vector_to_list(["def", obj_name + "?", ["lambda", ["o"],
-                    [
-                        ["vector-ref", "o", "" + count], "o"]
-                ]]);
-                console.log(list_to_array_deep(v));
-                // obj?
-                compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                return;
-            }*/
-            // (lambda (a b) ...)
-            // (lambda (a . b) ...)
-            else if (tag === "lambda") {
-                var params = cadr(l); // get parameters
-                var variadic_place = -1; // variadic place
-                var counter = 0; // count of parameter num
-                var vt_ = vt.slice(0); // new variable table
-                var macros_ = macros.slice(0); // new macro table
-                vt_.push([]) // we add a new frame
-                macros_.push([]); // add new frame
-                vt_[vt_.length - 1].push(GLOBAL_NULL); // save space for parent-env.
-                vt_[vt_.length - 1].push(GLOBAL_NULL); // save space for return address.
-                while (true) {
-                    if (params.type === TYPE_NULL) break;
-                    if (car(params) === ".") // variadic
-                    {
-                        variadic_place = counter;
-                        vt_[vt_.length - 1].push(cadr(params));
-                        counter += 1; // means no parameters requirement
-                        break;
-                    }
-                    vt_[vt_.length - 1].push(car(params));
-                    counter += 1;
-                    params = cdr(params);
-                }
-                // make lambda
-                INSTRUCTIONS.push(MAKELAMBDA << 12 | (counter << 6) | (variadic_place === -1 ? 0x0000 : (variadic_place << 1)) | (variadic_place === -1 ? 0x0000 : 0x0001));
-                var index1 = INSTRUCTIONS.length;
-                INSTRUCTIONS.push(0x0000); // steps that needed to jump over lambda
-                // for tail call optimization
-                var start_pc = INSTRUCTIONS.length; // get start_pc
-                // compile_body
-                var c_body = compiler_begin(cddr(l), vt_, macros_, parent_func_name, new Lambda_for_Compilation(counter, variadic_place, start_pc, vt_), env); // set parent_func_name to null
-                // return
-                INSTRUCTIONS.push(RETURN << 12 | 0x0001); // return and flag(see documentation)
-                var index2 = INSTRUCTIONS.length;
-                INSTRUCTIONS[index1] = index2 - index1; // set jump steps
-                return;
-            }
-            // macro
-            else if (tag === "defmacro") {
-                var var_name = cadr(l);
-                var clauses = cddr(l);
-                var already_defined = false;
-                for (var i = macros[macros.length - 1].length - 1; i >= 0; i--) {
-                    if (var_name === macros[macros.length - 1][i].macro_name) { // macro already exists
-                        already_defined = true;
-                        macros[macros.length - 1][i].clauses = clauses;
-                    }
-                }
-                if (already_defined === false) { // not defined, save macro
-                    macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)/*, env.slice(0)*/));
-                }
-                return;
-            }
-            // macroexpand-1
-            else if (tag === "macroexpand-1") {
-                var expand = cadr(l);
-                var macro_name = car(expand);
-                for (var i = macros.length - 1; i >= 0; i--) {
-                    var frame = macros[i];
-                    for (var j = frame.length - 1; j >= 0; j--) {
-                        if (frame[j].macro_name === macro_name) {
-                            var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), GLOBAL_NULL));
-                            return compiler(e, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                // macro
+                else if (tag === "defmacro") {
+                    var var_name = cadr(l).string;
+                    var clauses = cddr(l);
+                    var already_defined = false;
+                    for (var i = macros[macros.length - 1].length - 1; i >= 0; i--) {
+                        if (var_name === macros[macros.length - 1][i].macro_name) { // macro already exists
+                            already_defined = true;
+                            macros[macros.length - 1][i].clauses = clauses;
                         }
                     }
+                    if (already_defined === false) { // not defined, save macro
+                        macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)/*, env.slice(0)*/));
+                    }
+                    return;
                 }
-                console.log("ERROR: macroexpand-1 invalid macro: " + macro_name);
-                INSTRUCTIONS = [];
-                return;
-            }
-/*
-	  (for [i 10] . body)
-	  (for [i 0 10] . body)
-	  (for [i 0 10 1] . body)
-	  */
-/*
-	else if (tag === "for"){
-	    var chunk = cadr(l);
-	    var body = cddr(l);
-	    var var_name, start_value, end_value, step;
-	    var_name = car(chunk);
-	    if(cddr(chunk).type === TYPE_NULL){
-		start_value = "0";
-		end_value = cadr(chunk);
-		step = "1";
-	    }
-	    else if (cdddr(chunk).type === TYPE_NULL){
-		start_value = cadr(chunk);
-		end_value = caddr(chunk);
-		step = "1";
-	    }
-	    else{
-		start_value = cadr(chunk);
-		end_value = caddr(chunk);
-		step = cadddr(chunk);
-	    }
-	    
-	    // init i
-	    compiler(cons("def", cons(var_name, cons(start_value, GLOBAL_NULL))),
-		    vt,
-		    macros,
-		    tail_call_flag,
-		    parent_func_name,
-		    functions_for_compilation);
-	   
-	    // save index
-	    var index1 = INSTRUCTIONS.length;
-	    // check eq?
-	    compiler(cons("eq?", cons(var_name, cons(end_value, GLOBAL_NULL))),
-		     vt,
-		     macros,
-		     tail_call_flag,
-		     parent_func_name,
-		     functions_for_compilation);
-	    
-	    // test instruction
-	    var index2 = INSTRUCTIONS.length;
-	    INSTRUCTIONS.push(TEST << 12);
-	    INSTRUCTIONS.push(0x0005);
-	    
-	    var index3 = INSTRUCTIONS.length;
-	    INSTRUCTIONS.push(JMP << 12);
-	    INSTRUCTIONS.push(0x0000);
-	    INSTRUCTIONS.push(0x0000);
-	    
-	    // compile body
-	    compiler_begin(body, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
-	    
-	    // increase by steps
-	    compiler(cons("set!", cons(var_name, cons(cons("+", cons(var_name, cons(step, GLOBAL_NULL))), GLOBAL_NULL))),
-		     vt,
-		     macros,
-		     tail_call_flag,
-		     parent_func_name,
-		     functions_for_compilation);
-	    
-	    // jump back
-	    var jmp_steps = index1 - INSTRUCTIONS.length;
-	    INSTRUCTIONS.push(JMP << 12);
-	    INSTRUCTIONS.push((0xFFFF0000 & jmp_steps) >> 16);
-	    INSTRUCTIONS.push((0x0000FFFF & jmp_steps));
-
-	    // set test instruction jmp steps
-	    var test_steps = INSTRUCTIONS.length - index3;
-	    INSTRUCTIONS[index3 + 1] = (0xFFFF0000 & test_steps) >> 16;
-	    INSTRUCTIONS[index3 + 2] = (0x0000FFFF & test_steps)
-
-	    //printInstructions(INSTRUCTIONS);
-	    
-	    return;
-	    }
-	    */
-/*
-	  (while [< i 10] . body)
-	  */
-            // return
-            else if (tag === "return") {
-                compiler(cdr(l).type === TYPE_NULL ? GLOBAL_NULL : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
-                INSTRUCTIONS.push(RETURN << 12);
-                return;
-            }
-            // call function
-            else {
-                // check whether macro
-                var func = car(l);
-                if (typeof(func) === "string") {
+                // call function
+                else {
+                    // check whether macro
+                    var func = car(l);
+                    if (func.type === TYPE_STRING) {
+                        for (var i = macros.length - 1; i >= 0; i--) {
+                            var frame = macros[i];
+                            for (var j = frame.length - 1; j >= 0; j--) {
+                                if (frame[j].macro_name === func.string) {
+                                    return compiler(macro_expand_for_compilation(frame[j], cdr(l), macros), /*frame[j].vt,*/ vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
+                                }
+                            }
+                        }
+                    }
+                    // tail call
+                    if (tail_call_flag) {
+                        // so no new frame
+                        var start_index = vt[vt.length - 1].length;
+                        var track_index = start_index;
+                        // compile parameters
+                        var param_num = 0;
+                        var params = cdr(l);
+                        // push parameter from right to left
+                        params = list_to_array(params); // convert list to array
+                        param_num = params.length; // get param num
+                        var count_params = 0; // count param num
+                        /* compile parameters */
+                        for (var i = 0; i < param_num; i++) {
+                            if (i === functions_for_compilation.variadic_place) { // variadic param
+                                count_params++;
+                                var p = GLOBAL_NULL;
+                                var j = param_num - 1;
+                                for (; j >= i; j--) {
+                                    p = cons(make_string("cons"), cons(params[j], cons(p, GLOBAL_NULL)));
+                                }
+                                compiler(p, vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
+                                // set to current frame
+                                INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
+                                INSTRUCTIONS.push(0x0000FFFF & track_index); // value index
+                            } else {
+                                count_params++;
+                                compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
+                                // set to current frame
+                                INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
+                                INSTRUCTIONS.push(0x0000FFFF & track_index); // value index
+                            }
+                            track_index++;
+                        }
+                        // move parameters
+                        for (var i = 0; i < count_params; i++) {
+                            // get value
+                            INSTRUCTIONS.push(GET << 12 | vt.length - 1); // frame index
+                            INSTRUCTIONS.push(start_index + i); // value index
+                            // move to target index
+                            INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
+                            INSTRUCTIONS.push(i + 2) // value index
+                        }
+                        if (functions_for_compilation.variadic_place === -1 && i < functions_for_compilation.param_num) {
+                            for (; i < functions_for_compilation.param_num; i++) {
+                                INSTRUCTIONS.push(CONST_NULL << 12);
+                                // move to target index
+                                INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
+                                INSTRUCTIONS.push(i + 2);
+                            }
+                        }
+                        // jump back
+                        var start_pc = functions_for_compilation.start_pc; // start pc for that lambda
+                        INSTRUCTIONS.push(JMP << 12);
+                        var jump_steps = -(INSTRUCTIONS.length - start_pc); // jump steps
+                        INSTRUCTIONS.push((0xFFFF0000 & jump_steps) >> 16);
+                        INSTRUCTIONS.push(0xFFFF & jump_steps);
+                        return;
+                    }
+                    // not tail call
+                    else {
+                        // compile function first
+                        compiler(func, vt, macros, false, parent_func_name, functions_for_compilation, env); // compile lambda, save to accumulator
+                        INSTRUCTIONS.push(NEWFRAME << 12); // create new frame and set flag
+                        // compile parameters
+                        var param_num = 0;
+                        var params = cdr(l);
+                        // push parameter from right to left
+                        params = list_to_array(params); // convert list to array
+                        param_num = params.length; // get param num
+                        for (var i = 0; i < param_num; i++) // compile parameter from ---right to left---, now from left to right
+                        {
+                            compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
+                            INSTRUCTIONS.push(PUSH_ARG << 12 | (i + 2)); // push parameter to new frame
+                        }
+                        //compiler(func, vt, macros, false, parent_func_name, functions_for_compilation); // compile lambda, save to accumulator
+                        INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num))); // call function.
+                        return;
+                    }
+                }
+                /*
+                // macroexpand-1
+                else if (tag === "macroexpand-1") {
+                    var expand = cadr(l);
+                    var macro_name = car(expand);
                     for (var i = macros.length - 1; i >= 0; i--) {
                         var frame = macros[i];
                         for (var j = frame.length - 1; j >= 0; j--) {
-                            if (frame[j].macro_name === func) {
-                                return compiler(macro_expand_for_compilation(frame[j], cdr(l), macros), /*frame[j].vt,*/ vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
+                            if (frame[j].macro_name === macro_name) {
+                                var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), GLOBAL_NULL));
+                                return compiler(e, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                             }
                         }
                     }
-                }
-                // tail call
-                if (tail_call_flag) {
-                    // so no new frame
-                    var start_index = vt[vt.length - 1].length;
-                    var track_index = start_index;
-                    // compile parameters
-                    var param_num = 0;
-                    var params = cdr(l);
-                    // push parameter from right to left
-                    params = list_to_array(params); // convert list to array
-                    param_num = params.length; // get param num
-                    var count_params = 0; // count param num
-                    /* compile parameters */
-                    for (var i = 0; i < param_num; i++) {
-                        if (i === functions_for_compilation.variadic_place) { // variadic param
-                            count_params++;
-                            var p = GLOBAL_NULL;
-                            var j = param_num - 1;
-                            for (; j >= i; j--) {
-                                p = cons("cons", cons(params[j], cons(p, GLOBAL_NULL)));
-                            }
-                            compiler(p, vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
-                            // set to current frame
-                            INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
-                            INSTRUCTIONS.push(0x0000FFFF & track_index); // value index
-                        } else {
-                            count_params++;
-                            compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
-                            // set to current frame
-                            INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
-                            INSTRUCTIONS.push(0x0000FFFF & track_index); // value index
-                        }
-                        track_index++;
-                    }
-                    // move parameters
-                    for (var i = 0; i < count_params; i++) {
-                        // get value
-                        INSTRUCTIONS.push(GET << 12 | vt.length - 1); // frame index
-                        INSTRUCTIONS.push(start_index + i); // value index
-                        // move to target index
-                        INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
-                        INSTRUCTIONS.push(i + 2) // value index
-                    }
-                    if (functions_for_compilation.variadic_place === -1 && i < functions_for_compilation.param_num) {
-                        for (; i < functions_for_compilation.param_num; i++) {
-                            INSTRUCTIONS.push(CONST_NULL << 12);
-                            // move to target index
-                            INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
-                            INSTRUCTIONS.push(i + 2);
-                        }
-                    }
-                    // jump back
-                    var start_pc = functions_for_compilation.start_pc; // start pc for that lambda
-                    INSTRUCTIONS.push(JMP << 12);
-                    var jump_steps = -(INSTRUCTIONS.length - start_pc); // jump steps
-                    INSTRUCTIONS.push((0xFFFF0000 & jump_steps) >> 16);
-                    INSTRUCTIONS.push(0xFFFF & jump_steps);
+                    console.log("ERROR: macroexpand-1 invalid macro: " + macro_name);
+                    INSTRUCTIONS = [];
                     return;
                 }
-                // not tail call
-                else {
-                    // compile function first
-                    compiler(func, vt, macros, false, parent_func_name, functions_for_compilation, env); // compile lambda, save to accumulator
-                    INSTRUCTIONS.push(NEWFRAME << 12); // create new frame and set flag
-                    // compile parameters
-                    var param_num = 0;
-                    var params = cdr(l);
-                    // push parameter from right to left
-                    params = list_to_array(params); // convert list to array
-                    param_num = params.length; // get param num
-                    for (var i = 0; i < param_num; i++) // compile parameter from ---right to left---, now from left to right
-                    {
-                        compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
-                        INSTRUCTIONS.push(PUSH_ARG << 12 | (i + 2)); // push parameter to new frame
-                    }
-                    //compiler(func, vt, macros, false, parent_func_name, functions_for_compilation); // compile lambda, save to accumulator
-                    INSTRUCTIONS.push(CALL << 12 | (0x0FFF & (param_num))); // call function.
+                // return
+                else if (tag === "return") {
+                    compiler(cdr(l).type === TYPE_NULL ? GLOBAL_NULL : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
+                    INSTRUCTIONS.push(RETURN << 12);
                     return;
                 }
-            }
+                */
         }
     }
 
