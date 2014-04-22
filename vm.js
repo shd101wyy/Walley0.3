@@ -135,10 +135,12 @@ var make_float = function(num) {
         v.type = TYPE_FLOAT;
         return v;
     }
-var Macro = function(macro_name, clauses, variable_table) {
+var Macro = function(macro_name, clauses, variable_table
+    /*, env*/) {
         this.macro_name = macro_name;
         this.clauses = clauses;
         this.vt = variable_table;
+        //this.env = env;
     }
 /*
   注意。这里的environmen以
@@ -555,6 +557,7 @@ var JMP = 0x8;
 var TEST = 0x9;
 var PUSH = 0xA;
 var INSTRUCTIONS = []; // global variables. used to save instructions
+var INSTRUCTIONS_PC = 0; // global variables, used to save current pc location
 var CONSTANT_TABLE = {"true":0}; // use to save string index
 var CONSTANT_TABLE_LENGTH = 1; //
 var _4_digits_hex = function(num) {
@@ -1009,6 +1012,49 @@ var macro_expand_for_compilation = function(macro, exps, macros) {
                 clauses = cdr(clauses);
                 continue;
             } else { // match
+                /*
+                    eg (defm square [x] `(* ~x ~x)) (square 12)
+                    在macro_match之后得到了 match {x: 12}
+                */
+                /*
+                var expanded_value;
+                var start = INSTRUCTIONS_PC;
+                var new_vt = macro.vt.slice(0);
+                var new_env = macro.env.slice(0);
+                var new_vt_frame = [];
+                var new_env_frame = [];
+                new_vt.push(new_vt_frame);
+                new_env.push(new_env_frame);
+                for(i in match){
+                    new_vt_frame.push(i);
+                    // compile value(params)
+                    compiler(cons("quote", cons(match[i], GLOBAL_NULL)),  // compile instructions
+                         new_vt, 
+                         macros,
+                         false,
+                         null,
+                         null,
+                         new_env);
+                    new_env_frame.push(VM(INSTRUCTIONS, new_env, INSTRUCTIONS_PC));
+                    INSTRUCTIONS_PC = INSTRUCTIONS.length;
+                }
+                INSTRUCTIONS = INSTRUCTIONS.slice(0, start);
+                INSTRUCTIONS_PC = start;
+                console.log(cadr(car(clauses)));
+                compiler(cadr(car(clauses)),  // compile instructions
+                         new_vt, 
+                         macros,
+                         false,
+                         null,
+                         null,
+                         new_env);
+                printInstructions(INSTRUCTIONS);
+                expanded_value = VM(INSTRUCTIONS, new_env, INSTRUCTIONS_PC);
+                console.log("Expanded Value ");
+                console.log(expanded_value);
+                INSTRUCTIONS = INSTRUCTIONS.slice(0, INSTRUCTIONS_PC); 
+                printInstructions(INSTRUCTIONS);
+                return expanded_value;*/
                 return macro_expand_with_arg_value_for_compilation(cadr(car(clauses)), match, macro.vt, macros, true);
             }
         }
@@ -1020,7 +1066,7 @@ var macro_expand_for_compilation = function(macro, exps, macros) {
   eg (def (f n) (f 12)) when calling (f 12), its parent_func_name is "f"
   (def (f1 n) (f2 12)) when calling (f2 12), its parent_func_name is "f1"
   */
-var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation) {
+var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env) {
         if (l.type === TYPE_NULL) {
             INSTRUCTIONS.push(CONST_NULL); // push null
             return;
@@ -1040,7 +1086,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 //	return;
                 //}
                 if (i < 0) {
-                    return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+                    return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
                 }
                 INSTRUCTIONS.push(CONST_INTEGER);
                 //INSTRUCTIONS.push( /*(0xFFFF000000000000 & i) >> 48*/ (i / Math.pow(2, 48) & 0xFFFF) );
@@ -1056,7 +1102,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
             else if (isFloat(l)) {
                 var f = parseFloat(l);
                 if (f < 0) {
-                    return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+                    return compiler(cons("-", cons("0", cons(l.slice(1), GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
                 }
                 var i = parseInt(f);
                 INSTRUCTIONS.push(CONST_FLOAT);
@@ -1126,7 +1172,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
             if (tag === "quote") {
                 var v = cadr(l);
                 // check integer float string null
-                if (v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"') return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                if (v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"') return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 else if (v.type === TYPE_PAIR) // pair
                 {
                     var quote_list = function(l) {
@@ -1137,19 +1183,19 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                             else if (v === ".") return cons("quote", cons(cadr(l), GLOBAL_NULL));
                             return cons("cons", cons(cons("quote", cons(v, GLOBAL_NULL)), cons(quote_list(cdr(l)), GLOBAL_NULL)));
                         }
-                    return compiler(quote_list(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    return compiler(quote_list(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 }
                 // symbol/string
                 else if (v[0] != '"') {
                     v = '"' + v + '"'
-                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 }
                 return;
             } else if (tag == "quasiquote") { // add quasiquote
                 var v = cadr(l);
                 // check integer
                 // check integer float string null
-                if (v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"') return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                if (v.type === TYPE_NULL || isInteger(v) || isFloat(v) || v[0] === '"') return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 else if (v.type === TYPE_PAIR) // pair
                 {
                     var quasiquote = function(l) {
@@ -1163,12 +1209,12 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                             } else if (v === ".") return cons("quote", cons(cadr(l), GLOBAL_NULL));
                             return cons("cons", cons(cons("quote", cons(v, GLOBAL_NULL)), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
                         }
-                    return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 }
                 // symbol/string
                 else if (v[0] != '"') {
                     v = '"' + v + '"'
-                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    return compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 }
                 return;
             }
@@ -1180,7 +1226,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     var var_name = car(variable_name);
                     var args = cdr(variable_name);
                     var lambda = cons("lambda", cons(args, cddr(l)));
-                    return compiler(cons("def", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    return compiler(cons("def", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 }
 /*
 	    if(variable_name[0] == "#"){ // gensym
@@ -1218,7 +1264,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     parent_func_name = variable_name; // set parent_func_name
                 }
                 // compile value
-                compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 // add instruction
                 //INSTRUCTIONS.push( SET << 12  | vt.length - 1);   // frame index
                 //INSTRUCTIONS.push( 0x0000FFFF & ( variable_existed ? variable_index : vt[vt.length - 1].length - 1)); // value index
@@ -1233,7 +1279,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     var var_name = car(variable_name);
                     var args = cdr(variable_name);
                     var lambda = cons("lambda", cons(args, cddr(l)));
-                    return compiler(cons("set!", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    return compiler(cons("set!", cons(var_name, cons(lambda, GLOBAL_NULL))), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 }
                 var variable_value = caddr(l);
                 var index = vt_find(vt, variable_name);
@@ -1245,7 +1291,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     if (variable_value.type === TYPE_PAIR && car(variable_value) === "lambda") {
                         parent_func_name = variable_name; // set parent_func_name
                     }
-                    compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation) // compile value
+                    compiler(variable_value, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env) // compile value
                     INSTRUCTIONS.push(SET << 12 | (0x0FFF & index[0])); // frame index
                     INSTRUCTIONS.push(0x0000FFFF & index[1]); // value index
                     return;
@@ -1258,7 +1304,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 var alter;
                 if (cdddr(l).type === TYPE_NULL) alter = GLOBAL_NULL;
                 else alter = cadddr(l);
-                compiler(test, vt, macros, false, parent_func_name, functions_for_compilation); // compile test, the test is not tail call
+                compiler(test, vt, macros, false, parent_func_name, functions_for_compilation, env); // compile test, the test is not tail call
                 // push test, but now we don't know jump steps
                 INSTRUCTIONS.push(TEST << 12); // jump over consequence
                 var index1 = INSTRUCTIONS.length;
@@ -1268,7 +1314,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	      */
                 //var vt_0 = vt.slice(0, vt.length-1);
                 //vt_0.push(vt[vt.length-1].slice(0));
-                compiler_begin(cons(conseq, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler_begin(cons(conseq, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 // compiler(conseq, vt, macros, tail_call_flag, parent_func_name); // compiler consequence;
                 var index2 = INSTRUCTIONS.length;
                 INSTRUCTIONS.push(JMP << 12) // jmp
@@ -1278,7 +1324,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 INSTRUCTIONS[index1] = jump_steps;
                 //var vt_1 = vt.slice(0, vt.length - 1);
                 //vt_1.push(vt[vt.length-1].slice(0));
-                compiler_begin(cons(alter, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler_begin(cons(alter, GLOBAL_NULL), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 // compiler(alter, vt, macros, tail_call_flag, parent_func_name); // compiler alternative;
                 var index3 = INSTRUCTIONS.length;
                 jump_steps = index3 - index2;
@@ -1286,7 +1332,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 INSTRUCTIONS[index2 + 2] = (0xFFFF & jump_steps);
                 return;
             } else if (tag === "begin") { // begin
-                compiler_begin(cdr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler_begin(cdr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 return;
             }
             // (let [a 1 b 2] body)
@@ -1384,10 +1430,11 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     assignments = cons(def_array[i], assignments);
                 }
                 var let_ = cons(cons("lambda", cons(GLOBAL_NULL, list_append(assignments, body))), GLOBAL_NULL);
-                return compiler(let_, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                return compiler(let_, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
             }
             // def-object
             // see document
+            /*
             else if (tag === "def-object") {
                 // vector to list
                 var vector_to_list = function(v) {
@@ -1437,7 +1484,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 // console.log(method_names);
                 // console.log(list_to_array(constructor)[2][3]);
                 //compile constructor
-                compiler(constructor, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler(constructor, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 for (var i = 1; i < method_names.length; i++) {
                     var m_name = obj_name + "-" + method_names[i];
                     var params = method_lambdas_params[i];
@@ -1452,7 +1499,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     }
                     var v = vector_to_list(["def", m_name, ["lambda", params_, call_lambda]])
                     count++;
-                    compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                    compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     console.log(list_to_array_deep(v)[2]);
                 }
                 var v = vector_to_list(["def", obj_name + "?", ["lambda", ["o"],
@@ -1461,9 +1508,9 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 ]]);
                 console.log(list_to_array_deep(v));
                 // obj?
-                compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler(v, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 return;
-            }
+            }*/
             // (lambda (a b) ...)
             // (lambda (a . b) ...)
             else if (tag === "lambda") {
@@ -1496,7 +1543,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 // for tail call optimization
                 var start_pc = INSTRUCTIONS.length; // get start_pc
                 // compile_body
-                var c_body = compiler_begin(cddr(l), vt_, macros_, parent_func_name, new Lambda_for_Compilation(counter, variadic_place, start_pc, vt_)); // set parent_func_name to null
+                var c_body = compiler_begin(cddr(l), vt_, macros_, parent_func_name, new Lambda_for_Compilation(counter, variadic_place, start_pc, vt_), env); // set parent_func_name to null
                 // return
                 INSTRUCTIONS.push(RETURN << 12 | 0x0001); // return and flag(see documentation)
                 var index2 = INSTRUCTIONS.length;
@@ -1515,7 +1562,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     }
                 }
                 if (already_defined === false) { // not defined, save macro
-                    macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)));
+                    macros[macros.length - 1].push(new Macro(var_name, clauses, vt.slice(0)/*, env.slice(0)*/));
                 }
                 return;
             }
@@ -1528,7 +1575,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     for (var j = frame.length - 1; j >= 0; j--) {
                         if (frame[j].macro_name === macro_name) {
                             var e = cons("quote", cons(macro_expand(frame[j], cdr(expand)), GLOBAL_NULL));
-                            return compiler(e, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                            return compiler(e, vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                         }
                     }
                 }
@@ -1623,7 +1670,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
 	  */
             // return
             else if (tag === "return") {
-                compiler(cdr(l).type === TYPE_NULL ? GLOBAL_NULL : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation);
+                compiler(cdr(l).type === TYPE_NULL ? GLOBAL_NULL : cadr(l), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                 INSTRUCTIONS.push(RETURN << 12);
                 return;
             }
@@ -1636,7 +1683,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                         var frame = macros[i];
                         for (var j = frame.length - 1; j >= 0; j--) {
                             if (frame[j].macro_name === func) {
-                                return compiler(macro_expand_for_compilation(frame[j], cdr(l), macros), /*frame[j].vt,*/ vt, macros, tail_call_flag, parent_func_name, functions_for_compilation)
+                                return compiler(macro_expand_for_compilation(frame[j], cdr(l), macros), /*frame[j].vt,*/ vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env)
                             }
                         }
                     }
@@ -1662,13 +1709,13 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                             for (; j >= i; j--) {
                                 p = cons("cons", cons(params[j], cons(p, GLOBAL_NULL)));
                             }
-                            compiler(p, vt, macros, false, parent_func_name, functions_for_compilation); // each argument is not tail call
+                            compiler(p, vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
                             // set to current frame
                             INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
                             INSTRUCTIONS.push(0x0000FFFF & track_index); // value index
                         } else {
                             count_params++;
-                            compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation); // each argument is not tail call
+                            compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
                             // set to current frame
                             INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
                             INSTRUCTIONS.push(0x0000FFFF & track_index); // value index
@@ -1703,7 +1750,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                 // not tail call
                 else {
                     // compile function first
-                    compiler(func, vt, macros, false, parent_func_name, functions_for_compilation); // compile lambda, save to accumulator
+                    compiler(func, vt, macros, false, parent_func_name, functions_for_compilation, env); // compile lambda, save to accumulator
                     INSTRUCTIONS.push(NEWFRAME << 12); // create new frame and set flag
                     // compile parameters
                     var param_num = 0;
@@ -1713,7 +1760,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                     param_num = params.length; // get param num
                     for (var i = 0; i < param_num; i++) // compile parameter from ---right to left---, now from left to right
                     {
-                        compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation); // each argument is not tail call
+                        compiler(params[i], vt, macros, false, parent_func_name, functions_for_compilation, env); // each argument is not tail call
                         INSTRUCTIONS.push(PUSH_ARG << 12 | (i + 2)); // push parameter to new frame
                     }
                     //compiler(func, vt, macros, false, parent_func_name, functions_for_compilation); // compile lambda, save to accumulator
@@ -1723,24 +1770,37 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
             }
         }
     }
-var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_compilation) {
+
+var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_compilation, env) {
+        var acc = null;
         if (typeof(parent_func_name) === "undefined") parent_func_name = GLOBAL_NULL;
         if (typeof(functions_for_compilation) === "undefined") functions_for_compilation = GLOBAL_NULL;
-        // console.log("parent_func_name: " + parent_func_name);
+        if (typeof(env) === "undefined") env = GLOBAL_NULL;
         while (l.type !== TYPE_NULL) {
             if (cdr(l).type === TYPE_NULL && car(l).type === TYPE_PAIR && car(car(l)) === parent_func_name) {
                 // console.log("Tail Call");
-                compiler(car(l), vt, macros, 1, GLOBAL_NULL, functions_for_compilation) // tail call
-            } else compiler(car(l), vt, macros, 0, parent_func_name, functions_for_compilation) // not tail call;
+                compiler(car(l), vt, macros, 1, GLOBAL_NULL, functions_for_compilation, env)      // tail call
+            } 
+            else 
+                compiler(car(l), vt, macros, 0, parent_func_name, functions_for_compilation, env) // not tail call;
             l = cdr(l);
+
+            /* 
+                runtime evaluation support
+                run instructions 
+                我可能以后会添加一些flag， 例如在编译模式下就不运行，但是macro会有错
+            */ 
+            /*
+            if(vt.length == 1){
+                console.log("Run");
+                acc = VM(INSTRUCTIONS, env, INSTRUCTIONS_PC); // run instructions
+                INSTRUCTIONS_PC = INSTRUCTIONS.length;  // update instruction pc
+                console.log("Finish running VM");
+                console.log(acc);
+            }
+            */
+
         }
-/*
-      var opcode = (INSTRUCTIONS[INSTRUCTIONS.length - 1] & 0xF000) >> 12;
-      if(opcode === CALL)
-      {
-      console.log("TAIL CALL");
-      INSTRUCTIONS[INSTRUCTIONS.length - 1] = INSTRUCTIONS[INSTRUCTIONS.length - 1] | 0x0001; // add tail call flag
-  }*/
         return;
     }
     // variables for VM
@@ -2154,6 +2214,11 @@ var VM = function(INSTRUCTIONS, env, pc) {
     // console.log(p);
     //console.log(vm(p, Environment, null));
     // exports to Nodejs
+    //var l = lexer("(defmacro square ([x] (* x x))) (square 12)");
+    //var o = parser(l);
+    //var p = compiler_begin(o, VARIABLE_TABLE, MACROS, null, null, ENVIRONMENT);
+
+
     /*
 var l = lexer("(def f (lambda [n] (if (= n 0) 1 (* n (f (- n 1)))))) (f 100)");
 var o = parser(l);
