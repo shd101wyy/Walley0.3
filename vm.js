@@ -205,152 +205,12 @@ var isInteger = function(n) {
 var isFloat = function(n) {
         return isNumber(n) && !(isInteger(n))
     }
-/*
-  suppose list, number, symbol
-  */
-var lexer_iter = function(input_string, index, ahead_is_parenthesis) {
-        if (index >= input_string.length) return GLOBAL_NULL;
-        else if (input_string[index] == "(") return cons(input_string[index], lexer_iter(input_string, index + 1, true));
-        else if (input_string[index] == ")") return cons(input_string[index], lexer_iter(input_string, index + 1, false));
-        else if (input_string[index] == " " || input_string[index] == "\n" || input_string[index] == "\t" || input_string[index] == ",") return lexer_iter(input_string, index + 1, false);
-        else if (input_string[index] == "#" && (input_string[index + 1] == "[" || input_string[index + 1] == "(")) // vector
-        return cons("(", cons("vector", lexer_iter(input_string, index + 2, false)));
-        else if (input_string[index] == "{") // object
-        return cons("(", cons("object", lexer_iter(input_string, index + 1, false)));
-        else if (input_string[index] == "[" || input_string[index] == "{") return cons("(", lexer_iter(input_string, index + 1, false));
-        else if (input_string[index] == "]" || input_string[index] == "}") return cons(")", lexer_iter(input_string, index + 1, false));
-        else if (input_string[index] == "~" && input_string[index + 1] == "@") return cons("~@", lexer_iter(input_string, index + 2, false));
-        else if (input_string[index] == "'" || input_string[index] == "`" || input_string[index] == "~") return cons(input_string[index], lexer_iter(input_string, index + 1, false));
-        else if (input_string[index] == ";") { // comment
-            var i = index;
-            while (i != input_string.length) {
-                if (input_string[i] == "\n") break;
-                i++;
-            }
-            return lexer_iter(input_string, i, false);
-        } else if (input_string[index] === '"') {
-            var i = index + 1;
-            while (i != input_string.length) {
-                if (input_string[i] === "\\") {
-                    i = i + 2;
-                    continue;
-                }
-                if (input_string[i] === "\"") break;
-                i++
-            }
-            return cons(input_string.slice(index, i + 1), lexer_iter(input_string, i + 1, false));
-        }
-        // get number symbol
-        var end = index;
-        var s_;
-        while (true) {
-            if (end === input_string.length || input_string[end] === " " || input_string[end] === "\n" || input_string[end] === "\t" || input_string[end] === "," || input_string[end] === ")" || input_string[end] === "(" || input_string[end] === "]" || input_string[end] === "[" || input_string[end] === "{" || input_string[end] === "}" || input_string[end] === "'" || input_string[end] === "`" || input_string[end] === "~" || input_string[end] === ";") break;
-            end += 1;
-        }
-        s_ = input_string.slice(index, end);
-        //if(s_ === "def" && ahead_is_parenthesis === false){ 
-        //}
-        /*
-        if(s_ === "end"){
-            return cons(")", lexer_iter(input_string, end, false)); 
-        }
-        // def 和 set! 不需要 end
-        if(ahead_is_parenthesis === false && (s_ === "lambda" || s_ === "let" || s_ === "if")){ // def x lambda (a b) (+ a b) end, will support others in future
-            return cons("(", cons(s_, lexer_iter(input_string, end, false)));
-        }
-        // (add 3 4) <=> add[3,4]
-        if(end !== input_string.length && input_string[end] === "[" && (s_!== "lambda" || s_!== "let" || s_!=="def" || s_ !== "set!" || s_ !== "let")) 
-            return cons("(", cons(s_, lexer_iter(input_string, end + 1, false)));
-        else
-        */
-            return cons(s_, lexer_iter(input_string, end, false));
-    }
-var lexer = function(input_string) {
-        return lexer_iter(input_string, 0, false);
-    }
-
-/*
-  simple parser
-  */
-var parser_rest = GLOBAL_NULL;
 var formatQuickAccess = function(ns, keys) {
         var formatQuickAccess_iter = function(keys, output, count) {
                 if (count === keys.length) return output;
-                return formatQuickAccess_iter(keys, cons(output, cons(cons("quote", cons(keys[count], GLOBAL_NULL)), GLOBAL_NULL)), count + 1);
+                return formatQuickAccess_iter(keys, cons(output, cons(cons(make_string("quote"), cons(make_string(keys[count]), GLOBAL_NULL)), GLOBAL_NULL)), count + 1);
             }
-        return formatQuickAccess_iter(keys, cons(ns, cons(cons("quote", cons(keys[0], GLOBAL_NULL)), GLOBAL_NULL)), 1);
-    }
-var parser_symbol_or_number = function(v) {
-        if (v[0] === '"') return v;
-        var splitted_ = v.split(":");
-        if (v === ":" || splitted_.length == 1 || v[0] === ":" || v[v.length - 1] === ":") //  : :abc abc:
-        return v
-        var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
-        var keys = splitted_.slice(1);
-        var formatted_ = formatQuickAccess(ns, keys); // eg x:a => (x :a)
-        return formatted_;
-    }
-var parser_special = function(l) {
-        var tag;
-        if (car(l) === "'") tag = "quote"
-        else if (car(l) === "~") tag = "unquote"
-        else if (car(l) === "~@") tag = "unquote-splice"
-        else tag = 'quasiquote'
-        l = cdr(l);
-        if (car(l) === "(") // list
-        {
-            return cons(tag, cons(parser_list(cdr(l)), GLOBAL_NULL));
-        } else if (car(l) === "'" || car(l) === "~" || car(l) === "`") // quote unquote quasiquote
-        { // here my be some errors
-            return cons(tag, cons(parser_special(l), GLOBAL_NULL));
-        } else // symbol or number
-        {
-            parser_rest = cdr(l);
-            return cons(tag, cons(parser_symbol_or_number(car(l)), GLOBAL_NULL));
-        }
-    }
-var parser_list = function(l) {
-        if (l.type === TYPE_NULL) {
-            console.log("ERROR: invalid statement. Missing )");
-            parser_rest = GLOBAL_NULL;
-            return GLOBAL_NULL;
-        }
-        if (car(l) == ")") // find end
-        {
-            parser_rest = cdr(l);
-            return GLOBAL_NULL;
-        } else if (car(l) == "(") // another list
-        {
-            return cons(parser_list(cdr(l)), parser_list(parser_rest));
-        } else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@") // quote unquote quasiquote unquote-splice
-        {
-            return cons(parser_special(l), parser_list(parser_rest));
-        } else // symbol number
-        {
-            return cons(parser_symbol_or_number(car(l)), parser_list(cdr(l)));
-        }
-    }
-var parser = function(l) {
-        if (l.type === TYPE_NULL) return GLOBAL_NULL;
-        else if (car(l) == "(") return cons(parser_list(cdr(l)), parser(parser_rest));
-        // quote // unquote // quasiquote // unquote-splice
-        else if (car(l) === "'" || car(l) === "~" || car(l) === "`" || car(l) === "~@") return cons(parser_special(l), parser(parser_rest));
-        else{ // symbol number
-        // def x 12
-        // def y 15
-        /*
-            if(car(l) === "def" || car(l) === "set!"){
-                var val_start = caddr(l);
-                if(val_start === "(") // def add lambda (a b) (+ a b) end
-                    return cons(cons(car(l), cons(cadr(l), cons(parser_list(cdddr(l)), GLOBAL_NULL))), parser(parser_rest));
-                else if (val_start === "'" || val_start === "~" || val_start === "`" || val_start === "~@")  // def x '(a b)
-                    return cons(parser_special(cddr(l)), parser(parser_rest));
-                else  // def x 12  def y 15
-                    return cons(cons(car(l), cons(cadr(l), cons(caddr(l), GLOBAL_NULL))), parser(cdddr(l)));
-            }
-            */
-            return cons(parser_symbol_or_number(car(l)), parser(cdr(l)));
-        }
+        return formatQuickAccess_iter(keys, cons(make_string(ns), cons(cons(make_string("quote"), cons(make_string(keys[0]), GLOBAL_NULL)), GLOBAL_NULL)), 1);
     }
 
 // new lexer in order to support (add 3 4) <=> add[3, 4]
@@ -464,7 +324,7 @@ var new_parser_get_tag = function(i){
     else if (i === "~") tag = "unquote"
     else if (i === "~@") tag = "unquote-splice"
     else tag = 'quasiquote';
-    return tag;
+    return make_string(tag);
 }
 var new_parser = function(l){
     var current_list_pointer = GLOBAL_NULL;
@@ -496,7 +356,18 @@ var new_parser = function(l){
             if (l[i][0] === '"') temp = l[i];
             var splitted_ = l[i].split(":");
             if (l[i] === ":" || splitted_.length == 1 || l[i][0] === ":" || l[i][l[i].length - 1] === ":") //  : :abc abc:
-                temp = l[i];
+            {
+                // 暂不支持 "" 
+                if(isInteger(l[i])){
+                    temp = make_integer(parseInt(l[i]));
+                }
+                else if (isFloat(l[i])){
+                    temp = make_float(parseFloat(l[i]));
+                }
+                else{
+                    temp = make_string(l[i]);
+                }
+            }
             else{
                 var ns = splitted_[0]; // eg x:a => ns 'x'  keys ['a']
                 var keys = splitted_.slice(1);
@@ -523,12 +394,24 @@ var new_parser = function(l){
 // print list
 var new_parser_debug = function(p){
     var output_string = "(";
+    var v;
     while(p!==GLOBAL_NULL){
-        if(car(p).type === TYPE_PAIR || car(p) === GLOBAL_NULL){
-            output_string += new_parser_debug(car(p));
+        v = car(p);
+        if(v.type === TYPE_PAIR || v === GLOBAL_NULL){
+            output_string += new_parser_debug(v);
         }
         else{
-            output_string += car(p);
+            switch (v.type){
+                case TYPE_STRING:
+                    output_string += v.string   
+                    break;
+                case TYPE_INTEGER: case TYPE_FLOAT:
+                    output_string += v.num;
+                    break;
+                case TYPE_NULL:
+                    output_string += "()";
+                    break;
+                }
         }
         output_string += " ";
         p = cdr(p);
@@ -1071,7 +954,8 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
             INSTRUCTIONS.push(CONST_NULL); // push null
             return;
         }
-        if (typeof(l) === "string") {
+        //if (typeof(l) === "string") {
+        if (l.type == TYPE_STRING){
             if (l.type === TYPE_NULL) {
                 INSTRUCTIONS.push(CONST_NULL);
                 return;
@@ -2237,6 +2121,12 @@ var p = new_parser(l)
 console.log(p);
 console.log(new_parser_debug(p));
 */
+var v = "(def x '(1 2 3)) (a:b:c)"
+var l = new_lexer(v);
+var p = new_parser(l);
+
+console.log(new_parser_debug(p));
+
 if (typeof(module) != "undefined") {
     module.exports.vm_lexer = new_lexer;
     module.exports.vm_parser = new_parser;
