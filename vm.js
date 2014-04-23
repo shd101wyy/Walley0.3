@@ -116,15 +116,17 @@ var make_lambda = function(param_num, variadic_place, start_pc, env) {
 /*
     Continuation data type
 */
-var Continuation = function(start_pc, env){
+var Continuation = function(start_pc, env, current_frame_pointer, top_function){
     this.start_pc = start_pc; 
     this.env = env;
+    this.current_frame_pointer = current_frame_pointer;
+    this.top_function = top_function;
 }
 
-var make_continuation = function(start_pc, env){
+var make_continuation = function(start_pc, env, current_frame_pointer, top_function){
     var v = new Value();
     v.type = TYPE_CONTINUATION;
-    v.continuation = new Continuation(start_pc, env);
+    v.continuation = new Continuation(start_pc, env, current_frame_pointer, top_function);
     return v;
 }
 
@@ -1381,13 +1383,18 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
     // variables for VM
 var constant_table = [GLOBAL_TRUE]; // used to save constant. 
 var VM = function(INSTRUCTIONS, env, pc) {
-        //printInstructions(INSTRUCTIONS);
+        printInstructions(INSTRUCTIONS);
+        printInstructions("\n\n");
         if (typeof(pc) === "undefined") pc = 0;
         var accumulator = GLOBAL_NULL; // accumulator
         var length_of_insts = INSTRUCTIONS.length;
         var current_frame_pointer = GLOBAL_NULL; // pointer that points to current new frame
         var frame_list = cons(GLOBAL_NULL, GLOBAL_NULL); // stack used to save frames    head frame1 frame0 tail, queue
         var functions_list = GLOBAL_NULL; // used to save functions 
+
+        var continuation_return_pc = GLOBAL_NULL;  // 保存 continuation 返回时候的 return pc
+
+
         while (pc !== length_of_insts) {
             var inst = INSTRUCTIONS[pc];
             var opcode = (inst & 0xF000) >> 12;
@@ -1534,7 +1541,6 @@ var VM = function(INSTRUCTIONS, env, pc) {
                     case TYPE_BUILTIN_LAMBDA:
                         lambda = lambda.builtin_lambda;
                         // builtin lambda
-                        //lambda = accumulator.builtin_lambda;
                         pc = pc + 1;
                         accumulator = lambda(current_frame_pointer, current_frame_pointer.length - param_num); // remove saved env and pc
                         for(var i = 0; i < param_num; i++){
@@ -1542,6 +1548,11 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         }
                         frame_list = cdr(frame_list); // pop top frame
                         current_frame_pointer = car(frame_list) // update frame_pointer
+
+                        /*if(continuation_return_pc !== GLOBAL_NULL){
+                            pc = car(continuation_return_pc);
+                            continuation_return_pc = cdr(continuation_return_pc);
+                        }*/
                         continue
                     case TYPE_OBJECT: // doesn't support object anymore
                         // object
@@ -1620,11 +1631,29 @@ var VM = function(INSTRUCTIONS, env, pc) {
                         frame_list = cdr(frame_list) // update frame list
                         current_frame_pointer = car(frame_list);
                         continue;
+                    // test
+                    // (def x 0)(+ 1 (call/cc (lambda (a) (set! x a) 2))) (x 3) => 4
                     case TYPE_CONTINUATION: // continuation
                         accumulator = current_frame_pointer[current_frame_pointer.length - param_num]; // set accumulator (return value)
+                        console.log("accumulator: ");
+                        console.log(accumulator);
                         // restore env and pc
-                        env = lambda.continuation.env; 
+                        env = lambda.continuation.env.slice(0); 
                         pc = lambda.continuation.start_pc; 
+
+                        for(var i = 0; i < param_num; i++){
+                                current_frame_pointer.pop(); // pop params
+                        }
+                        frame_list = cdr(frame_list); // pop top frame
+                        current_frame_pointer = car(frame_list);
+                        //current_frame_pointer = lambda.continuation.current_frame_pointer === GLOBAL_NULL ? GLOBAL_NULL : lambda.continuation.current_frame_pointer.slice(0);
+
+                        //frame_list = cons(current_frame_pointer, frame_list);
+                        
+                        // functions_list = cons(lambda.continuation.top_function, functions_list);
+                        
+                        // save next pc to  continuation_return_pc
+                        // continuation_return_pc = cons(pc + 1, continuation_return_pc);
                         continue;
                     default: 
                         switch(lambda.num){
@@ -1640,6 +1669,7 @@ var VM = function(INSTRUCTIONS, env, pc) {
                                     }
                                     pc = pc + 1;
                                     accumulator = func(args, 0);
+
                                     for(var i = 0; i < param_num; i++){
                                         current_frame_pointer.pop(); // pop params
                                     }
@@ -1696,17 +1726,20 @@ var VM = function(INSTRUCTIONS, env, pc) {
                                     current_frame_pointer = car(frame_list);
                                     continue;
                                 }
+
                             case 1:  // call cc
-                                var p = current_frame_pointer[current_frame_pointer.length - param_num].lambda;
-                                var new_env = p.env.slice(0);
-                                var new_env_frame = [env, pc + 1, make_continuation(pc + 1, env.slice(0))];
+                                console.log(cadr(frame_list));
+                                var p = current_frame_pointer[current_frame_pointer.length - param_num].lambda; // 得到 lambda
+                                var new_env = p.env.slice(0); // create new env for that lambda
+                                var new_env_frame = [env, pc + 1, make_continuation(pc + 1, env.slice(0), cadr(frame_list) === GLOBAL_NULL ? GLOBAL_NULL : cadr(frame_list).slice(0), functions_list === GLOBAL_NULL ? GLOBAL_NULL : car(functions_list) )]; // env, return-pc continuation...
                                 new_env.push(new_env_frame);
 
+                                // ==========================================
                                 for(var i = 0; i < param_num; i++){
                                         current_frame_pointer.pop(); // pop params
                                     }
                                 frame_list = cdr(frame_list); // pop top frame
-                                current_frame_pointer = car(frame_list) // update frame_pointer
+                                current_frame_pointer = frame_list == GLOBAL_NULL ? GLOBAL_NULL : car(frame_list) // update frame_pointer
 
                                 env = new_env;
                                 pc = p.start_pc;
@@ -1718,7 +1751,7 @@ var VM = function(INSTRUCTIONS, env, pc) {
                     }
                 }
             case NEWFRAME:
-                // get functino
+                // get function
                 switch (accumulator.type){
                     case TYPE_LAMBDA:
                         var new_frame = [null, null];
@@ -1756,10 +1789,17 @@ var VM = function(INSTRUCTIONS, env, pc) {
                 // return
                 { // return
                     // restore pc and env
-                    pc = env[env.length - 1][1];
                     env = env[env.length - 1][0];
-                    // update current_frame_pointer
-                    //current_frame_pointer = car(frame_list);
+                    pc = env[env.length - 1][1];
+
+                    /*
+                    if(continuation_return_pc !== GLOBAL_NULL){
+                        pc = car(continuation_return_pc);
+                        continuation_return_pc = cdr(continuation_return_pc);
+                    }
+                    else{
+                        pc = env[env.length - 1][1];
+                    }*/
                     continue;
                 }
             case PUSH:
