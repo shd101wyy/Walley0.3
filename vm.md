@@ -15,7 +15,7 @@
 8. CALL 	   0x7  
 9. JMP 	   0x8  
 10. TEST 	   0x9  
-
+11. PUSH  0xA  保存到最top的frame上
 =================================================  
 ### first 4 bits instructions
 ```
