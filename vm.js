@@ -1387,6 +1387,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
     }
     // variables for VM
 var constant_table = [GLOBAL_TRUE]; // used to save constant. 
+var BUILTIN_PRIMITIVE_PROCEDURE_STACK = [];
 var VM = function(INSTRUCTIONS, env, pc, end_pc, frame_list, functions_list, continuation_env, continuation_return_pc, is_continuation_if_less_than_0, accumulator) {
         //printInstructions(INSTRUCTIONS);
         //printInstructions("\n\n");
@@ -1865,13 +1866,13 @@ var VM = function(INSTRUCTIONS, env, pc, end_pc, frame_list, functions_list, con
                         pc = pc + 1;
                         continue;
                     case TYPE_BUILTIN_LAMBDA: case TYPE_VECTOR: case TYPE_OBJECT: case TYPE_CONTINUATION:
-                        current_frame_pointer = env[env.length - 1]; // get top frame
+                        current_frame_pointer = BUILTIN_PRIMITIVE_PROCEDURE_STACK; // env[env.length - 1]; // get top frame
                         frame_list = cons(current_frame_pointer, frame_list);
                         functions_list = cons(accumulator, functions_list);
                         pc = pc + 1;
                         continue;
                     default: // apply function
-                        current_frame_pointer = env[env.length - 1]; // get top frame
+                        current_frame_pointer = BUILTIN_PRIMITIVE_PROCEDURE_STACK;// env[env.length - 1]; // get top frame
                         frame_list = cons(current_frame_pointer, frame_list);
                         functions_list = cons(accumulator, functions_list);
                         pc = pc + 1;
