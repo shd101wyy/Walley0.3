@@ -258,17 +258,11 @@ var new_lexer = function(input_string){
             output_list.push("vector");
             i++;
         }
-        else if (input_string[i] == "{"){
-            output_list.push("(");
-            output_list.push("object");
-        }
-        else if (input_string[i] == "{"){
-            output_list.push("{");
-        }
-        else if (input_string[i] == "["){
+        else if (input_string[i] == "[" || input_string[i] == "{"){
             if(i!== 0 && 
              (input_string[i - 1] != " " && input_string[i - 1] != "\n"  && input_string[i - 1] != "\t"
-              && input_string[i-1] != "'" && input_string[i-1]!="`" && input_string[i-1]!="~")){
+              && input_string[i-1] != "'" && input_string[i-1]!="`" && input_string[i-1]!="~"
+             && input_string[i - 1]!="(" && input_string[i - 1]!="{" && input_string[i - 1]!="[")){
                 if(output_list[output_list.length - 1]!==")"){ // +[  => ( +
                     var t = output_list[output_list.length - 1];
                     output_list[output_list.length - 1] = "(";
@@ -297,9 +291,20 @@ var new_lexer = function(input_string){
                 }
             }
             else{
-                output_list.push("(");
+                if(input_string[i] === "[")
+                    output_list.push("(");
+                else{
+                    output_list.push("(");
+                    output_list.push("object");
+                }
             }
         }
+        /*
+        else if (input_string[i] == "{"){
+            output_list.push("(");
+            output_list.push("object");
+        }
+        */
         else if (input_string[i] == "]" || input_string[i] == "}"){
             output_list.push(")")
         }

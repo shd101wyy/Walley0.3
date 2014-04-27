@@ -7,10 +7,16 @@ def add lambda (a b)
     (+ a b)
 end
 
+def add lambda{[a b] (+ a b)};
+let{[a b] (+ a b)}
+
+
 def sub lambda (a b)
     -[a b]  ;; same as (- a b)
 end
 
+;; <=>
+def sub lambda{[a b] (- a b)}
 ;; <=>
 def sub (lambda [a b]
             -[a b])
@@ -34,6 +40,13 @@ def max lambda (a b)
         b
     end
 end
+
+def mac lambda{[a b]
+    if{(> a b)
+        a
+        b
+        }
+    }
 
 defm swap (a b)
     let temp ~a do
@@ -135,6 +148,13 @@ def list-ref lambda [l n]
         list-ref[cdr[l], n]
     end
 end 
+
+def list-ref lambda{[l n]
+    if{(= n 0)
+        car[l]
+        list-ref[cdr[l], n]
+        }
+    }
 
 def list-length lambda [l]
     if (null? l)
