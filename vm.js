@@ -267,11 +267,12 @@ var new_lexer = function(input_string){
         }
         else if (input_string[i] == "["){
             if(i!== 0 && 
-             (input_string[i - 1] != " " && input_string[i - 1] != "\n"  && input_string[i - 1] != "\t")){
-                if(output_list[output_list.length - 1]!==")"){
-                    //var t = output_list[output_list.length - 1];
-                    //output_list[output_list.length - 1] = "(";
-                    output_list.push("(");
+             (input_string[i - 1] != " " && input_string[i - 1] != "\n"  && input_string[i - 1] != "\t"
+              && input_string[i-1] != "'" && input_string[i-1]!="`" && input_string[i-1]!="~")){
+                if(output_list[output_list.length - 1]!==")"){ // +[  => ( +
+                    var t = output_list[output_list.length - 1];
+                    output_list[output_list.length - 1] = "(";
+                    output_list.push(t);
                 }
                 else{ // ahead is )
                     var count = 1;
@@ -1779,7 +1780,7 @@ var VM = function(INSTRUCTIONS, env, pc, end_pc, frame_list, functions_list, con
                         }
                     default: 
                         switch(lambda.num){
-                            case 0:  // apply
+                            case 1:  // apply
                                 lambda = current_frame_pointer[current_frame_pointer.length - param_num];
                                 if(lambda.type === TYPE_BUILTIN_LAMBDA){
                                     var func = lambda.builtin_lambda;  
@@ -1857,7 +1858,7 @@ var VM = function(INSTRUCTIONS, env, pc, end_pc, frame_list, functions_list, con
                                     continue;
                                 }
                             // start_pc, env, frame_list, functions_list, continuation_return_pc, continuation_env
-                            case 1:  // call cc
+                            case 2:  // call cc
                                 var p = current_frame_pointer[current_frame_pointer.length - param_num].lambda; // 得到 lambda
                                 // ==========================================
                                 for(var i = 0; i < param_num; i++){
