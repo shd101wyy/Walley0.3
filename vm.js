@@ -1424,6 +1424,7 @@ var compiler_begin = function(l, vt, macros, parent_func_name, functions_for_com
             */ 
             
             if(vt.length == 1){
+                printInstructions(INSTRUCTIONS);
                 acc = VM(INSTRUCTIONS, env, INSTRUCTIONS_PC); // run instructions
                 INSTRUCTIONS_PC = INSTRUCTIONS.length;  // update instruction pc
                 console.log("****** Finish running VM ******");

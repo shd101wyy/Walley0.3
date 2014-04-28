@@ -11,7 +11,7 @@
 int main(){
     
     Walley_init();
-    char s[1000] = "(def x 'a) 'a";
+    char s[1000] = "(if 'a 'b 'c)";
     Lexer * p;
     p = lexer((char*)s);
     Lexer_Debug(p);
@@ -24,7 +24,7 @@ int main(){
     compiler_begin(insts,
                    o,
                    VT_init(),
-                   "",
+                   NULL,
                    NULL);
     printInstructions(insts);
     /*

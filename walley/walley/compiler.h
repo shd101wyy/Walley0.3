@@ -53,6 +53,11 @@ void compiler(Instructions * insts,
               int tail_call_flag,
               char * parent_func_name,
               Lambda_for_Compilation * function_for_compilation){
+    /*if(l->type == PAIR){
+        printf("\n##");
+        parser_debug(l);
+        printf("##\n");
+    }*/
     int i, j;
     unsigned long index1, index2, index3, jump_steps, start_pc;
     char * string;
@@ -92,7 +97,7 @@ void compiler(Instructions * insts,
                             case '\\':
                                 s[j] = '\\';
                             default:
-                                printf("ERROR: Invalid String Slash");
+                                printf("ERROR: Invalid String Slash\n");
                                 break;
                             i++;
                         }
@@ -120,8 +125,7 @@ void compiler(Instructions * insts,
                                  Object_initInteger(CONSTANT_TABLE_FOR_COMPILATION_LENGTH));
                     CONSTANT_TABLE_FOR_COMPILATION_LENGTH++;
                 }
-                // free var_value
-                free(var_value);
+               
                 
                 // so length of string is j
                 length = j;
@@ -147,7 +151,7 @@ void compiler(Instructions * insts,
                 VT_find(vt, l->data.String.v, vt_find);
                 if(vt_find[0] == -1){
                     // variable doesn't exist
-                    printf("ERROR: undefined variable %s", l->data.String.v);
+                    printf("ERROR: undefined variable %s\n", l->data.String.v);
                     return;
                 }
                 Insts_push(insts, GET<<12 | vt_find[0]); // frame index
@@ -199,6 +203,7 @@ void compiler(Instructions * insts,
                                     function_for_compilation);
                 }
                 else if(v->data.String.v[0] != '\''){
+                    
                     string = string_append("\"", string_append(v->data.String.v, "\""));
                     return compiler(insts,
                                     Object_initString(string,
@@ -223,7 +228,7 @@ void compiler(Instructions * insts,
                 for (j = frame->length - 1; j >= 0; j--) {
                     if (str_eq(var_name->data.String.v,
                                frame->var_names[j])) {
-                        printf("ERROR: variable: %s alreadt defined", var_name->data.String.v);
+                        printf("ERROR: variable: %s alreadt defined\n", var_name->data.String.v);
                         return;
                     }
                 }
@@ -288,12 +293,16 @@ void compiler(Instructions * insts,
                 index1 = insts->length;
                 Insts_push(insts, 0x0000); // jump steps
                 
+                //printf("\n@ %ld\n", insts->length);
+                //parser_debug(conseq);
+                v = cons(conseq, GLOBAL_NULL);
                 // compiler_begin ...
                 compiler_begin(insts,
                                cons(conseq, GLOBAL_NULL),
                                vt,
                                parent_func_name,
                                function_for_compilation);
+                //printf("\n@ %ld\n", insts->length);
                 
                 index2 = insts->length;
                 Insts_push(insts, JMP<<12); // jmp
@@ -385,7 +394,7 @@ void compiler(Instructions * insts,
                         break;
                     }
                     if (car(params)->type != STRING) {
-                        printf("ERROR: Invalid Function Parameter type");
+                        printf("ERROR: Invalid Function Parameter type\n");
                         return;
                     }
                     if (str_eq(car(params)->data.String.v,
@@ -551,7 +560,7 @@ void compiler(Instructions * insts,
                 }
             }
         default:
-            printf("ERROR: Invalid Data");
+            printf("ERROR: Invalid Data\n");
             return;
             break;
     }
@@ -568,22 +577,24 @@ void compiler_begin(Instructions * insts,
     while (l != GLOBAL_NULL) {
         if (cdr(l) == GLOBAL_NULL
             && car(l)->type == PAIR
+            && parent_func_name != NULL
             && str_eq(car(car(l))->data.String.v, parent_func_name)) {
             // tail call
             compiler(insts,
                      car(l),
                      vt,
                      1,
-                     "",
+                     NULL,
                      function_for_compilation);
         }
-        else
+        else{
             compiler(insts,
                      car(l),
                      vt,
                      0,
                      parent_func_name,
                      function_for_compilation);
+        }
         l = cdr(l);
     }
     parser_free(l); // free parser
