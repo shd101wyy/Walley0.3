@@ -180,6 +180,7 @@ Object * Object_initString(char * v, unsigned long string_length){
     }
     strcpy(o->data.String.v, v);
     o->data.String.length = string_length;
+    o->use_count = 0;
     return o;
 }
 /*

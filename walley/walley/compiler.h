@@ -109,7 +109,6 @@ void compiler(Instructions * insts,
                 if(var_value!= GLOBAL_NULL){ // already exist
                     Insts_push(insts, CONST_LOAD); // load from table
                     Insts_push(insts, var_value->data.Integer.v);
-                    
                     // free 'v'
                     free(v->data.String.v);
                     free(v);
