@@ -79,6 +79,7 @@ void printInstructions(Instructions * insts){
 typedef struct Variable_Table_Frame{
     char ** var_names;
     unsigned int length;
+    unsigned int use_count;
 } Variable_Table_Frame;
 
 /*
@@ -88,6 +89,7 @@ Variable_Table_Frame * VTF_init(unsigned int size){
     Variable_Table_Frame * vtf = malloc(sizeof(Variable_Table_Frame));
     vtf->var_names = malloc(sizeof(char*)*size);
     vtf->length = 0;
+    vtf->use_count = 0;
     return vtf;
 }
 /* 
@@ -125,6 +127,7 @@ void VTF_free(Variable_Table_Frame * vtf){
 typedef struct Variable_Table{
     Variable_Table_Frame * frames[VARIABLE_TABLE_MAX_SIZE];
     unsigned int length;
+    // unsigned int use_count;
 } Variable_Table;
 
 // push value to VT's #frame_index frame
@@ -136,8 +139,11 @@ typedef struct Variable_Table{
 Variable_Table * VT_init(){
     Variable_Table * vt = malloc(sizeof(Variable_Table));
     vt->frames[0] = VTF_init(FRAME0_SIZE);
-    vt->length = 1; // 有一个frame
+    vt->frames[0]->use_count = 1; // in use
     
+    vt->length = 1; // 有一个frame
+    //vt->use_count = 1; // in use
+
     // set frame0
     VT_push(vt, 0, "cons");
     VT_push(vt, 0, "car");
@@ -182,6 +188,8 @@ Variable_Table * VT_init(){
 }
 
 void Variable_Table_push_frame(Variable_Table * vt, Variable_Table_Frame * vtf){
+    vtf->use_count++; // increase use_count of vtf
+    
     vt->frames[vt->length] = vtf;
     vt->length++;
 }
@@ -203,8 +211,15 @@ void VT_find(Variable_Table * vt, char * var_name, int output[2]){
     output[1] = -1;
     return;
 }
+/* append empty frame */
+void VT_add_new_empty_frame(Variable_Table * vt){
+    Variable_Table_Frame * frame = VTF_init(64);
+    frame->use_count = 1; // increase use_count of vtf
+    vt->frames[vt->length] = frame;
+    vt->length++ ;
+}
 /*
-    克隆 Variabel Table
+    克隆 Variable Table
  */
 Variable_Table * VT_copy(Variable_Table * vt){
     Variable_Table * return_vt;
@@ -214,8 +229,27 @@ Variable_Table * VT_copy(Variable_Table * vt){
     return_vt->length = length;
     for (i = 0; i < length; i++) {
         return_vt->frames[i] = vt->frames[i]; // 没有copy frame deeply
+        vt->frames[i]->use_count++; // in use ++
     }
     return return_vt;
+}
+
+/*
+    free Variable Table
+ */
+void VT_free(Variable_Table * vt){
+    unsigned int length = vt->length;
+    unsigned i = 0;
+    for (i = 0; i < length; i++) {
+        vt->frames[i]->use_count--;
+        if (vt->frames[i]->use_count == 0) { // 只有在没人使用的时候free
+            VTF_free(vt->frames[i]);
+            vt->frames[i] = NULL;
+        }
+    }
+    free(vt->frames);
+    free(vt);
+    return;
 }
 
 
@@ -228,6 +262,11 @@ typedef struct Lambda_for_Compilation{
     unsigned long start_pc;
     Variable_Table * vt;
 }Lambda_for_Compilation;
+
+void LFC_free(Lambda_for_Compilation * func){
+    if(func->vt != NULL)
+        VT_free(func->vt);
+}
 
 #endif
 

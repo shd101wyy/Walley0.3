@@ -1340,7 +1340,7 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                         }
                         if (functions_for_compilation.variadic_place === -1 && i < functions_for_compilation.param_num) {
                             for (; i < functions_for_compilation.param_num; i++) {
-                                INSTRUCTIONS.push(CONST_NULL << 12);
+                                INSTRUCTIONS.push(CONST_NULL);
                                 // move to target index
                                 INSTRUCTIONS.push(SET << 12 | vt.length - 1); // frame index
                                 INSTRUCTIONS.push(i/* + 2*/); // value index 不再加2是因为不再存env 和 pc

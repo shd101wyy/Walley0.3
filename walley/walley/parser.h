@@ -76,6 +76,7 @@ Object * parser(Lexer * le){
     CONS_STRING = Object_initString("cons", 4);
     DEF_STRING = Object_initString("def", 3);
     SET_STRING = Object_initString("set", 3);
+    LAMBDA_STRING = Object_initString("lambda", 6);
     
     char ** l = le->string_array;
     uint32_t length = le->array_length;

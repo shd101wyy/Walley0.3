@@ -34,6 +34,7 @@ static Object * QUASIQUOTE_STRING;
 static Object * CONS_STRING;
 static Object * DEF_STRING;
 static Object * SET_STRING;
+static Object * LAMBDA_STRING;
 
 
 
