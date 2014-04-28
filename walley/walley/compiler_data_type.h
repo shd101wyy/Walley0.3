@@ -155,6 +155,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "vector!");
     VT_push(vt, 0, "vector");
     VT_push(vt, 0, "vector-length");
+    
     VT_push(vt, 0, "vector-push!");
     VT_push(vt, 0, "vector-pop!");
     VT_push(vt, 0, "=");
@@ -165,6 +166,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "int?");
     VT_push(vt, 0, "float?");
     VT_push(vt, 0, "pair?");
+    
     VT_push(vt, 0, "null?");
     VT_push(vt, 0, "lambda?");
     VT_push(vt, 0, "strcmp");
@@ -175,6 +177,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "table-keys");
     VT_push(vt, 0, "table-delete");
     VT_push(vt, 0, "file-read");
+    
     VT_push(vt, 0, "file-write");
     VT_push(vt, 0, "sys-argv");
     VT_push(vt, 0, "int->string");
