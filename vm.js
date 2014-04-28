@@ -234,7 +234,13 @@ var formatQuickAccess = function(ns, keys) {
                 if (count === keys.length) return output;
                 return formatQuickAccess_iter(keys, cons(output, cons(cons(make_string("quote"), cons(make_string(keys[count]), GLOBAL_NULL)), GLOBAL_NULL)), count + 1);
             }
-        return formatQuickAccess_iter(keys, cons(make_string(ns), cons(cons(make_string("quote"), cons(make_string(keys[0]), GLOBAL_NULL)), GLOBAL_NULL)), 1);
+        return formatQuickAccess_iter(keys,
+				      cons(make_string(ns),
+					   cons(cons(make_string("quote"), 
+						     cons(make_string(keys[0]), 
+							  GLOBAL_NULL)),
+						GLOBAL_NULL)),
+				      1);
     }
 
 // new lexer in order to support (add 3 4) <=> add[3, 4]
@@ -322,7 +328,7 @@ var new_lexer = function(input_string){
             }
         } 
         else if (input_string[i] === '"') {
-            var a = index + 1;
+            var a = i + 1;
             while (a != input_string.length) {
                 if (input_string[a] === "\\") {
                     a = a + 2;

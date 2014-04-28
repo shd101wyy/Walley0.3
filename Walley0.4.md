@@ -266,6 +266,45 @@ def x list[1, 2, 3, 4]
 def y list[:a 12 :b 15]
 
 
+def abs lambda [a]
+    if (> a 0)
+        a
+        (- a)
+    end
+end
+
+def max lambda [l]
+    def max_ car[l]
+    while not[null?[l]]
+        if (> car[l] max_)
+            max_ = car[l]
+        end
+    end
+    max_
+end
+
+(defn abs [a]
+    (if (> a 0)
+        a
+        (- a)))
+
+defn abs [a]
+    if (> a 0)
+        a
+        (- a)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
