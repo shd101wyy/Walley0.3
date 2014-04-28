@@ -67,17 +67,6 @@ void parser_free(Object * p){
     }
 }
 Object * parser(Lexer * le){
-    // init several constants
-    GLOBAL_NULL = Object_initNull(); // init GLOBAL_NULL
-    QUOTE_STRING = Object_initString("quote", 5);
-    UNQUOTE_STRING = Object_initString("unquote", 7);
-    UNQUOTE_SPLICE_STRING = Object_initString("unquote_splice", 14);
-    QUASIQUOTE_STRING = Object_initString("quasiquote", 10);
-    CONS_STRING = Object_initString("cons", 4);
-    DEF_STRING = Object_initString("def", 3);
-    SET_STRING = Object_initString("set", 3);
-    LAMBDA_STRING = Object_initString("lambda", 6);
-    
     char ** l = le->string_array;
     uint32_t length = le->array_length;
     Object * current_list_pointer = GLOBAL_NULL;
@@ -89,7 +78,7 @@ Object * parser(Lexer * le){
     char * t;
     char * ns;
     for(i = length - 1; i >= 0; i--){
-        printf("@ %s\n", l[i]);
+        // printf("@ %s\n", l[i]);
         if(str_eq(l[i], ")")){
             lists = cons(current_list_pointer, lists); // save current lists
             current_list_pointer = GLOBAL_NULL;        // reset current_list_pointer

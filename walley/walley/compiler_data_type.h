@@ -66,7 +66,7 @@ void printInstructions(Instructions * insts){
     unsigned long length = insts->length;
     unsigned long i;
     for (i = 0; i < length; i++) {
-        printf("%x ", insts->array[i]);
+        printf("%04x ", insts->array[i]);
     }
     return;
 }
@@ -248,7 +248,7 @@ void VT_free(Variable_Table * vt){
         }
     }
     free(vt->frames);
-    free(vt);
+    //free(vt);
     return;
 }
 

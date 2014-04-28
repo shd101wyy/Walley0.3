@@ -39,8 +39,6 @@ static Object * LAMBDA_STRING;
 
 
 static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
-static Object* CONSTANT_TABLE[1024];
-static int CONSTANT_TABLE_LENGTH = 1;
 static Object * SYS_ARGV;
 
 static int * INSTRUCTIONS;
@@ -327,7 +325,7 @@ void rehash(Object * t){
 /*
  getval
  */
-Object * getval(Object * t, Object * key){
+Object * Table_getval(Object * t, Object * key){
     unsigned long hash_value = hash(key->data.String.v, t->data.Table.size); // get hash value
     Table_Pair * table_pairs = t->data.Table.vec[hash_value]; // get pairs
     while(table_pairs!=NULL){
@@ -342,7 +340,7 @@ Object * getval(Object * t, Object * key){
 /*
  setval
  */
-void setval(Object *t, Object * key, Object * value){
+void Table_setval(Object *t, Object * key, Object * value){
     if(t->data.Table.length / (double)t->data.Table.size >= 0.7) // rehash
         rehash(t);
     unsigned long hash_value = hash(key->data.String.v, t->data.Table.size);

@@ -39,6 +39,7 @@
 		F6C86B75190E0CB40019820A /* vm.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = vm.js; sourceTree = "<group>"; };
 		F6C86B77190E0DAF0019820A /* compiler_data_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compiler_data_type.h; sourceTree = "<group>"; };
 		F6C86B78190E16670019820A /* compiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compiler.h; sourceTree = "<group>"; };
+		F6C86B79190E351A0019820A /* vm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vm.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +79,7 @@
 				F6C86B60190E07240019820A /* main.c */,
 				F6C86B77190E0DAF0019820A /* compiler_data_type.h */,
 				F6C86B78190E16670019820A /* compiler.h */,
+				F6C86B79190E351A0019820A /* vm.h */,
 				F6C86B62190E07240019820A /* walley.1 */,
 				F6C86B69190E07390019820A /* data_type.h */,
 				F6C86B73190E0B110019820A /* Makefile */,

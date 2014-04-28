@@ -10,6 +10,10 @@
 #define walley_compiler_h
 #include "compiler_data_type.h"
 
+static Object* CONSTANT_TABLE_FOR_COMPILATION;
+static unsigned long CONSTANT_TABLE_FOR_COMPILATION_LENGTH;
+// static int CONSTANT_TABLE_LENGTH = 0;
+
 Object * quote_list(Object * l){
     if(l->type == NULL_) return GLOBAL_NULL;
     Object * v = car(l);
@@ -61,7 +65,7 @@ void compiler(Instructions * insts,
     Object * v;
     Object * var_name, * var_value;
     Object * test, * conseq, * alter;
-    int var_existed, var_index;
+    int var_existed/*, var_index*/;
     Variable_Table_Frame * frame;
     switch (l->type) {
         case NULL_:
@@ -97,6 +101,29 @@ void compiler(Instructions * insts,
                         s[j] = l->data.String.v[i];
                     j++;
                 }
+                // init key save to 'v'
+                v = Object_initString(s, length);
+                var_value = Table_getval(CONSTANT_TABLE_FOR_COMPILATION,
+                                        v);
+                // check s in CONSTANT_TABLE_FOR_COMPILATION
+                if(var_value!= GLOBAL_NULL){ // already exist
+                    Insts_push(insts, CONST_LOAD); // load from table
+                    Insts_push(insts, var_value->data.Integer.v);
+                    
+                    // free 'v'
+                    free(v->data.String.v);
+                    free(v);
+                    return;
+                }
+                else{ // doesn't exist, save to table
+                    Table_setval(CONSTANT_TABLE_FOR_COMPILATION,
+                                 v,
+                                 Object_initInteger(CONSTANT_TABLE_FOR_COMPILATION_LENGTH));
+                    CONSTANT_TABLE_FOR_COMPILATION_LENGTH++;
+                }
+                // free var_value
+                free(var_value);
+                
                 // so length of string is j
                 length = j;
                 Insts_push(insts, CONST_STRING);
@@ -401,6 +428,12 @@ void compiler(Instructions * insts,
                                parent_func_name,
                                function_);
                 
+                VT_free(vt_); // free vt_;
+                free(vt_);
+                vt_ = NULL;
+                free(function_); // free lambda for compilation
+                function_ = NULL;
+                
                 return;
             }
             else if (str_eq(tag, "defmacro")){
@@ -556,11 +589,11 @@ void compiler_begin(Instructions * insts,
     }
     parser_free(l); // free parser
     l = NULL;
-    VT_free(vt);    // free vt
-    vt = NULL;
+    //VT_free(vt);    // free vt
+    //vt = NULL;
     //LFC_free(function_for_compilation); // free function_for_compilation
-    free(function_for_compilation);
-    function_for_compilation = NULL;
+    //free(function_for_compilation);
+    //function_for_compilation = NULL;
     return;
 }
 

@@ -7,10 +7,11 @@
 //
 
 #include <stdio.h>
-#include "compiler.h"
+#include "vm.h"
 int main(){
     
-    char s[1000] = "(def x 12)";
+    Walley_init();
+    char s[1000] = "(def x 'a) 'a";
     Lexer * p;
     p = lexer((char*)s);
     Lexer_Debug(p);
@@ -18,5 +19,17 @@ int main(){
     Object * o;
     o = parser(p);
     parser_debug(o);
+    
+    Instructions * insts = Insts_init(); // init insts
+    compiler_begin(insts,
+                   o,
+                   VT_init(),
+                   "",
+                   NULL);
+    printInstructions(insts);
+    /*
+    long i = 0x4029000000000000;
+    printf("\n%lf", *((double*)&(i)));
+    */
     return 0;
 }
