@@ -1,4 +1,0 @@
-/*
-  parser.c
- */
-#include "lexer.c"

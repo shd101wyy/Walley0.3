@@ -1,1 +1,0 @@
-gcc -g -Wall -Werror -o walley lexer.c

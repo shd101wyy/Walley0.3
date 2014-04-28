@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>35AF1DBE-FB2F-4CA4-AAE7-9054C08D7ECE</string>
+	<key>IDESourceControlProjectName</key>
+	<string>walley</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>222EF21E-7B49-4B47-A8EA-0A93FFA5A776</key>
+		<string>https://github.com/shd101wyy/Walley0.3.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>walley/walley.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>222EF21E-7B49-4B47-A8EA-0A93FFA5A776</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/shd101wyy/Walley0.3.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>222EF21E-7B49-4B47-A8EA-0A93FFA5A776</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>222EF21E-7B49-4B47-A8EA-0A93FFA5A776</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Walley0.3</string>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,424 @@
+Twalley
+v6
+r1
+cCheck dependencies
+cCompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+cLd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/walley normal x86_64
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
+c000000005348DAC500000000000000AA
+t1397283525
+s170
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/SDKSettings.plist
+c0000000052681EE9000000000000044C
+t1382555369
+s1100
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/CoreServices/SystemVersion.plist
+c00000000531E958700000000000001DE
+t1394513287
+s478
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/libSystem.dylib
+c00000000531E9589000000000000681C
+t1394513289
+s26652
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcache.dylib
+c0000000052681EED0000000000004734
+t1382555373
+s18228
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcommonCrypto.dylib
+c0000000052681EED000000000000FC6C
+t1382555373
+s64620
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcompiler_rt.dylib
+c0000000052681EED000000000000F6A0
+t1382555373
+s63136
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcopyfile.dylib
+c0000000052681EED0000000000006254
+t1382555373
+s25172
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcorecrypto.dylib
+c0000000052681EED000000000000E0F8
+t1382555373
+s57592
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdispatch.dylib
+c00000000531E9589000000000000D6DC
+t1394513289
+s55004
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdyld.dylib
+c00000000531E95890000000000006308
+t1394513289
+s25352
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libkeymgr.dylib
+c0000000052681EED0000000000004050
+t1382555373
+s16464
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/liblaunch.dylib
+c00000000531E95890000000000008570
+t1394513289
+s34160
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libmacho.dylib
+c0000000052681EED0000000000005EA0
+t1382555373
+s24224
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libquarantine.dylib
+c0000000052681EED0000000000005FAC
+t1382555373
+s24492
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libremovefile.dylib
+c0000000052681EED0000000000004440
+t1382555373
+s17472
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_asl.dylib
+c0000000052681EED000000000000AA28
+t1382555373
+s43560
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_blocks.dylib
+c0000000052681EED0000000000003E2C
+t1382555373
+s15916
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_c.dylib
+c00000000531E95890000000000030B04
+t1394513289
+s199428
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_configuration.dylib
+c00000000531E95890000000000005E54
+t1394513289
+s24148
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_dnssd.dylib
+c00000000531E95890000000000006A90
+t1394513289
+s27280
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_info.dylib
+c0000000052681EED00000000000178AC
+t1382555373
+s96428
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_kernel.dylib
+c00000000531E9589000000000001ADC8
+t1394513289
+s110024
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_m.dylib
+c0000000052681EED000000000001028C
+t1382555373
+s66188
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_malloc.dylib
+c00000000531E95890000000000008800
+t1394513289
+s34816
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_network.dylib
+c0000000052681EED0000000000011090
+t1382555373
+s69776
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_notify.dylib
+c0000000052681EED000000000000882C
+t1382555373
+s34860
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_platform.dylib
+c00000000531E958900000000000067AC
+t1394513289
+s26540
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_pthread.dylib
+c0000000052681EED0000000000008DEC
+t1382555373
+s36332
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_sandbox.dylib
+c00000000531E95890000000000004C08
+t1394513289
+s19464
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_stats.dylib
+c00000000531E95890000000000002428
+t1394513289
+s9256
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunc.dylib
+c0000000052681EED000000000000439C
+t1382555373
+s17308
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunwind.dylib
+c0000000052681EED0000000000006768
+t1382555373
+s26472
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libxpc.dylib
+c00000000531E958900000000000172F4
+t1394513289
+s94964
+
+N/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/5.1/include/module.map
+c00000000531E958A0000000000000ADC
+t1394513290
+s2780
+
+N/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/5.1/lib/darwin/libclang_rt.osx.a
+c000000005348DAB80000000000001770
+t1397283512
+s6000
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.o
+c00000000535DD33700000000000037C8
+t1398657847
+s14280
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.o
+c00000000535DD34D0000000000004F88
+t1398657869
+s20360
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o
+t1398658182
+s28568
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.o
+c00000000535DD34D0000000000006C54
+t1398657869
+s27732
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/walley.LinkFileList
+c00000000535DD368000000000000008C
+t1398657896
+s140
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/walley
+t1398658178
+s21860
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c
+c00000000000000000000000000000000
+t2
+s0
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h
+c00000000535DD3BE0000000000003339
+t1398657982
+s13113
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c
+c00000000535DD34D0000000000001BB9
+t1398657869
+s7097
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h
+c00000000535DD3A10000000000001BB9
+t1398657953
+s7097
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c
+c00000000535DD4860000000000000155
+t1398658182
+s341
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c
+c00000000535DD2DD0000000000001A49
+t1398657757
+s6729
+
+N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h
+c00000000535DD4770000000000001B95
+t1398658167
+s7061
+
+CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c
+r0
+
+CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c
+r0
+
+CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c
+r0
+
+CBuild AST from /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c
+r0
+
+CCheck dependencies
+r0
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies18"Check dependencies651dae060c0eb941^a27bae060c0eb941^-631"warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/Makefile' of type sourcecode.make for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h' of type sourcecode.c.h for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h' of type sourcecode.c.h for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h' of type sourcecode.c.h for architecture x86_644(21%IDEActivityLogMessage2@157"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/Makefile' of type sourcecode.make for architecture x86_64-420350982#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@155"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h' of type sourcecode.c.h for architecture x86_64-420350982#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@156"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h' of type sourcecode.c.h for architecture x86_64-420350982#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@159"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h' of type sourcecode.c.h for architecture x86_64-420350982#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--0#1#1#--18"Check dependencies36"E611676B-E8D6-4AB8-A863-5D85C461ED74-
+
+CCompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+s420350647.635986
+e420350647.687430
+r1
+xCompileC
+xBuild/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.o
+x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c
+xnormal
+xx86_64
+xc
+xcom.apple.compilers.llvm.clang.1_0.compiler
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:28:17: warning: unused variable 'GLOBAL_TRUE' [-Wunused-variable]
+ostatic Object * GLOBAL_TRUE;
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:29:17: warning: unused variable 'QUOTE_STRING' [-Wunused-variable]
+ostatic Object * QUOTE_STRING;
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:30:17: warning: unused variable 'UNQUOTE_STRING' [-Wunused-variable]
+ostatic Object * UNQUOTE_STRING;
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:31:17: warning: unused variable 'UNQUOTE_SPLICE_STRING' [-Wunused-variable]
+ostatic Object * UNQUOTE_SPLICE_STRING;
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:32:17: warning: unused variable 'QUASIQUOTE_STRING' [-Wunused-variable]
+ostatic Object * QUASIQUOTE_STRING;
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:33:17: warning: unused variable 'GLOBAL_FRAME' [-Wunused-variable]
+ostatic Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:34:16: warning: unused variable 'CONSTANT_TABLE' [-Wunused-variable]
+ostatic Object* CONSTANT_TABLE[1024];
+o               ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:35:12: warning: unused variable 'CONSTANT_TABLE_LENGTH' [-Wunused-variable]
+ostatic int CONSTANT_TABLE_LENGTH = 1;
+o           ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:36:17: warning: unused variable 'SYS_ARGV' [-Wunused-variable]
+ostatic Object * SYS_ARGV;
+o                ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:38:14: warning: unused variable 'INSTRUCTIONS' [-Wunused-variable]
+ostatic int * INSTRUCTIONS;
+o             ^
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:39:12: warning: unused variable 'INSTRUCTIONS_LENGTH' [-Wunused-variable]
+ostatic int INSTRUCTIONS_LENGTH;
+o           ^
+o11 warnings generated.
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection85"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c173"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.o walley/data_type.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler4be8a2b70a0eb941^d3faafb70a0eb941^-2073"/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:28:17: warning: unused variable 'GLOBAL_TRUE' [-Wunused-variable]static Object * GLOBAL_TRUE;                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:29:17: warning: unused variable 'QUOTE_STRING' [-Wunused-variable]static Object * QUOTE_STRING;                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:30:17: warning: unused variable 'UNQUOTE_STRING' [-Wunused-variable]static Object * UNQUOTE_STRING;                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:31:17: warning: unused variable 'UNQUOTE_SPLICE_STRING' [-Wunused-variable]static Object * UNQUOTE_SPLICE_STRING;                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:32:17: warning: unused variable 'QUASIQUOTE_STRING' [-Wunused-variable]static Object * QUASIQUOTE_STRING;                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:33:17: warning: unused variable 'GLOBAL_FRAME' [-Wunused-variable]static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:34:16: warning: unused variable 'CONSTANT_TABLE' [-Wunused-variable]static Object* CONSTANT_TABLE[1024];               ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:35:12: warning: unused variable 'CONSTANT_TABLE_LENGTH' [-Wunused-variable]static int CONSTANT_TABLE_LENGTH = 1;           ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:36:17: warning: unused variable 'SYS_ARGV' [-Wunused-variable]static Object * SYS_ARGV;                ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:38:14: warning: unused variable 'INSTRUCTIONS' [-Wunused-variable]static int * INSTRUCTIONS;             ^/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c:39:12: war11(36%IDEClangDiagnosticActivityLogMessage2@29"Unused variable 'GLOBAL_TRUE'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^27#16#27#16#529#0#19"Unused Entity Issue--2@30"Unused variable 'QUOTE_STRING'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^28#16#28#16#558#0#19"Unused Entity Issue--2@32"Unused variable 'UNQUOTE_STRING'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^29#16#29#16#588#0#19"Unused Entity Issue--2@39"Unused variable 'UNQUOTE_SPLICE_STRING'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^30#16#30#16#620#0#19"Unused Entity Issue--2@35"Unused variable 'QUASIQUOTE_STRING'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^31#16#31#16#659#0#19"Unused Entity Issue--2@30"Unused variable 'GLOBAL_FRAME'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^32#16#32#16#694#0#19"Unused Entity Issue--2@32"Unused variable 'CONSTANT_TABLE'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^33#15#33#15#742#0#19"Unused Entity Issue--2@39"Unused variable 'CONSTANT_TABLE_LENGTH'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^34#11#34#11#775#0#19"Unused Entity Issue--2@26"Unused variable 'SYS_ARGV'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^35#16#35#16#818#0#19"Unused Entity Issue--2@30"Unused variable 'INSTRUCTIONS'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^37#13#37#13#842#0#19"Unused Entity Issue--2@37"Unused variable 'INSTRUCTIONS_LENGTH'-420350647#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^38#11#38#11#867#0#19"Unused Entity Issue--0#0#1#-19%DVTDocumentLocation4@120"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/data_type.c0000000000000000^2563"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.o walley/data_type.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -fmodules -fmodules-cache-path=/Users/wangyiyi/Library/Developer/Xcode/DerivedData/ModuleCache -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/walley.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/data_type.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.c -o /Users/wangyiyi/百度云36"C90A4272-2163-44E3-AC96-F4B4FC542D7D-
+b5B1D28A1-B422-4336-8930-71F3B4148137
+
+CCompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+s420350669.822204
+e420350669.864471
+r1
+xCompileC
+xBuild/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.o
+x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c
+xnormal
+xx86_64
+xc
+xcom.apple.compilers.llvm.clang.1_0.compiler
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection81"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c165"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.o walley/lexer.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler158cd2cd0a0eb941^594fddcd0a0eb941^---0#0#1#-19%DVTDocumentLocation2@116"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/lexer.c0000000000000000^2537"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.o walley/lexer.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -fmodules -fmodules-cache-path=/Users/wangyiyi/Library/Developer/Xcode/DerivedData/ModuleCache -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/walley.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/lexer.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c -o /Users/wangyiyi/百36"7C53AD6B-49BF-4603-BCE7-43F8FED20BAB-
+b9B456062-3A09-49AF-9234-81C3D04E3B0D
+
+CCompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+s420350982.681508
+e420350982.734864
+r1
+xCompileC
+xBuild/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o
+x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c
+xnormal
+xx86_64
+xc
+xcom.apple.compilers.llvm.clang.1_0.compiler
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection80"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c163"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compilerda8dae060c0eb941^0821bc060c0eb941^---0#0#1#-19%DVTDocumentLocation2@115"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/main.c0000000000000000^2532"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -fmodules -fmodules-cache-path=/Users/wangyiyi/Library/Developer/Xcode/DerivedData/ModuleCache -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/walley.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c -o /Users/wangyiyi/百36"B44F6D13-4D6B-4290-BEB4-6E5D18835B67-
+b2538DC58-E650-458B-B367-AF7F5BB0F987
+
+CCompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
+s420350669.822585
+e420350669.872362
+r1
+xCompileC
+xBuild/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.o
+x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c
+xnormal
+xx86_64
+xc
+xcom.apple.compilers.llvm.clang.1_0.compiler
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.c
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:24:89: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]
+o                                                    cons(Object_initString(keys[count], strlen(keys[count])),
+o                                                         ~~~~~~~~~~~~~~~~~              ^~~~~~~~~~~~~~~~~~~
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:94:52: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]
+o                    temp = Object_initString(l[i], strlen(l[i]));
+o                           ~~~~~~~~~~~~~~~~~       ^~~~~~~~~~~~
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:130:69: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]
+o                                         cons(Object_initString(ns, strlen(ns)),
+o                                              ~~~~~~~~~~~~~~~~~     ^~~~~~~~~~
+o/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:132:94: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]
+o                                                        cons(Object_initString(splitted_[1], strlen(splitted_[1])), 
+o                                                             ~~~~~~~~~~~~~~~~~               ^~~~~~~~~~~~~~~~~~~~
+o4 warnings generated.
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection82"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c167"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.o walley/parser.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compilerfca8d2cd0a0eb941^1152dfcd0a0eb941^-1443"/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:24:89: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]                                                    cons(Object_initString(keys[count], strlen(keys[count])),                                                         ~~~~~~~~~~~~~~~~~              ^~~~~~~~~~~~~~~~~~~/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:94:52: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]                    temp = Object_initString(l[i], strlen(l[i]));                           ~~~~~~~~~~~~~~~~~       ^~~~~~~~~~~~/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:130:69: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]                                         cons(Object_initString(ns, strlen(ns)),                                              ~~~~~~~~~~~~~~~~~     ^~~~~~~~~~/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c:132:94: warning: implicit conversion loses integer precision: 'unsigned long' to 'int' [-Wshorten-64-to-32]                                                        cons(Object_initString(splitted_[1], strlen(splitted_[1])),                                                              ~~~~~~~~~~~~~~~~~          4(36%IDEClangDiagnosticActivityLogMessage2@69"Implicit conversion loses integer precision: 'unsigned long' to 'int'-420350669#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^23#88#23#88#791#0#22"Value Conversion Issue2(3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^23#88#23#107#791#18#3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^23#57#23#74#760#0#-2@69"Implicit conversion loses integer precision: 'unsigned long' to 'int'-420350669#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^93#51#93#51#3313#0#22"Value Conversion Issue2(3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^93#51#93#63#3313#11#3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^93#27#93#44#3289#0#-2@69"Implicit conversion loses integer precision: 'unsigned long' to 'int'-420350669#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^129#68#129#68#4759#0#22"Value Conversion Issue2(3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^129#68#129#78#4759#9#3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^129#46#129#63#4737#0#-2@69"Implicit conversion loses integer precision: 'unsigned long' to 'int'-420350669#18446744073709551615#0#-1#27"com.apple.dt.IDE.diagnostic3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^131#93#131#93#4935#0#22"Value Conversion Issue2(3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^131#93#131#113#4935#19#3@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^131#61#131#78#4903#0#-0#0#1#-19%DVTDocumentLocation4@117"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/parser.c0000000000000000^2545"CompileC Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.o walley/parser.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -fmodules -fmodules-cache-path=/Users/wangyiyi/Library/Developer/Xcode/DerivedData/ModuleCache -Wno-trigraphs -fpascal-strings -O0 -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -DDEBUG=1 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -Wno-sign-conversion -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/walley.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/parser.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.c -o /Users/wangyiyi/百度36"71D83729-C0E7-48B2-92A1-FA2859935814-
+b9B456062-3A09-49AF-9234-81C3D04E3B0D
+
+CLd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/walley normal x86_64
+s420350982.736469
+e420350982.755956
+r1
+xLd
+x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/walley
+xnormal
+xx86_64
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/walley.LinkFileList
+d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/main.o
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/libSystem.dylib
+d/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/5.1/lib/darwin/libclang_rt.osx.a
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcache.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcommonCrypto.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcompiler_rt.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcopyfile.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libcorecrypto.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdispatch.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libdyld.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libkeymgr.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/liblaunch.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libmacho.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libquarantine.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libremovefile.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_asl.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_blocks.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_c.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_configuration.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_dnssd.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_info.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_kernel.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_m.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_malloc.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_network.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_notify.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_platform.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_pthread.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_sandbox.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libsystem_stats.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunc.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunwind.dylib
+d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libxpc.dylib
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection91"Link /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug/walley44"Ld Build/Products/Debug/walley normal x86_647c99bc060c0eb941^0e87c1060c0eb941^---0#0#1#--1050"Ld Build/Products/Debug/walley normal x86_64    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export MACOSX_DEPLOYMENT_TARGET=10.9    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -L/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Debug -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -filelist /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/walley.LinkFileList -mmacosx-version-min=10.9 -Xlinker -dependency_info -Xlinker /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Debug/walley.build/Objects-normal/x86_64/walley_dependency_info.dat -o /Users/wangyiyi36"7BAB12D3-6054-4894-82C4-7582BF7F6D67-
+b2538DC58-E650-458B-B367-AF7F5BB0F987
+
