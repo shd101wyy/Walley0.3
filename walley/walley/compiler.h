@@ -107,7 +107,7 @@ void compiler(Instructions * insts,
                     j++;
                 }
                 // init key save to 'v'
-                v = Object_initString(s, length);
+                v = Object_initString(s, j/*j is length*/);
                 var_value = Table_getval(CONSTANT_TABLE_FOR_COMPILATION,
                                         v);
                 // check s in CONSTANT_TABLE_FOR_COMPILATION
@@ -334,8 +334,8 @@ void compiler(Instructions * insts,
                 return;
             }
             else if (str_eq(tag, "let")){
-                Object * chunk;
-                Object * body;
+                Object * chunk = cadr(l);
+                //Object * body; => cddr(l)
                 char * var_names[64];
                 Object * def_array[64];
                 int is_def;
@@ -371,7 +371,7 @@ void compiler(Instructions * insts,
                          cons(cons(LAMBDA_STRING,
                                    cons(GLOBAL_NULL,
                                         list_append(assignments,
-                                                    body))),
+                                                    cddr(l)))),
                               GLOBAL_NULL),
                          vt,
                          tail_call_flag,
@@ -482,7 +482,7 @@ void compiler(Instructions * insts,
                                      parent_func_name,
                                      function_for_compilation); // each argument is not tail call
                             // set tp current frame
-                            Insts_push(insts, (SET << 12) | vt->length - 1); // frame index
+                            Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                             Insts_push(insts, 0x0000FFFF & track_index);
                             // value index
                         }
@@ -495,7 +495,7 @@ void compiler(Instructions * insts,
                                      parent_func_name,
                                      function_for_compilation); // this argument is not tail call
                             // set to current frame
-                            Insts_push(insts, (SET << 12) | vt->length - 1); // frame index
+                            Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                             Insts_push(insts, 0x0000FFFF & track_index);
                             // value index
                         }

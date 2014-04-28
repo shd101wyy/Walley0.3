@@ -26,7 +26,7 @@ typedef struct Object Object;
 typedef struct Table_Pair Table_Pair;
 
 static Object * GLOBAL_NULL;
-static Object * GLOBAL_TRUE;
+//static Object * GLOBAL_TRUE;
 static Object * QUOTE_STRING;
 static Object * UNQUOTE_STRING;
 static Object * UNQUOTE_SPLICE_STRING;
@@ -38,11 +38,11 @@ static Object * LAMBDA_STRING;
 
 
 
-static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
-static Object * SYS_ARGV;
+//static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
+//static Object * SYS_ARGV;
 
-static int * INSTRUCTIONS;
-static int INSTRUCTIONS_LENGTH;
+//static int * INSTRUCTIONS;
+//static int INSTRUCTIONS_LENGTH;
 Object * Object_initInteger(/*long v*/ long v);
 void Object_free(Object * o);
 /* data types */
