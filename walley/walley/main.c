@@ -7,10 +7,10 @@
 //
 
 #include <stdio.h>
-#include "parser.h"
+#include "compiler.h"
 int main(){
     
-    char s[1000] = "12.4";
+    char s[1000] = "(def x 12)";
     Lexer * p;
     p = lexer((char*)s);
     Lexer_Debug(p);

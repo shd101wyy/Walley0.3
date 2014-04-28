@@ -12,7 +12,6 @@
 		F6C86B6A190E07390019820A /* data_type.h in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B69190E07390019820A /* data_type.h */; };
 		F6C86B6E190E07830019820A /* parser.h in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B6D190E07830019820A /* parser.h */; };
 		F6C86B70190E07C00019820A /* lexer.h in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B6F190E07C00019820A /* lexer.h */; };
-		F6C86B74190E0B110019820A /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B73190E0B110019820A /* Makefile */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,6 +36,9 @@
 		F6C86B6F190E07C00019820A /* lexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lexer.h; sourceTree = "<group>"; };
 		F6C86B71190E07E00019820A /* vm_c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vm_c; sourceTree = "<group>"; };
 		F6C86B73190E0B110019820A /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		F6C86B75190E0CB40019820A /* vm.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = vm.js; sourceTree = "<group>"; };
+		F6C86B77190E0DAF0019820A /* compiler_data_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compiler_data_type.h; sourceTree = "<group>"; };
+		F6C86B78190E16670019820A /* compiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compiler.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,10 +71,13 @@
 		F6C86B5F190E07240019820A /* walley */ = {
 			isa = PBXGroup;
 			children = (
+				F6C86B75190E0CB40019820A /* vm.js */,
 				F6C86B6F190E07C00019820A /* lexer.h */,
 				F6C86B71190E07E00019820A /* vm_c */,
 				F6C86B6D190E07830019820A /* parser.h */,
 				F6C86B60190E07240019820A /* main.c */,
+				F6C86B77190E0DAF0019820A /* compiler_data_type.h */,
+				F6C86B78190E16670019820A /* compiler.h */,
 				F6C86B62190E07240019820A /* walley.1 */,
 				F6C86B69190E07390019820A /* data_type.h */,
 				F6C86B73190E0B110019820A /* Makefile */,
@@ -131,7 +136,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F6C86B74190E0B110019820A /* Makefile in Sources */,
 				F6C86B70190E07C00019820A /* lexer.h in Sources */,
 				F6C86B61190E07240019820A /* main.c in Sources */,
 				F6C86B6E190E07830019820A /* parser.h in Sources */,
@@ -251,6 +255,7 @@
 				F6C86B68190E07240019820A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

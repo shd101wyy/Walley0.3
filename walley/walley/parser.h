@@ -41,15 +41,41 @@ int isInteger(char * s){
     strtol(s, &p, 10); // 只支持10进制
     return *p == '\0';
 }
-
+/*
+    free parser
+ */
+void parser_free(Object * p){
+    Object * v;
+    Object * temp;
+    while(p!=GLOBAL_NULL){
+        v = car(p);
+        switch (v->type) {
+            case STRING:
+                free(v->data.String.v);
+                free(v);
+                break;
+            case INTEGER:case DOUBLE:
+                free(v);
+                break;
+            default:
+                break;
+        }
+        temp = p;
+        p = cdr(p);
+        free(temp);
+        temp = NULL;
+    }
+}
 Object * parser(Lexer * le){
-    
     // init several constants
     GLOBAL_NULL = Object_initNull(); // init GLOBAL_NULL
     QUOTE_STRING = Object_initString("quote", 5);
     UNQUOTE_STRING = Object_initString("unquote", 7);
     UNQUOTE_SPLICE_STRING = Object_initString("unquote_splice", 14);
     QUASIQUOTE_STRING = Object_initString("quasiquote", 10);
+    CONS_STRING = Object_initString("cons", 4);
+    DEF_STRING = Object_initString("def", 3);
+    SET_STRING = Object_initString("set", 3);
     
     char ** l = le->string_array;
     uint32_t length = le->array_length;
@@ -154,6 +180,8 @@ Object * parser(Lexer * le){
             }
         }
     }
+    // after parsing, free lexer
+    Lexer_free(le);
     return current_list_pointer;
 }
 

@@ -24,12 +24,19 @@
 
 typedef struct Object Object;
 typedef struct Table_Pair Table_Pair;
+
 static Object * GLOBAL_NULL;
 static Object * GLOBAL_TRUE;
 static Object * QUOTE_STRING;
 static Object * UNQUOTE_STRING;
 static Object * UNQUOTE_SPLICE_STRING;
 static Object * QUASIQUOTE_STRING;
+static Object * CONS_STRING;
+static Object * DEF_STRING;
+static Object * SET_STRING;
+
+
+
 static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
 static Object* CONSTANT_TABLE[1024];
 static int CONSTANT_TABLE_LENGTH = 1;
@@ -124,6 +131,11 @@ vector_Set((v_), vector_Length((v_)),  (val_)); \
 
 #define car(v) ((v)->data.Pair.car)
 #define cdr(v) ((v)->data.Pair.cdr)
+#define cadr(v) (car(cdr((v))))
+#define caddr(v) (car(cdr(cdr((v)))))
+#define cadddr(v) (car(cdr(cdr(cdr((v))))))
+#define cdddr(v) (cdr(cdr(cdr((v)))))
+#define cddr(v) (cdr(cdr((v))))
 
 /*
  allocate object
@@ -161,15 +173,13 @@ Object * Object_initDouble(double v){
 Object * Object_initString(char * v, unsigned long string_length){
     Object * o = allocateObject();
     o->type = STRING;
-    o->data.String.v = malloc(sizeof(char)*(strlen(v) + 1));
+    o->data.String.v = malloc(sizeof(char)*(string_length + 1));
     if(o->data.String.v == NULL)
     {
         printf("ERROR:Out of memory\n");
         exit(1);
     }
     strcpy(o->data.String.v, v);
-    
-    o->data.String.v = v;
     o->data.String.length = string_length;
     return o;
 }

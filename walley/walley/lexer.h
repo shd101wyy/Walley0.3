@@ -64,6 +64,23 @@ char * string_slice(char * input_string, int start, int end){
     r[i-start] = 0;
     return r;
 }
+// string append
+char * string_append(char *str1, char *str2){
+    long length1 = strlen(str1);
+    long length2 = strlen(str2);
+    int i ;
+    int j ;
+    char *r = malloc(sizeof(char)*(length1 + length2 + 1));
+    for (i = 0; i < length1; i++) {
+        r[i] = str1[i];
+    }
+    for (j = 0; j < length2; j++) {
+        r[i] = str2[j];
+        i++;
+    }
+    r[i] = 0;
+    return r;
+}
 
 
 #define Lexer_set(l, index, value) ((l)->string_array[(index)] = (value))
