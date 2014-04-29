@@ -1,14 +1,13 @@
 ;; Walley Language test file
-(display-string "Hello World\n")
+;;(display-string "Hello World\n")
 (def test2 
      (lambda []
        (def x 12)
        (lambda [msg]
-	 (display-string msg)
 	 (if (eq? msg 'x)
 	     x
-	   (set! x 15)))))
+	   (set! x 13)))))
 (def x (test2))
-x
-(eq? 'x 'x)
-
+(x 'x)
+(x 'a)
+(x 'x)

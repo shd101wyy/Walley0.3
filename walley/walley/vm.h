@@ -78,6 +78,10 @@ void Walley_init(){
     Constant_Pool[8] = GLOBAL_TRUE;
 
     Constant_Pool_Length = 9; // set length
+    
+    // init CONSTANT_TABLE_INSTRUCTIONS for compiler
+    CONSTANT_TABLE_INSTRUCTIONS = Insts_init();
+    CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX = 0;
 }
 
 /*
@@ -86,19 +90,20 @@ void Walley_init(){
 typedef struct Environment_Frame {
     Object ** array;
     int length;
+    int use_count;
 } Environment_Frame;
 
 /*
     free frame
  */
 void EF_free(Environment_Frame * ef){
-    //if (ef->use_count == 0) {
+    if (ef->use_count == 0) {
         for (int i = 0; i < ef->length; i++) {
             ef->array[i]->use_count--;
             Object_free(ef->array[i]);
         }
         free(ef->array);
-    //}
+    }
     return;
 }
 /*
@@ -108,6 +113,7 @@ Environment_Frame * EF_init_with_size(int size){
     Environment_Frame * frame = malloc(sizeof(Environment_Frame));
     frame->length = 0;
     frame->array = malloc(sizeof(Object*)*size);
+    frame->use_count = 0;
     return frame;
 }
 #define EF_set_builtin_lambda(v_, index, o_) ((v_)->array[(index)] = Object_initBuiltinLambda(o_))
@@ -137,7 +143,7 @@ Environment_Frame *createFrame0(){
     Environment_Frame * frame = malloc(sizeof(Environment_Frame));
     frame->length = 0;
     frame->array = GLOBAL_FRAME;
-    // frame->use_count = 0;
+    frame->use_count = 0;
     
     // add builtin lambda
     EF_set_builtin_lambda(frame, 0, &builtin_cons);
@@ -191,7 +197,7 @@ Environment *createEnvironment(){
     env->length = 1;
     env->frames = malloc(sizeof(Environment_Frame*) * MAX_STACK_SIZE);
     env->frames[0] = createFrame0();
-    // env->frames[0]->use_count = 1;
+    env->frames[0]->use_count = 1;
     return env;
 }
 /*
@@ -203,7 +209,7 @@ Environment *copyEnvironment(Environment * old_env){
     new_env->frames = malloc(sizeof(Environment_Frame*) * new_env->length);
     for (int i = 0; i < new_env->length; i++) {
         new_env->frames[i] = old_env->frames[i]; // copy frame pointer
-        // new_env->frames[i]->use_count++; // increase use count
+        new_env->frames[i]->use_count++; // increase use count
     }
     return new_env;
 }
@@ -218,9 +224,10 @@ Environment *copyEnvironmentAndPushFrame(Environment * old_env, Environment_Fram
     int i;
     for (i = 0; i < old_env->length; i++) {
         new_env->frames[i] = old_env->frames[i]; // copy frame pointer
-        // new_env->frames[i]->use_count++; // increase use count
+        new_env->frames[i]->use_count++; // increase use count
     }
     new_env->frames[i] = frame;
+    frame->use_count++;
     new_env->length+=1;
     return new_env;
 }
@@ -229,6 +236,8 @@ Environment *copyEnvironmentAndPushFrame(Environment * old_env, Environment_Fram
     temp->use_count--; \
     Object_free(temp); \
     current_frame_pointer->length--;}
+#define free_current_frame_pointer(current_frame_pointer) (current_frame_pointer->use_count)--; \
+                                   EF_free((current_frame_pointer));
 
 /*
  Walley Language Virtual Machine
@@ -237,8 +246,8 @@ Object *VM(unsigned short * instructions,
            unsigned long start_pc,
            unsigned long end_pc,
            Environment * env){
-    unsigned long pc = start_pc;
-    unsigned int i;
+    unsigned long pc;
+    unsigned long i;
     unsigned short frame_index, value_index;
     short inst;
     short opcode;
@@ -264,6 +273,7 @@ Object *VM(unsigned short * instructions,
     Object * temp2;
     
     Environment_Frame *BUILTIN_PRIMITIVE_PROCEDURE_STACK = EF_init_with_size(MAX_STACK_SIZE); // for builtin primitive procedure calculation
+    BUILTIN_PRIMITIVE_PROCEDURE_STACK->use_count = 1; // cannot free it
     
     Environment * continuation_env[MAX_STACK_SIZE];      // used to save env
     short continuation_env_length = 0;                   // save length of that array
@@ -275,8 +285,60 @@ Object *VM(unsigned short * instructions,
     Object * functions_list[MAX_STACK_SIZE]; // save function
     short functions_list_length = 0;
     
+    pc = CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX;
+    // run CONSTANT_TABLE_INSTRUCTIONS first to load constant
+    while (pc != CONSTANT_TABLE_INSTRUCTIONS->length) {
+        inst = CONSTANT_TABLE_INSTRUCTIONS->array[pc];
+        opcode = (inst & 0xF000) >> 12;
+        // 目前只支持string
+        switch (inst) {
+            case CONST_STRING: // push string to constant table
+                string_length = (long)instructions[pc + 1]; // string length maximum 2 bytes
+                created_string = (char*)malloc(sizeof(char) * (string_length + 1));
+                pc = pc + 2;
+                i = 0;
+                while(1){
+                    s = CONSTANT_TABLE_INSTRUCTIONS->array[pc];
+                    s1 = (char)((0xFF00 & s) >> 8);
+                    s2 = (char)(0x00FF & s);
+                    if(s1 == 0x00) // reach end
+                        break;
+                    else{
+                        created_string[i] = s1;
+                        i++;
+                    }
+                    if(s2 == 0x00) // reach end
+                        break;
+                    else{
+                        created_string[i] = s2;
+                        i++;
+                    }
+                    pc = pc + 1;
+                }
+                created_string[i] = 0;
+                
+                
+                // create string
+                accumulator = Object_initString(created_string, string_length - 1);
+                accumulator->use_count = 1;
+                // push to Constant_Pool
+                // printf("PUSH %s %d\n", accumulator->data.String.v, Constant_Pool_Length);
+                Constant_Pool[Constant_Pool_Length] = accumulator;
+                Constant_Pool_Length++;
+                pc = pc + 1;
+                continue;
+                break;
+            default:
+                printf("ERROR: Invalid opcode for constant table");
+                return  NULL;
+                break;
+        }
+    }
+    CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX = CONSTANT_TABLE_INSTRUCTIONS->length; // update track index for constant table instructions.
+
+    pc = start_pc;
     while(pc != end_pc){
-        printf("%lu, %x\n", pc, instructions[pc]);
+        // printf("%lu, %x\n", pc, instructions[pc]);
         inst = instructions[pc];
         opcode = (inst & 0xF000) >> 12;
         //printf("%x\n", inst);
@@ -326,51 +388,14 @@ Object *VM(unsigned short * instructions,
                         accumulator = Object_initDouble((double)(*((double*)&(integer_))));
                         pc = pc + 5;
                         continue;
-                    case CONST_STRING:
-                        printf("\nCONSTANT STRING\n");
-                        string_length = (long)instructions[pc + 1]; // string length maximum 2 bytes 
-                        created_string = (char*)malloc(sizeof(char) * (string_length + 1));
-                        pc = pc + 2;
-                        i = 0;
-                        while(1){
-                            s = instructions[pc];
-                            s1 = (char)((0xFF00 & s) >> 8);
-                            s2 = (char)(0x00FF & s);
-                            if(s1 == 0x00) // reach end
-                                break;
-                            else{
-                                created_string[i] = s1;
-                                i++;
-                            }
-                            if(s2 == 0x00) // reach end
-                                break;
-                            else{
-                                created_string[i] = s2;
-                                i++;
-                            }
-                            pc = pc + 1;
-                        }
-                        created_string[i] = 0;
                         
-                        // free accumulator if necessary
-                        Object_free(accumulator);
-                        
-                        // create string
-                        accumulator = Object_initString(created_string, string_length - 1);
-                        accumulator->data.String.in_table = 1;
-                        // push to Constant_Pool
-                        printf("PUSH %s %d\n", accumulator->data.String.v, Constant_Pool_Length);
-                        Constant_Pool[Constant_Pool_Length] = accumulator;
-                        Constant_Pool_Length++;
-                        
-                        pc = pc + 1;
-                        continue;
+                    // case CONST_STRING: 这个会在CONSTANT_TABLE_INSTRUCTIONS里面运行
                     case CONST_LOAD:
                         // free accumulator if necessary
                         Object_free(accumulator);
                         
                         accumulator = Constant_Pool[instructions[pc + 1]]; // load constant
-                        printf("GET %s\n", accumulator->data.String.v);
+                        // printf("GET %s\n", accumulator->data.String.v);
                         pc = pc + 2;
                         continue;
                     case CONST_NULL: // null
@@ -392,17 +417,16 @@ Object *VM(unsigned short * instructions,
                 
                 // free accumulator is necessary
                 Object_free(accumulator);
+                
                 accumulator = Object_initUserDefinedLambda(param_num, variadic_place, start_pc, copyEnvironment(env));
                 pc = pc + jump_steps + 1;
                 continue;
             case RETURN:
+                
                 // free top frame
                 temp_frame = env->frames[env->length - 1]; // get top frame
-                // free each value in that frame
-                for (int i = 0; i < temp_frame->length; i++) {
-                    temp_frame->array[i]->use_count--;
-                    Object_free(temp_frame->array[i]);
-                }
+                temp_frame->use_count--;
+                EF_free(temp_frame);
                 free(env->frames);
                 free(env);
                 
@@ -422,6 +446,7 @@ Object *VM(unsigned short * instructions,
                         // save to frames_list
                         frames_list[frames_list_length] = current_frame_pointer;
                         frames_list_length++;
+                        current_frame_pointer->use_count++; // current frame pointer is used
 
                         // save to function list
                         functions_list[functions_list_length] = accumulator;
@@ -436,6 +461,7 @@ Object *VM(unsigned short * instructions,
                         // save to frame list
                         frames_list[frames_list_length] = current_frame_pointer;
                         frames_list_length++;
+                        current_frame_pointer->use_count++; // current frame pointer is used
                         
                         // save to function list
                         functions_list[functions_list_length] = accumulator;
@@ -458,8 +484,9 @@ Object *VM(unsigned short * instructions,
             case CALL:
                 param_num = (0x0FFF & inst);
                 v = functions_list[functions_list_length - 1]; // get function
+                functions_list[functions_list_length - 1] = NULL; // clear
                 functions_list_length--;  // pop that function from list
-                v->use_count--;
+                v->use_count--; // decrement use count
                 
                 switch (v->type){
                     case BUILTIN_LAMBDA: // builtin lambda
@@ -474,6 +501,9 @@ Object *VM(unsigned short * instructions,
                             
                             current_frame_pointer->length--; // decrease length
                         }
+                        // free current_frame_pointer
+                        free_current_frame_pointer(current_frame_pointer);
+                        
                         frames_list_length--; // pop frame list
                         current_frame_pointer = frames_list[frames_list_length - 1];
         
@@ -491,6 +521,9 @@ Object *VM(unsigned short * instructions,
                                 temp->use_count--; // pop parameters
                                 Object_free(temp);
                                 current_frame_pointer->length--; // decrease length
+                                
+                                // free current_frame_pointer
+                                free_current_frame_pointer(current_frame_pointer);
                                 
                                 frames_list_length--; // pop frame list
                                 current_frame_pointer = frames_list[frames_list_length - 1];
@@ -520,6 +553,9 @@ Object *VM(unsigned short * instructions,
                                     current_frame_pointer->length--; // decrease length
                                 }
                                 
+                                // free current_frame_pointer
+                                free_current_frame_pointer(current_frame_pointer);
+                                
                                 frames_list_length--; // pop frame list
                                 current_frame_pointer = frames_list[frames_list_length - 1];
                                 
@@ -546,6 +582,9 @@ Object *VM(unsigned short * instructions,
                                 Object_free(temp);
                                 current_frame_pointer->length--; // decrease length
                                 
+                                // free current_frame_pointer
+                                free_current_frame_pointer(current_frame_pointer);
+                                
                                 frames_list_length--; // pop frame list
                                 current_frame_pointer = frames_list[frames_list_length - 1];
                                 
@@ -571,6 +610,8 @@ Object *VM(unsigned short * instructions,
                                     
                                     current_frame_pointer->length--; // decrease length
                                 }
+                                // free current_frame_pointer
+                                free_current_frame_pointer(current_frame_pointer);
                                 
                                 frames_list_length--; // pop frame list
                                 current_frame_pointer = frames_list[frames_list_length - 1];
@@ -584,7 +625,6 @@ Object *VM(unsigned short * instructions,
                                 return GLOBAL_NULL;
                         }
                     case USER_DEFINED_LAMBDA: // user defined function
-                        
                         required_param_num = v->data.User_Defined_Lambda.param_num;
                         required_variadic_place = v->data.User_Defined_Lambda.variadic_place;
                         start_pc = v->data.User_Defined_Lambda.start_pc;
@@ -627,6 +667,10 @@ Object *VM(unsigned short * instructions,
                         env = new_env;
                         pc = start_pc;
                         
+                        // free current_frame_pointer
+                        free_current_frame_pointer(current_frame_pointer);
+                        
+                        /* 前面的 copyEnvironmentAndPushFrame 里面的 current_frame_pointer 的 use_count会++, 所以这里得 -- */
                         frames_list_length--; // pop frame list
                         current_frame_pointer = frames_list[frames_list_length - 1];
                         
@@ -653,7 +697,7 @@ Object *VM(unsigned short * instructions,
                 // set value and increase length
                 env->frames[env->length-1]->array[env->frames[env->length-1]->length] = accumulator;
                 env->frames[env->length-1]->length++;
-        
+
                 accumulator->use_count++; // increase use_count
                 pc++;
                 continue;

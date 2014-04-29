@@ -12,6 +12,11 @@
 
 static Object* CONSTANT_TABLE_FOR_COMPILATION;
 static unsigned long CONSTANT_TABLE_FOR_COMPILATION_LENGTH;
+
+// instructions used to save contant...
+static Instructions * CONSTANT_TABLE_INSTRUCTIONS;
+static unsigned long CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX; // 保存上次的运行PC
+
 // static int CONSTANT_TABLE_LENGTH = 0;
 
 Object * quote_list(Object * l){
@@ -77,6 +82,9 @@ void compiler(Instructions * insts,
             Insts_push(insts, CONST_NULL); // push null;
             return;
             break;
+        /*
+            关于 string, 存在于 CONSTANT_TABLE_INSTRUCTIONS 而不是 insts
+         */
         case STRING:
             if (l->data.String.v[0] == '"') { // string
                 char * s = malloc(sizeof(char)*(strlen(l->data.String.v)+1));
@@ -115,38 +123,41 @@ void compiler(Instructions * insts,
                 if(var_value!= GLOBAL_NULL){ // already exist
                     Insts_push(insts, CONST_LOAD); // load from table
                     Insts_push(insts, var_value->data.Integer.v);
-                    printf("%s already exist\n", s);
+                    // printf("%s already exist\n", s);
                     // free 'v'
                     free(v->data.String.v);
                     free(v);
                     return;
                 }
                 else{ // doesn't exist, save to table
+                    Insts_push(insts, CONST_LOAD); // load from table
+                    Insts_push(insts, CONSTANT_TABLE_FOR_COMPILATION_LENGTH);
+                    
                     Table_setval(CONSTANT_TABLE_FOR_COMPILATION,
                                  v,
                                  Object_initInteger(CONSTANT_TABLE_FOR_COMPILATION_LENGTH));
-                    printf("%s doesn't exist %ld\n", s, CONSTANT_TABLE_FOR_COMPILATION_LENGTH);
+                    // printf("%s doesn't exist %ld\n", s, CONSTANT_TABLE_FOR_COMPILATION_LENGTH);
                     CONSTANT_TABLE_FOR_COMPILATION_LENGTH++;
                 }
                
                 
                 // so length of string is j
                 length = j;
-                Insts_push(insts, CONST_STRING);
-                Insts_push(insts, length);
+                Insts_push(CONSTANT_TABLE_INSTRUCTIONS, CONST_STRING);
+                Insts_push(CONSTANT_TABLE_INSTRUCTIONS, length);
                 find_end = false;
                 for (i = 0; i < length; i = i + 2) {
                     if(i + 1 == length){
-                        Insts_push(insts, (s[i] << 8) & 0xFF00);
+                        Insts_push(CONSTANT_TABLE_INSTRUCTIONS, (s[i] << 8) & 0xFF00);
                         find_end = true;
                         break;
                     }
                     else {
-                        Insts_push(insts, (s[i] << 8) | s[i+1]);
+                        Insts_push(CONSTANT_TABLE_INSTRUCTIONS, (s[i] << 8) | s[i+1]);
                     }
                 }
                 if(find_end == false){
-                    Insts_push(insts, 0x0000); // add end
+                    Insts_push(CONSTANT_TABLE_INSTRUCTIONS, 0x0000); // add end
                 }
                 return;
             }

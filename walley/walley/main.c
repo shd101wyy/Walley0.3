@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "walley.h"
 int main(int argc, char *argv[]){
-    printf("Walley Language 0.3.745\n");
+    printf("Walley Language 0.3.827\n");
     
     // ######################################################
     // ######################################################

@@ -90,6 +90,9 @@ void Walley_Run_File(char * file_name){
                    NULL);
     printf("\n\n@@@ INSTRUCTIONS with length %ld \n", insts->length);
 #if WALLEY_DEBUG
+    printf("@@@@ CONSTANTS TABLE \n");
+    printInstructions(CONSTANT_TABLE_INSTRUCTIONS);
+    printf("\n@@@@ Proram \n");
     printInstructions(insts);
 #endif
     printf("\n\n");
@@ -97,13 +100,27 @@ void Walley_Run_File(char * file_name){
 
 #if WALLEY_DEBUG
     Object * v = VM(insts->array, 0, insts->length, env);
+    printf("\n@@@@ Finish Running VM \n");
     if (v->type == USER_DEFINED_LAMBDA) {
         printf("\nUser Defined Lambda\n");
         printf("env length %d\n", v->data.User_Defined_Lambda.env->length);
         printf("%d\n", v->data.User_Defined_Lambda.env->frames[0]->length);
         if (v == v->data.User_Defined_Lambda.env->frames[0]->array[39]) {
             printf("Equal %d\n", v->use_count);
+            printf("top frame length %d\n", v->data.User_Defined_Lambda.env->frames[1]->length);
+            printf("fuck %ld\n", v->data.User_Defined_Lambda.env->frames[1]->array[0]->data.Integer.v);
         }
+    }
+    else if (v->type == INTEGER){
+        printf("\nInteger\n");
+        printf("use-count %d\n", v->use_count);
+        printf("%ld\n", v->data.Integer.v);
+        
+    }
+    else if (v->type == STRING){
+        printf("\nString\n");
+        printf("use-count %d\n", v->use_count);
+        printf("%s\n", v->data.String.v);
     }
 #else
     VM(insts->array, 0, insts->length, env);
