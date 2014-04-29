@@ -10,6 +10,62 @@
 #define walley_walley_h
 #include "vm.h"
 
+// debug
+#if WALLEY_DEBUG
+void Walley_Debug(/*Lexer * l, // lexer
+                  Object * p, // parser
+                  Instructions * insts, // instructions*/
+Object * v // vm output
+                  ){
+                      /*
+      printf("\n\n@@@ LEXER @@@\n");
+      Lexer_Debug(l);
+      printf("\n@@@ PARSER @@@\n");
+      parser_debug(p);
+                      
+      printf("@@@@ CONSTANTS TABLE \n");
+      printInstructions(CONSTANT_TABLE_INSTRUCTIONS);
+      printf("\n@@@@ Proram \n");
+      printInstructions(insts);
+                      */
+      printf("\n@@@@ Finish Running VM \n");
+      if (v->type == USER_DEFINED_LAMBDA) {
+          printf("\nUser Defined Lambda\n");
+          printf("env length %d\n", v->data.User_Defined_Lambda.env->length);
+          printf("%d\n", v->data.User_Defined_Lambda.env->frames[0]->length);
+          if (v == v->data.User_Defined_Lambda.env->frames[0]->array[39]) {
+              printf("Equal %d\n", v->use_count);
+              printf("top frame length %d\n", v->data.User_Defined_Lambda.env->frames[1]->length);
+              printf("fuck %ld\n", v->data.User_Defined_Lambda.env->frames[1]->array[0]->data.Integer.v);
+          }
+      }
+      else if (v->type == INTEGER){
+          printf("\nInteger\n");
+          printf("use-count %d\n", v->use_count);
+          number_debug(v);
+      }
+      else if (v->type == DOUBLE){
+          printf("\nDouble\n");
+          printf("use-count %d\n", v->use_count);
+          number_debug(v);
+      }
+      else if (v->type == RATIO){
+          printf("\nRatio\n");
+          printf("use-count %d\n", v->use_count);
+          number_debug(v);
+      }
+      else if (v->type == STRING){
+          printf("\nString\n");
+          printf("use-count %d\n", v->use_count);
+          printf("%s\n", v->data.String.v);
+      }
+      else if (v == GLOBAL_NULL){
+          printf("\n()\n");
+      }
+}
+
+#endif
+
 /*
  read ints and return instructions
  0: fail
@@ -44,6 +100,41 @@ int read_ints (const char* file_name, unsigned short ** instructions, int * len)
     fclose (file);
     return 1;
 }
+
+// repl
+void Walley_Repl(){
+    // init walley
+    Walley_init();
+    Lexer * p;
+    Object * o;
+    Instructions * insts = Insts_init();
+    Variable_Table * vt = VT_init();
+    Environment * env = createEnvironment();
+    Object * v;
+    char * buffer = malloc(sizeof(char)*512);
+    while (1) {
+        fputs("walley> ", stdout);
+        fgets(buffer, 512, stdin);
+        p = lexer(buffer);
+        o = parser(p);
+        // compile
+        compiler_begin(insts,
+                       o,
+                       vt,
+                       NULL,
+                       NULL);
+        // run
+        v = VM(insts->array, insts->start_pc, insts->length, env);
+        insts->start_pc = insts->length; // update start pc
+        
+#if WALLEY_DEBUG
+        Walley_Debug(v);
+#endif
+        
+        
+    }
+}
+
 /*
     suppose run .wa file
  */

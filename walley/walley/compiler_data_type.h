@@ -37,6 +37,7 @@ typedef struct Instructions{
     unsigned short * array;
     unsigned long length;
     unsigned long size;
+    unsigned long start_pc;
 }Instructions;
 /*
     init insts
@@ -46,6 +47,7 @@ Instructions * Insts_init(){
     insts->length = 0;
     insts->size = 1024;
     insts->array = malloc(sizeof(short)*insts->size);
+    insts->start_pc = 0;
     return insts;
 }
 /*
