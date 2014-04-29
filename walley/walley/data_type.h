@@ -260,7 +260,7 @@ unsigned long hash(char * str, unsigned long size){
         hash = ((hash << 5) + hash) + *(str); // hash * 33 + c
         str++;
     }
-    if(hash >= size)
+    if(hash >= size) //size必须是>0的
         return hash % size;
     return hash;
 }

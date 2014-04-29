@@ -1,12 +1,16 @@
 ;; Walley Language test file
 (display-string "Hello World\n")
-(def test2 
-     (lambda []
-       (def x 12)
-       (lambda [msg a]
-	 (if (eq? msg 'x)
-	     x
-	   (set! x 15)))))
-(def x (/ 6 15))
-(def y (/ 2 5))
-(= x y)
+(def Person {})
+(Person 'a 12)
+(Person 'init 
+	(lambda [age]
+	  (def self {})
+	  (self 'age age)
+	  (self 'set-age (lambda [new_age]
+			   (self 'age new_age)))
+	  self
+	  ))
+
+(def a (Person:init 22))
+;(a:set-age 15)
+(display-string (int->string a:age))

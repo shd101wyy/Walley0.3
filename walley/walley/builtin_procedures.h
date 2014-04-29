@@ -518,7 +518,7 @@ Object *builtin_string_append(Object ** params, int param_num, int start_index){
 // 26 table
 // (table 'a 12 'b 16)
 Object *builtin_make_table(Object ** params, int param_num, int start_index){
-    Object * table = Object_initTable((int)param_num/0.6);
+    Object * table = Object_initTable( param_num == 0? 16 : (int)param_num/0.6);
     unsigned int i = 0;
     for(; i < param_num; i = i + 2){
         Table_setval(table, params[i + start_index], params[i + start_index + 1]);
