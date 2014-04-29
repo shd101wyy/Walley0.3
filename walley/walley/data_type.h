@@ -18,12 +18,14 @@
 #ifndef DATA_TYPE_C
 #define DATA_TYPE_C
 
-#define GLOBAL_FRAME_SIZE 1024
-#define ENV_SIZE 32
-#define MAX_STACK_SIZE 1024
+
 
 typedef struct Object Object;
 typedef struct Table_Pair Table_Pair;
+
+typedef struct Environment Environment;
+void Env_free(Environment * env);
+
 
 static Object * GLOBAL_NULL;
 static Object * GLOBAL_TRUE;
@@ -38,7 +40,6 @@ static Object * LAMBDA_STRING;
 
 
 
-static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
 static Object * SYS_ARGV;
 
 //static int * INSTRUCTIONS;
@@ -102,7 +103,7 @@ struct Object {
             char param_num;
             char variadic_place;
             int start_pc;
-            Object * env;
+            Environment * env;
         } User_Defined_Lambda;
         struct {
             Object ** v;   // array of pointers
@@ -111,7 +112,7 @@ struct Object {
             char resizable;  // is this vector resizable
         } Vector;
         struct {          // builtin lambda
-            Object* (*func_ptr)(Object*, int, int); // function pointer
+            Object* (*func_ptr)(Object**, int, int); // function pointer
         } Builtin_Lambda;
     } data;
 };
@@ -122,7 +123,7 @@ struct Object {
 #define vector_Length(v) ((v)->data.Vector.length)
 #define vector_Size(v) ((v)->data.Vector.size)
 #define vector_Set(v_, index, o_) ((v_)->data.Vector.v[(index)] = o_)
-#define vector_set_builtin_lambda(v_, index, o_) ((v_)->data.Vector.v[(index)] = Object_initBuiltinLambda(o_))
+
 #define string_Length(v_) ((v_)->data.String.length)
 #define vector_Push(v_, val_)  \
 vector_Set((v_), vector_Length((v_)),  (val_)); \
@@ -215,7 +216,7 @@ Object * Object_initNull(){
 /*
  initialize user defined lambda
  */
-Object * Object_initUserDefinedLambda(char param_num, char variadic_place, int start_pc, Object * env){
+Object * Object_initUserDefinedLambda(char param_num, char variadic_place, int start_pc, Environment * env){
     Object * o = allocateObject();
     o->type = USER_DEFINED_LAMBDA;
     o->data.User_Defined_Lambda.param_num = param_num;
@@ -224,10 +225,11 @@ Object * Object_initUserDefinedLambda(char param_num, char variadic_place, int s
     o->data.User_Defined_Lambda.env = env;
     return o;
 }
-Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object *, int, int)){
+Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object **, int, int)){
     Object * o = allocateObject();
     o->type = BUILTIN_LAMBDA;
     o->data.Builtin_Lambda.func_ptr = func_ptr;
+    o->use_count = 1;
     return o;
 }
 
@@ -442,7 +444,7 @@ void Object_free(Object * o){
                 free(o);
                 return;
             case USER_DEFINED_LAMBDA:
-                Object_free(o->data.User_Defined_Lambda.env);
+                Env_free(o->data.User_Defined_Lambda.env);
                 free(o);
             case BUILTIN_LAMBDA:
                 return; // cannt free builtin lambda

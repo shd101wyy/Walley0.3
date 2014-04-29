@@ -10,6 +10,10 @@
 #define walley_vm_h
 #include "builtin_procedures.h"
 
+#define MAX_STACK_SIZE 1024
+#define GLOBAL_FRAME_SIZE 1024
+static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
+
 static Object * Constant_Pool[1024]; // used to save symbols and strings
 static unsigned int Constant_Pool_Length; 
 /*
@@ -75,92 +79,155 @@ void Walley_init(){
     Constant_Pool_Length = 8; // set length
 }
 
+/*
+    construct frame for environment
+ */
+typedef struct Environment_Frame {
+    Object ** array;
+    int length;
+} Environment_Frame;
 
+/*
+    free frame
+ */
+void EF_free(Environment_Frame * ef){
+    //if (ef->use_count == 0) {
+        for (int i = 0; i < ef->length; i++) {
+            ef->array[i]->use_count--;
+            Object_free(ef->array[i]);
+        }
+        free(ef->array);
+    //}
+    return;
+}
+/*
+    create frame with size
+ */
+Environment_Frame * EF_init_with_size(int size){
+    Environment_Frame * frame = malloc(sizeof(Environment_Frame));
+    frame->length = 0;
+    frame->array = malloc(sizeof(Object*)*size);
+    return frame;
+}
+#define EF_set_builtin_lambda(v_, index, o_) ((v_)->array[(index)] = Object_initBuiltinLambda(o_))
+/*
+    construct environment
+ */
+typedef struct Environment{
+    Environment_Frame ** frames;
+    int length;  // max length MAX_STACK_SIZE
+} Environment;
+
+void Env_free(Environment * env){
+    for (int i = 0; i < env->length; i++) {
+        // env->frames[i]->use_count--;
+        EF_free(env->frames[i]);
+    }
+    free(env->frames);
+    free(env);
+    return;
+}
 
 /*
  create frame0
  */
-Object *createFrame0(){
+Environment_Frame *createFrame0(){
     // Object * frame = Object_initVector(0, GLOBAL_FRAME_SIZE);
-    Object * frame = allocateObject();
-    frame->type = VECTOR;
-    frame->data.Vector.size = GLOBAL_FRAME_SIZE;
-    frame->data.Vector.length = 0;
-    frame->data.Vector.resizable = 0;
-    frame->data.Vector.v = GLOBAL_FRAME; //(Object**)malloc(sizeof(Object*) * (size)); // array of pointers
-    frame->use_count = 1;
-    // add builtin lambda
-    vector_set_builtin_lambda(frame, 0, &builtin_cons);
-    vector_set_builtin_lambda(frame, 1, &builtin_car);
-    vector_set_builtin_lambda(frame, 2, &builtin_cdr);
-    vector_set_builtin_lambda(frame, 3, &builtin_add);
-    vector_set_builtin_lambda(frame, 4, &builtin_sub);
-    vector_set_builtin_lambda(frame, 5, &builtin_mul);
-    vector_set_builtin_lambda(frame, 6, &builtin_div);
-    vector_set_builtin_lambda(frame, 7, &builtin_vector);
-    vector_set_builtin_lambda(frame, 8, &builtin_vector_with_unchangable_length);
-    vector_set_builtin_lambda(frame, 9, &builtin_vector_length);
-    vector_set_builtin_lambda(frame, 10, &builtin_vector_push);
-    vector_set_builtin_lambda(frame, 11, &builtin_vector_pop);
-    vector_set_builtin_lambda(frame, 12, &builtin_num_equal);
-    vector_set_builtin_lambda(frame, 13, &builtin_num_lt);
-    vector_set_builtin_lambda(frame, 14, &builtin_num_le);
-    vector_set_builtin_lambda(frame, 15, &builtin_eq);
-    vector_set_builtin_lambda(frame, 16, &builtin_string_type);
-    vector_set_builtin_lambda(frame, 17, &builtin_int_type);
-    vector_set_builtin_lambda(frame, 18, &builtin_float_type);
-    vector_set_builtin_lambda(frame, 19, &builtin_pair_type);
-    vector_set_builtin_lambda(frame, 20, &builtin_null_type);
-    vector_set_builtin_lambda(frame, 21, &builtin_lambda_type);
-    vector_set_builtin_lambda(frame, 22, &builtin_strcmp);
-    vector_set_builtin_lambda(frame, 23, &builtin_string_slice);
-    vector_set_builtin_lambda(frame, 24, &builtin_string_length);
-    vector_set_builtin_lambda(frame, 25, &builtin_string_append);
-    vector_set_builtin_lambda(frame, 26, &builtin_make_table);
-    vector_set_builtin_lambda(frame, 27, &builtin_table_keys);
-    vector_set_builtin_lambda(frame, 28, &builtin_table_delete);
-    vector_set_builtin_lambda(frame, 29, &builtin_file_read);
-    vector_set_builtin_lambda(frame, 30, &builtin_file_write);
-    // sys-argv
-    vector_Set(frame, 31, SYS_ARGV);
-    vector_set_builtin_lambda(frame, 32, &builtin_int_to_string);
-    vector_set_builtin_lambda(frame, 33, &builtin_float_to_string);
-    vector_set_builtin_lambda(frame, 34, &builtin_input);
-    vector_set_builtin_lambda(frame, 35, &builtin_display_string);
-    vector_set_builtin_lambda(frame, 36, &builtin_string_to_int);
-    vector_set_builtin_lambda(frame, 37, &builtin_string_to_float);
+    Environment_Frame * frame = malloc(sizeof(Environment_Frame));
+    frame->length = 0;
+    frame->array = GLOBAL_FRAME;
+    // frame->use_count = 0;
     
-    frame->data.Vector.length = 38; // set length
+    // add builtin lambda
+    EF_set_builtin_lambda(frame, 0, &builtin_cons);
+    EF_set_builtin_lambda(frame, 1, &builtin_car);
+    EF_set_builtin_lambda(frame, 2, &builtin_cdr);
+    EF_set_builtin_lambda(frame, 3, &builtin_add);
+    EF_set_builtin_lambda(frame, 4, &builtin_sub);
+    EF_set_builtin_lambda(frame, 5, &builtin_mul);
+    EF_set_builtin_lambda(frame, 6, &builtin_div);
+    EF_set_builtin_lambda(frame, 7, &builtin_vector);
+    EF_set_builtin_lambda(frame, 8, &builtin_vector_with_unchangable_length);
+    EF_set_builtin_lambda(frame, 9, &builtin_vector_length);
+    EF_set_builtin_lambda(frame, 10, &builtin_vector_push);
+    EF_set_builtin_lambda(frame, 11, &builtin_vector_pop);
+    EF_set_builtin_lambda(frame, 12, &builtin_num_equal);
+    EF_set_builtin_lambda(frame, 13, &builtin_num_lt);
+    EF_set_builtin_lambda(frame, 14, &builtin_num_le);
+    EF_set_builtin_lambda(frame, 15, &builtin_eq);
+    EF_set_builtin_lambda(frame, 16, &builtin_string_type);
+    EF_set_builtin_lambda(frame, 17, &builtin_int_type);
+    EF_set_builtin_lambda(frame, 18, &builtin_float_type);
+    EF_set_builtin_lambda(frame, 19, &builtin_pair_type);
+    EF_set_builtin_lambda(frame, 20, &builtin_null_type);
+    EF_set_builtin_lambda(frame, 21, &builtin_lambda_type);
+    EF_set_builtin_lambda(frame, 22, &builtin_strcmp);
+    EF_set_builtin_lambda(frame, 23, &builtin_string_slice);
+    EF_set_builtin_lambda(frame, 24, &builtin_string_length);
+    EF_set_builtin_lambda(frame, 25, &builtin_string_append);
+    EF_set_builtin_lambda(frame, 26, &builtin_make_table);
+    EF_set_builtin_lambda(frame, 27, &builtin_table_keys);
+    EF_set_builtin_lambda(frame, 28, &builtin_table_delete);
+    EF_set_builtin_lambda(frame, 29, &builtin_file_read);
+    EF_set_builtin_lambda(frame, 30, &builtin_file_write);
+    // sys-argv
+    frame->array[31] = SYS_ARGV;
+    EF_set_builtin_lambda(frame, 32, &builtin_int_to_string);
+    EF_set_builtin_lambda(frame, 33, &builtin_float_to_string);
+    EF_set_builtin_lambda(frame, 34, &builtin_input);
+    EF_set_builtin_lambda(frame, 35, &builtin_display_string);
+    EF_set_builtin_lambda(frame, 36, &builtin_string_to_int);
+    EF_set_builtin_lambda(frame, 37, &builtin_string_to_float);
+    
+    frame->length = 38; // set length
     return frame;
 }
 /*
  create environment
  */
-Object *createEnvironment(){
-    Object * env = Object_initVector(1, ENV_SIZE); // create env
-    env->data.Vector.v[0] = createFrame0();  // add frame0
-    env->data.Vector.length = 1;
-    env->use_count = 1;
-    
+Environment *createEnvironment(){
+    Environment * env = malloc(sizeof(Environment));
+    env->length = 1;
+    env->frames = malloc(sizeof(Environment_Frame*) * MAX_STACK_SIZE);
+    env->frames[0] = createFrame0();
+    // env->frames[0]->use_count = 1;
     return env;
 }
-
 /*
- copy environment
+    copy environment
  */
-Object *copyEnvironment(Object * env){
-    int i = 0;
-    int size = env->data.Vector.size;
-    int length = env->data.Vector.length;
-    Object * new_env = Object_initVector(1, size);
-    for(i = 0; i < length; i++){
-        new_env->data.Vector.v[i] = env->data.Vector.v[i];
+Environment *copyEnvironment(Environment * old_env){
+    Environment * new_env = malloc(sizeof(Environment));
+    new_env->length = old_env->length;
+    new_env->frames = malloc(sizeof(Environment_Frame*) * new_env->length);
+    for (int i = 0; i < new_env->length; i++) {
+        new_env->frames[i] = old_env->frames[i]; // copy frame pointer
+        // new_env->frames[i]->use_count++; // increase use count
     }
-    new_env->data.Vector.length = length;
-    new_env->use_count = 1;
     return new_env;
 }
 
+/*
+ copy environment and push frame
+ */
+Environment *copyEnvironmentAndPushFrame(Environment * old_env, Environment_Frame * frame){
+    Environment * new_env = malloc(sizeof(Environment));
+    new_env->length = old_env->length;
+    new_env->frames = malloc(sizeof(Environment_Frame*) * (new_env->length + 1));
+    int i;
+    for (i = 0; i < old_env->length; i++) {
+        new_env->frames[i] = old_env->frames[i]; // copy frame pointer
+        // new_env->frames[i]->use_count++; // increase use count
+    }
+    new_env->frames[i] = frame;
+    new_env->length+=1;
+    return new_env;
+}
+#define pop_param for(i = 0; i < param_num; i++){\
+    temp = current_frame_pointer->array[current_frame_pointer->length - 1];\
+    temp->use_count--; \
+    Object_free(temp); \
+    current_frame_pointer->length--;}
 
 /*
  Walley Language Virtual Machine
@@ -168,14 +235,14 @@ Object *copyEnvironment(Object * env){
 Object *VM(unsigned short * instructions,
            unsigned long start_pc,
            unsigned long end_pc,
-           Object * env){
+           Environment * env){
     unsigned long pc = start_pc;
     unsigned int i;
     unsigned short frame_index, value_index;
     short inst;
     short opcode;
     char param_num, variadic_place;
-    unsigned long start_pc, jump_steps;
+    unsigned long jump_steps;
     int required_param_num, required_variadic_place;
     
     unsigned long string_length;
@@ -184,23 +251,27 @@ Object *VM(unsigned short * instructions,
     char s1, s2;
     
     long integer_;
-    double double_;
+    // double double_;
     
     Object * accumulator = GLOBAL_NULL;
-    Object * current_frame_pointer = GLOBAL_NULL;
-    Object * frames_list = GLOBAL_NULL; // save frames
-    Object * functions_list = GLOBAL_NULL; // use to save lambdas
-    Object * new_env;
-    Object * (*func_ptr)(Object*, int, int); // function pointer
+    Environment_Frame * current_frame_pointer = NULL;
+    Environment * new_env;
+    Object * (*func_ptr)(Object**, int, int); // function pointer
     Object * v;
     Object * temp; // temp use
     Object * temp2;
-    Object * top_frame_pointer = vector_Get(env, 0); // top frame
     
-    Object * BUILTIN_PRIMITIVE_PROCEDURE_STACK[1024]; // for builtin primitive procedure calculation
+    Environment_Frame *BUILTIN_PRIMITIVE_PROCEDURE_STACK = EF_init_with_size(MAX_STACK_SIZE); // for builtin primitive procedure calculation
     
-    Object * continuation_env = GLOBAL_NULL;             // used to save env
-    Object * continuation_return_pc = GLOBAL_NULL;       // used to save return pc
+    Environment * continuation_env[MAX_STACK_SIZE];      // used to save env
+    short continuation_env_length = 0;                   // save length of that array
+    unsigned long continuation_return_pc[MAX_STACK_SIZE]; // used to save return pc
+    short continuation_return_pc_length = 0;             // save length of that array
+    Environment_Frame * frames_list[MAX_STACK_SIZE]; // save frame
+    frames_list[0] = NULL;
+    short frames_list_length = 1;
+    Object * functions_list[MAX_STACK_SIZE]; // save function
+    short functions_list_length = 0;
     
     while(pc != end_pc){
         inst = instructions[pc];
@@ -210,12 +281,12 @@ Object *VM(unsigned short * instructions,
             case SET:
                 frame_index = 0x0FFF & inst;
                 value_index = instructions[pc + 1];
-                v = vector_Get(vector_Get(env, frame_index), value_index);
-
+                v = env->frames[frame_index]->array[value_index];
+                
                 v->use_count--; // decrement use_count
                 Object_free(v);
 
-                vector_Get(vector_Get(env, frame_index), value_index) = accumulator; // set value
+                env->frames[frame_index]->array[value_index] = accumulator; // set value
                 accumulator->use_count++;  // increase accumulator use_count
                 pc = pc + 2;
                 continue;
@@ -226,7 +297,7 @@ Object *VM(unsigned short * instructions,
                 Object_free(accumulator);
                 
                 // 这里应该检查 accumulator, 看看是否要free掉
-                accumulator = env->data.Vector.v[frame_index]->data.Vector.v[value_index];
+                accumulator = env->frames[frame_index]->array[value_index];
                 pc = pc + 2;
                 continue;
             case CONST:
@@ -319,42 +390,45 @@ Object *VM(unsigned short * instructions,
                 pc = pc + jump_steps + 1;
                 continue;
             case RETURN:
-                pc = car(continuation_pc);
-                env = car(continuation_env);
+                EF_free(env->frames[env->length - 1]); // free top frame
+                free(env->frames);
+                free(env);
                 
-                v = cdr(continuation_pc); // save rest
-                continuation_pc->use_count--; // free current
-                Object_free(continuation_pc); 
-                continuation_pc = v;
+                pc = continuation_return_pc[continuation_return_pc_length - 1]; // get old pc
+                continuation_return_pc_length-=1;
                 
-                v = cdr(continuation_env); // save rest
-                continuation_env->use_count--; // free current
-                Object_free(continuation_env); 
-                continuation_env = v;
-                
-                
-                // free top_frame_pointer
-                top_frame_pointer->use_count--;
-                Object_free(top_frame_pointer);
-                
-                //Object_free(top_frame_pointer); // free top frame
-                top_frame_pointer = vector_Get(env, vector_Length(env) - 1); // reset top_frame pointer
-                //printf("PC %d\n", pc);
+                env = continuation_env[continuation_env_length - 1]; // get old env
+                continuation_env_length-=1;
                 continue;
             case NEWFRAME: // create new frame
                 switch (accumulator->type){
                     case USER_DEFINED_LAMBDA: // user defined function
                         // create new frame with length 64
-                        current_frame_pointer = Object_initVector(0, 64);
-                        current_frame_pointer->data.Vector.length = 2; // set length to 2, save space for env and pc
-                        frames_list = cons(current_frame_pointer, frames_list);
-                        functions_list = cons(accumulator, functions_list);
+                        current_frame_pointer = EF_init_with_size(64);
+                        
+                        // save to frames_list
+                        frames_list[frames_list_length] = current_frame_pointer;
+                        frames_list_length++;
+
+                        // save to function list
+                        functions_list[functions_list_length] = accumulator;
+                        functions_list_length++;
+                        accumulator->use_count++;
+                        
                         pc = pc + 1;
                         continue;
                     case BUILTIN_LAMBDA: case VECTOR: case TABLE: // builtin lambda or vector or table
-                        current_frame_pointer = top_frame_pointer; // get top frame
-                        frames_list = cons(current_frame_pointer, frames_list); // save to frame list
-                        functions_list = cons(accumulator, functions_list); // save function to function list
+                        current_frame_pointer = BUILTIN_PRIMITIVE_PROCEDURE_STACK; // get top frame
+                        
+                        // save to frame list
+                        frames_list[frames_list_length] = current_frame_pointer;
+                        frames_list_length++;
+                        
+                        // save to function list
+                        functions_list[functions_list_length] = accumulator;
+                        functions_list_length++;
+                        accumulator->use_count++;
+                        
                         pc = pc + 1;
                         continue;
                     default:
@@ -362,51 +436,34 @@ Object *VM(unsigned short * instructions,
                         return GLOBAL_NULL;
                 }
             case PUSH_ARG: // push arguments
-                //current_frame_pointer->data.Vector.v[0x0FFF & inst] = accumulator;
-                //printf("PUSHARG %d\n", accumulator->data.Integer.v);
                 accumulator->use_count++; // increase use count
-                current_frame_pointer->data.Vector.v[current_frame_pointer->data.Vector.length] = accumulator;
-                current_frame_pointer->data.Vector.length++;
+                current_frame_pointer->array[current_frame_pointer->length] = accumulator; // push to env frame
+                current_frame_pointer->length++;
                 pc = pc + 1;
                 continue;
                 
             case CALL:
                 param_num = (0x0FFF & inst);
-                v = car(functions_list); // get function
-                functions_list = cdr(functions_list);  // pop that function from list
+                v = functions_list[functions_list_length - 1]; // get function
+                functions_list_length--;  // pop that function from list
+                v->use_count--;
+                
                 switch (v->type){
                     case BUILTIN_LAMBDA: // builtin lambda
                         func_ptr = v->data.Builtin_Lambda.func_ptr;
                         pc = pc + 1;
-                        accumulator = (*func_ptr)(current_frame_pointer, param_num, vector_Length(current_frame_pointer) - param_num); // call function
-                        //printf("@@ %d %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v ,
-                        //     vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v);
-                        /*if(func_ptr == &builtin_num_equal){
-                         printf("CHECK EQUAL\n");
-                         printf("@@ %d %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v ,
-                         vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 2)->data.Integer.v);
-                         }
-                         if(func_ptr == &builtin_sub){
-                         printf("SUB\n");
-                         printf("@@ %d %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v ,
-                         vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 2)->data.Integer.v);
-                         printf("RESULT %d\n", accumulator->data.Integer.v);
-                         }
-                         if(func_ptr == &builtin_mul){
-                         printf("MUL\n");
-                         exit(0);
-                         }
-                         printf("%d\n", (int)func_ptr);*/
-                        //printf("GET accumulator %s\n", accumulator->data.String.v );
+                        accumulator = (*func_ptr)(current_frame_pointer->array, param_num, current_frame_pointer->length - param_num); // call function
                         // pop parameters
                         for(i = 0; i < param_num; i++){
-                            temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1 - i);
+                            temp = current_frame_pointer->array[current_frame_pointer->length - 1];
                             temp->use_count--; // －1 因为在push的时候加1了
                             Object_free(temp);
+                            
+                            current_frame_pointer->length--; // decrease length
                         }
-                        current_frame_pointer->data.Vector.length -= param_num; // decrement the length
-                        frames_list = cdr(frames_list);           //
-                        current_frame_pointer = car(frames_list); // get new frame pointer
+                        frames_list_length--; // pop frame list
+                        current_frame_pointer = frames_list[frames_list_length - 1];
+        
                         // free lambda
                         Object_free(v);
                         continue;
@@ -414,38 +471,49 @@ Object *VM(unsigned short * instructions,
                         pc = pc + 1;
                         switch(param_num){
                             case 1: // vector get
-                                accumulator = vector_Get(v, vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1)->data.Integer.v);
-                                // pop 1 param
-                                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1);
-                                temp->use_count--;
-                                Object_free(temp);
-                                current_frame_pointer->data.Vector.length--; // set length
-                                break;
-                            case 2: // vector set
-                                i = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2)->data.Integer.v; // set index
-                                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1); // set value
-                                Object_free(vector_Get(v, i)); // free that original value
+                                temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+                                integer_ = temp->data.Integer.v; // get index
+                                accumulator = v->data.Vector.v[integer_]; // get value
                                 
-                                vector_Get(v, i) = temp;
-                                accumulator = v;
-                                //temp->use_count++; // increase use count 不用再＋＋ 因为再 PUSHARG的时候加过了
-                                // pop 2 params
-                                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
-                                temp->use_count--;
+                                temp->use_count--; // pop parameters
                                 Object_free(temp);
-                                //temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
-                                //Object_free(temp);
-                                current_frame_pointer->data.Vector.length-=2; // set length
-                                break;
+                                current_frame_pointer->length--; // decrease length
+                                
+                                frames_list_length--; // pop frame list
+                                current_frame_pointer = frames_list[frames_list_length - 1];
+                                
+                                // free lambda
+                                Object_free(v);
+                                continue;
+                            case 2: // vector set
+                                temp = current_frame_pointer->array[current_frame_pointer->length - 2]; // index
+                                temp2 = current_frame_pointer->array[current_frame_pointer->length - 1]; // value
+                                integer_ = temp->data.Integer.v;
+                                // set to vector
+                                v->data.Vector.v[integer_] = temp2;
+                                temp2->use_count++; // in use
+                                
+                                // pop parameters
+                                for(i = 0; i < param_num; i++){
+                                    temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+                                    temp->use_count--; // －1 因为在push的时候加1了
+                                    Object_free(temp);
+                                    
+                                    current_frame_pointer->length--; // decrease length
+                                }
+                                
+                                frames_list_length--; // pop frame list
+                                current_frame_pointer = frames_list[frames_list_length - 1];
+                                
+                                // free lambda
+                                Object_free(v);
+                                
+                                continue;
                             default: // wrong parameters
                                 printf("ERROR: Invalid vector operation\n");
                                 return GLOBAL_NULL;
                         }
-                        frames_list = cdr(frames_list);           //
-                        current_frame_pointer = car(frames_list); // get new frame pointer
-                        // free lambda
-                        Object_free(v);
-                        continue;
+                    /*
                     case TABLE: // table
                         pc = pc + 1;
                         switch(param_num){
@@ -490,20 +558,15 @@ Object *VM(unsigned short * instructions,
                         // free lambda
                         Object_free(v);
                         continue;
+                    */
                     case USER_DEFINED_LAMBDA: // user defined function
                         
                         required_param_num = v->data.User_Defined_Lambda.param_num;
                         required_variadic_place = v->data.User_Defined_Lambda.variadic_place;
                         start_pc = v->data.User_Defined_Lambda.start_pc;
                         
-                        new_env = copyEnvironment(v->data.User_Defined_Lambda.env);
-                        new_env->data.Vector.v[new_env->data.Vector.length] = current_frame_pointer; // add frame
-                        new_env->data.Vector.length++;
-                        
-                        top_frame_pointer = current_frame_pointer; // update top frame pointer
-                        
-                        vector_Get(current_frame_pointer, 0) = env; // save current env to new-frame
-                        vector_Get(current_frame_pointer, 1) = Object_initInteger(pc + 1); // save pc
+                        // create new environment
+                        new_env = copyEnvironmentAndPushFrame(v->data.User_Defined_Lambda.env, current_frame_pointer);
                         
                         if(required_variadic_place == -1 && param_num - 1 > required_param_num){
                             printf("ERROR: Too many parameters provided\n");
@@ -511,27 +574,37 @@ Object *VM(unsigned short * instructions,
                         }
                         if(required_variadic_place != -1){
                             v = GLOBAL_NULL;
-                            for(i = vector_Length(current_frame_pointer) - 1; i >= required_variadic_place + 2; i--){
-                                v = cons(vector_Get(current_frame_pointer, i), v);
+                            for(i = (current_frame_pointer->length) - 1; i >= required_variadic_place; i--){
+                                current_frame_pointer->array[i]->use_count--; // 因为 cons的时候会再增加
+                                v = cons(current_frame_pointer->array[i], v);
+                                current_frame_pointer->array[i] = NULL; // clear
                             }
-                            vector_Get(current_frame_pointer, required_variadic_place + 2) = v;
+                            current_frame_pointer->array[required_variadic_place] = v;
+                            v->use_count++;
+                            current_frame_pointer->length = required_variadic_place + 1; // update length
                         }
                         
-                        if(vector_Length(current_frame_pointer) - 2 < required_param_num){
+                        // set null
+                        if((current_frame_pointer->length) < required_param_num){
                             for(i = param_num; i < required_param_num; i++){
-                                vector_Get(current_frame_pointer, i+2) = GLOBAL_NULL;
+                                current_frame_pointer->array[i] = GLOBAL_NULL;
+                                GLOBAL_NULL->use_count++; // 用吗？
                             }
                         }
+                        
+                        // save return pc
+                        continuation_return_pc[continuation_return_pc_length] = pc+1;
+                        continuation_return_pc_length++;
+                        // save old env
+                        continuation_env[continuation_env_length] = env;
+                        continuation_env_length++;
                         
                         // resert pointers
                         env = new_env;
                         pc = start_pc;
                         
-                        //printf("@@@@ User Defined Function %d\n", vector_Get(current_frame_pointer, vector_Length(current_frame_pointer) - 1)->data.Integer.v);
-                        //printf("@@@@ new env length: %d  value: %d\n", vector_Length(env),vector_Get(vector_Get(env, 1), 2)->data.Integer.v);
-                        // pop frame
-                        frames_list = cdr(frames_list);
-                        current_frame_pointer = car(frames_list);
+                        frames_list_length--; // pop frame list
+                        current_frame_pointer = frames_list[frames_list_length - 1];
                         
                         // free lambda
                         Object_free(v);
@@ -541,23 +614,22 @@ Object *VM(unsigned short * instructions,
                         return GLOBAL_NULL;
                 }
             case JMP:
-                pc = pc + ((instructions[pc + 1] << 16) | instructions[pc + 2]);
+                pc = pc + (signed int)((instructions[pc + 1] << 16) | instructions[pc + 2]);
                 continue;
                 
             case TEST:
                 if (accumulator->type == NULL_){
-                    pc = pc + instructions[pc + 1];
+                    pc = pc + (unsigned short)instructions[pc + 1];
                     continue;
                 }
-                //printf("RUN NEXT\n");
-                // run next
                 pc = pc + 2;
                 continue;
             case PUSH: // push to top frame
-                //v = top_frame_pointer; // top frame
-                top_frame_pointer->data.Vector.v[top_frame_pointer->data.Vector.length] = accumulator; // set value
+                // set value and increase length
+                env->frames[env->length-1]->array[env->frames[env->length-1]->length] = accumulator;
+                env->frames[env->length-1]->length++;
+        
                 accumulator->use_count++; // increase use_count
-                top_frame_pointer->data.Vector.length++; // increase length
                 pc++;
                 continue;
             default:
