@@ -386,7 +386,7 @@ void compiler(Instructions * insts,
                 Variable_Table * vt_ = VT_copy(vt); // new variable table
                 //var macros_ = macros.slice(0); // new macro table
                 //var env_ = env.slice(0);
-                VT_add_new_empty_frame(vt); // we add a new frame
+                VT_add_new_empty_frame(vt_); // we add a new frame
                 //macros_.push([]); // add new frame
                 //env_.push([]); // 必须加上这个， 要不然((lambda [] (defmacro square ([x] `[* ~x ~x])) (square 12))) macro 会有错
                 while (true) {
@@ -400,16 +400,17 @@ void compiler(Instructions * insts,
                     if (str_eq(car(params)->data.String.v,
                                ".")) { // variadic
                         variadic_place = counter;
-                        VT_push(vt, vt->length - 1, cadr(params)->data.String.v);
+                        VT_push(vt_, vt_->length - 1, cadr(params)->data.String.v);
                         counter += 1; // means no parameters requirement
                         break;
                     }
-                    VT_push(vt,
-                            vt->length - 1,
+                    VT_push(vt_,
+                            vt_->length - 1,
                             car(params)->data.String.v);
                     counter++;
                     params = cdr(params);
                 }
+                                
                 // make lambda
                 Insts_push(insts,
                            (MAKELAMBDA << 12)
@@ -435,9 +436,22 @@ void compiler(Instructions * insts,
                                vt_,
                                parent_func_name,
                                function_);
+                // return
+                Insts_push(insts, RETURN << 12);
+                index2 = insts->length;
+                insts->array[index1] = index2 - index1; // set jump steps
                 
-                VT_free(vt_); // free vt_;
+                
+                // 这里出错了, 因该只用free 最top的
+                // VT_free(vt_); // free vt_;
+                // free(vt_);
+                for (i = 0; i < vt_->frames[vt_->length-1]->length; i++) {
+                    free(vt_->frames[vt_->length - 1]->var_names[i]);
+                }
+                free(vt_->frames[vt_->length - 1]->var_names);
+                free(vt_->frames[vt_->length - 1]);
                 free(vt_);
+                
                 vt_ = NULL;
                 free(function_); // free lambda for compilation
                 function_ = NULL;

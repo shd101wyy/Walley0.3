@@ -219,7 +219,7 @@ void VT_add_new_empty_frame(Variable_Table * vt){
     Variable_Table_Frame * frame = VTF_init(64);
     frame->use_count = 1; // increase use_count of vtf
     vt->frames[vt->length] = frame;
-    vt->length++ ;
+    vt->length+=1;
 }
 /*
     克隆 Variable Table

@@ -102,7 +102,7 @@ struct Object {
         struct {
             char param_num;
             char variadic_place;
-            int start_pc;
+            unsigned long start_pc;
             Environment * env;
         } User_Defined_Lambda;
         struct {
@@ -216,7 +216,7 @@ Object * Object_initNull(){
 /*
  initialize user defined lambda
  */
-Object * Object_initUserDefinedLambda(char param_num, char variadic_place, int start_pc, Environment * env){
+Object * Object_initUserDefinedLambda(char param_num, char variadic_place, unsigned long start_pc, Environment * env){
     Object * o = allocateObject();
     o->type = USER_DEFINED_LAMBDA;
     o->data.User_Defined_Lambda.param_num = param_num;

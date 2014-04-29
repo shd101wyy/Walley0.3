@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
     // ######################################################
     
     Walley_init();
-    char s[1000] = "(if 'a 'b 'c)";
+    char s[1000] = "(def x {'a 12}) (x 'b 15) (x 'b)";
     Lexer * p;
     p = lexer((char*)s);
     Lexer_Debug(p);
@@ -46,9 +46,32 @@ int main(int argc, char *argv[]){
                    NULL,
                    NULL);
     printInstructions(insts);
-    /*
-    long i = 0x4029000000000000;
-    printf("\n%lf", *((double*)&(i)));
-    */
+    
+    printf("\n\n @@@ RUN VM @@@\n");
+    printf("Instruction Length %ld \n", insts->length);
+    Environment * env = createEnvironment();
+    Object * acc = VM(insts->array, 0, insts->length, env);
+    
+    printf("\n\n @@@ Finish @@@ \n\n");
+    //printf("%ld", acc->data.Vector.v[1]->data.Integer.v);
+    printf("%ld", acc->data.Integer.v);
+    // printf("%s", acc->data.String.v);
+    // printf("%ld\n", env->frames[0]->length);
+    // printf("%ld\n", env->frames[0]->array[38]->data.Integer.v);
+
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -113,10 +113,10 @@ Environment_Frame * EF_init_with_size(int size){
 /*
     construct environment
  */
-typedef struct Environment{
+struct Environment{
     Environment_Frame ** frames;
     int length;  // max length MAX_STACK_SIZE
-} Environment;
+};
 
 void Env_free(Environment * env){
     for (int i = 0; i < env->length; i++) {
@@ -255,6 +255,7 @@ Object *VM(unsigned short * instructions,
     
     Object * accumulator = GLOBAL_NULL;
     Environment_Frame * current_frame_pointer = NULL;
+    Environment_Frame * temp_frame;
     Environment * new_env;
     Object * (*func_ptr)(Object**, int, int); // function pointer
     Object * v;
@@ -306,8 +307,8 @@ Object *VM(unsigned short * instructions,
                         // free accumulator is necessary
                         Object_free(accumulator);
                         
-                        accumulator = Object_initInteger((long)((instructions[pc + 1] << 48) | 
-                                                                (instructions[pc + 2] << 32) | 
+                        accumulator = Object_initInteger((long)(((long)instructions[pc + 1] << 48) |
+                                                                ((long)instructions[pc + 2] << 32) |
                                                                 (instructions[pc + 3] << 16) |
                                                                 (instructions[pc + 4])));
                         pc = pc + 5;
@@ -316,8 +317,8 @@ Object *VM(unsigned short * instructions,
                         // free accumulator is necessary
                         Object_free(accumulator);
                     
-                        integer_ = (long)((instructions[pc + 1] << 48) | 
-                                                                (instructions[pc + 2] << 32) | 
+                        integer_ = (long)(((long)instructions[pc + 1] << 48) |
+                                                                ((long)instructions[pc + 2] << 32) |
                                                                 (instructions[pc + 3] << 16) |
                                                                 (instructions[pc + 4]));
                         accumulator = Object_initDouble((double)(*((double*)&(integer_))));
@@ -390,9 +391,16 @@ Object *VM(unsigned short * instructions,
                 pc = pc + jump_steps + 1;
                 continue;
             case RETURN:
-                EF_free(env->frames[env->length - 1]); // free top frame
+                // free top frame
+                temp_frame = env->frames[env->length - 1]; // get top frame
+                // free each value in that frame
+                for (int i = 0; i < temp_frame->length; i++) {
+                    temp_frame->array[i]->use_count--;
+                    Object_free(temp_frame->array[i]);
+                }
                 free(env->frames);
                 free(env);
+                
                 
                 pc = continuation_return_pc[continuation_return_pc_length - 1]; // get old pc
                 continuation_return_pc_length-=1;
@@ -489,6 +497,11 @@ Object *VM(unsigned short * instructions,
                                 temp = current_frame_pointer->array[current_frame_pointer->length - 2]; // index
                                 temp2 = current_frame_pointer->array[current_frame_pointer->length - 1]; // value
                                 integer_ = temp->data.Integer.v;
+                                
+                                // decrease use_count of old_value
+                                v->data.Vector.v[integer_]->use_count--;
+                                Object_free(v->data.Vector.v[integer_]);
+                                
                                 // set to vector
                                 v->data.Vector.v[integer_] = temp2;
                                 temp2->use_count++; // in use
@@ -513,52 +526,58 @@ Object *VM(unsigned short * instructions,
                                 printf("ERROR: Invalid vector operation\n");
                                 return GLOBAL_NULL;
                         }
-                    /*
+                    
                     case TABLE: // table
                         pc = pc + 1;
                         switch(param_num){
                             case 1: // table get
-                                // get key
-                                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1);
-                                accumulator = getval(v,
-                                                     temp);
+                                temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+                               
+                                // get value from table
+                                accumulator = Table_getval(v, temp);
+                               
                                 
-                                printf("%d\n", accumulator->data.Integer.v);
-                                
-                                // pop 1 param
-                                temp->use_count--;
+                                temp->use_count--; // pop parameters
                                 Object_free(temp);
-                                current_frame_pointer->data.Vector.length -= 1; // set length
-                                break;
+                                current_frame_pointer->length--; // decrease length
+                                
+                                frames_list_length--; // pop frame list
+                                current_frame_pointer = frames_list[frames_list_length - 1];
+                                
+                                // free lambda
+                                Object_free(v);
+                                continue;
+
                             case 2: // object set
-                                // get key
-                                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
-                                // get value
-                                temp2 = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-1); // set value
-                                temp2->use_count--; // 因为在setval的时候会++
-                                // Object_free(getval(v, i)); // free that original value 不用运行这个, 在setval的时候会自动free
+                                temp = current_frame_pointer->array[current_frame_pointer->length - 2]; // key
+                                temp2 = current_frame_pointer->array[current_frame_pointer->length - 1]; // value
                                 
-                                setval(v, temp, temp2);
-                                accumulator = v;
-                                //temp->use_count++; // increase use count 不用再＋＋ 因为再 PUSHARG的时候加过了
-                                // pop 2 params
-                                temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
-                                temp->use_count--;
-                                Object_free(temp);
-                                //temp = vector_Get(current_frame_pointer, vector_Length(current_frame_pointer)-2);
-                                //Object_free(temp);
-                                current_frame_pointer->data.Vector.length -= 2; // set length
-                                break;
+                                Table_setval(v, temp, temp2);
+                                
+                                // 下面这个不用运行
+                                // 因为在 Table_setval的时候会自动增加
+                                // temp2->use_count++; // in use
+                                
+                                // pop parameters
+                                for(i = 0; i < param_num; i++){
+                                    temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+                                    temp->use_count--; // －1 因为在push的时候加1了
+                                    Object_free(temp);
+                                    
+                                    current_frame_pointer->length--; // decrease length
+                                }
+                                
+                                frames_list_length--; // pop frame list
+                                current_frame_pointer = frames_list[frames_list_length - 1];
+                                
+                                // free lambda
+                                Object_free(v);
+                                
+                                continue;
                             default: // wrong parameters
                                 printf("ERROR: Invalid table operation\n");
                                 return GLOBAL_NULL;
                         }
-                        frames_list = cdr(frames_list);           //
-                        current_frame_pointer = car(frames_list); // get new frame pointer
-                        // free lambda
-                        Object_free(v);
-                        continue;
-                    */
                     case USER_DEFINED_LAMBDA: // user defined function
                         
                         required_param_num = v->data.User_Defined_Lambda.param_num;
@@ -624,6 +643,7 @@ Object *VM(unsigned short * instructions,
                 }
                 pc = pc + 2;
                 continue;
+            // 不知道到底用不用是有这个opcode
             case PUSH: // push to top frame
                 // set value and increase length
                 env->frames[env->length-1]->array[env->frames[env->length-1]->length] = accumulator;

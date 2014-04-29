@@ -123,7 +123,7 @@ Object *builtin_vector_push(Object ** params, int param_num, int start_index){
 // 11 vector-pop!
 Object *builtin_vector_pop(Object ** params, int param_num, int start_index){
     Object * vec = params[start_index];
-    int length = vector_Length(vec);
+    unsigned long length = vector_Length(vec);
     
     Object *return_out = vector_Get(vec, length - 1); // get pop value
     return_out->use_count--;                          // decrement use count

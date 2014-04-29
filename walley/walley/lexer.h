@@ -116,7 +116,12 @@ Lexer* lexer(char * input_string){
         }
         else if (input_string[i] == '#' && (input_string[i + 1] == '[' || input_string[i + 1] == '(')){ // vector
             Lexer_push(output_list, "(");
-            Lexer_push(output_list, "vector"); // change this part later
+            if (input_string[i + 1] == '(') {
+                Lexer_push(output_list, "vector"); // 定长 vector, 长度不可变
+            }
+            else{
+                Lexer_push(output_list, "vector!"); // 不定长 vector, 长度可变
+            }
             i++;
         }
         else if (input_string[i] == '[' || input_string[i] == '{'){
