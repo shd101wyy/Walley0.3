@@ -479,6 +479,7 @@ void compiler(Instructions * insts,
             else{
                 // 咱不支持 macro
                 if(tail_call_flag){
+                    printf("TAIL CALL!");
                     // so no new frame
                     int start_index = vt->frames[vt->length - 1]->length;
                     int track_index = start_index;
@@ -549,7 +550,7 @@ void compiler(Instructions * insts,
                     // jump back
                     start_pc = function_for_compilation->start_pc;
                     Insts_push(insts, JMP << 12);
-                    jump_steps = -(insts->length - start_pc); // jump steps
+                    jump_steps = -(insts->length - start_pc) + 1; // jump steps
                     Insts_push(insts, (0xFFFF0000 & jump_steps) >> 16);
                     Insts_push(insts, 0x0000FFFF & jump_steps);
                     return;

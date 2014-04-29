@@ -350,11 +350,12 @@ Object *VM(unsigned short * instructions,
             case SET:
                 frame_index = 0x0FFF & inst;
                 value_index = instructions[pc + 1];
-                v = env->frames[frame_index]->array[value_index];
-                
-                v->use_count--; // decrement use_count
-                Object_free(v);
 
+                v = env->frames[frame_index]->array[value_index];
+                if(v){ //因为 v 可能不存在, 所以得检查
+                    v->use_count--; // decrement use_count
+                    Object_free(v);
+                }
                 env->frames[frame_index]->array[value_index] = accumulator; // set value
                 accumulator->use_count++;  // increase accumulator use_count
                 pc = pc + 2;
@@ -688,6 +689,7 @@ Object *VM(unsigned short * instructions,
                         return GLOBAL_NULL;
                 }
             case JMP:
+                //printf("JUMP STEPS %d\n", (signed int)((instructions[pc + 1] << 16) | instructions[pc + 2]));
                 pc = pc + (signed int)((instructions[pc + 1] << 16) | instructions[pc + 2]);
                 continue;
                 

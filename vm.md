@@ -22,6 +22,7 @@ Todo List:
 	Compile to JavaScript
 	Make Virtual Machine more efficient
 	Improve Garbage Collection 
+	Support UTF 8
 	...
 
 (~ *_*)~
