@@ -1,7 +1,33 @@
-#Toy Language Virtual Machine Instructions
+#Walley Language Virtual Machine Instructions
 
 ###every instruction is 16 bits 0xFFFF
+```
 ===============================================  
+Now I begin to write Walley Lanuage in C language
+Its Virtual Machine is different from the JavaScript Version. 
+
+Supported Data Type:
+	integer                    64bit long
+	Double                     64bit double
+	Ratio                      2 64 bit long
+	String
+	Vector 
+	Table
+	User_Defined_Lambda
+	NULL
+
+Todo List:
+	Support Macro
+	Support Call-CC
+	Compile to JavaScript
+	Make Virtual Machine more efficient
+	Improve Garbage Collection 
+	...
+
+(~ *_*)~
+
+===============================================
+```
 
 ####INSTRUCTIONS:
 1. SET        0x0  

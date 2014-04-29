@@ -10,7 +10,19 @@
 			   (self 'age new_age)))
 	  self
 	  ))
+(Person 'display-age 
+	(lambda [p]
+	  (display-string (int->string p:age))))
 
 (def a (Person:init 22))
 ;(a:set-age 15)
+(Person:display-age a)
+
+(def b (Person:init 24))
+(display-string (int->string b:age))
 (display-string (int->string a:age))
+
+(display-string "\n")
+(def f
+     (lambda [n] (if (= n 0) 1 (* n (f (- n 1))))))
+(display-string (int->string (f 10)))
