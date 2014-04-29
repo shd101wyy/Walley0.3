@@ -28,18 +28,24 @@ long gcd(long a, long b){
  */
 Object * Object_initRatio(long numer, long denom){
     long g;
+    Object * o;
     if (denom == 1) {
-        Object * o = allocateObject();
-        o->type = INTEGER;
-        o->data.Integer.v = numer;
-        return o;
+    it_is_integer:
+            o = allocateObject();
+            o->type = INTEGER;
+            o->data.Integer.v = numer;
+            return o;
     }
     else{
         g = gcd(numer, denom);
-        Object * o = allocateObject();
+        numer = numer / g;
+        denom = denom / g;
+        if (denom == 1) goto it_is_integer;
+        
+        o = allocateObject();
         o->type = RATIO;
-        o->data.Ratio.numer = numer/g;
-        o->data.Ratio.denom = denom/g;
+        o->data.Ratio.numer = numer;
+        o->data.Ratio.denom = denom;
         return o;
     }
 }
