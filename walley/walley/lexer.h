@@ -39,6 +39,15 @@ void Lexer_push(Lexer * l, char * value){
     l->array_length += 1;
 }
 
+void Lexer_set(Lexer * l, int index, char * value){
+    free(l->string_array[index]);
+    l->string_array[index] = NULL;
+    char * s = malloc(sizeof(char)*((int)strlen(value) + 1));
+    strcpy(s, value); // copy string
+    l->string_array[index] = s;
+    return;
+}
+
 // free lexer
 void Lexer_free(Lexer * l){
     uint32_t i;
@@ -82,7 +91,7 @@ char * string_append(char *str1, char *str2){
 }
 
 
-#define Lexer_set(l, index, value) ((l)->string_array[(index)] = (value))
+//#define Lexer_set(l, index, value) ((l)->string_array[(index)] = (value))
 #define Lexer_get(l, index) ((l)->string_array[(index)])
 #define Lexer_length(l) ((l)->array_length)
 #define true 1
