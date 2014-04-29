@@ -180,7 +180,7 @@ Object * Object_initString(char * v, unsigned long string_length){
     }
     strcpy(o->data.String.v, v);
     o->data.String.length = string_length;
-    o->use_count = 0;
+    // o->use_count = 0;  // already set to 0 when allocateObject()
     return o;
 }
 /*
@@ -236,6 +236,10 @@ Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object *, int, int)){
  */
 Object * cons(Object * car, Object * cdr){
     Object * o = allocateObject();
+    
+    car->use_count++; // increase use_count
+    cdr->use_count++; // increase use_count
+    
     o->type = PAIR;
     o->data.Pair.car = car;
     o->data.Pair.cdr = cdr;
@@ -429,6 +433,10 @@ void Object_free(Object * o){
                 }
                 return;
             case PAIR:
+                // decrement the use count
+                o->data.Pair.car->use_count--; 
+                o->data.Pair.cdr->use_count--;
+                
                 Object_free(o->data.Pair.car);
                 Object_free(o->data.Pair.cdr);
                 free(o);

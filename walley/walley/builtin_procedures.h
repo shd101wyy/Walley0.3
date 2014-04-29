@@ -124,7 +124,10 @@ Object *builtin_vector_push(Object * params, int param_num, int start_index){
 Object *builtin_vector_pop(Object * params, int param_num, int start_index){
     Object * vec = vector_Get(params, start_index);
     int length = vector_Length(vec);
+    
     Object *return_out = vector_Get(vec, length - 1); // get pop value
+    return_out->use_count--;                          // decrement use count
+    
     vector_Get(vec, length - 1) = GLOBAL_NULL; // clear that variable
     length = length - 1;
     vec->data.Vector.length = length; // reset length
