@@ -11,6 +11,7 @@ Object *builtin_cons(Object ** params, int param_num, int start_index){
     Object * o = allocateObject();
     Object * car = params[start_index];
     Object * cdr = params[start_index+1];
+    o->use_count = 0;
     o->type = PAIR;
     o->data.Pair.car = car;
     o->data.Pair.cdr = cdr;

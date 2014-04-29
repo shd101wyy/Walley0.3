@@ -1066,7 +1066,11 @@ var compiler = function(l, vt, macros, tail_call_flag, parent_func_name, functio
                                     else if (car(v).type == TYPE_STRING && car(v) === "unquote-splice") return cons(make_string("append"), cons(cadr(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
                                     return cons(make_string("cons"), cons(quasiquote(v), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
                                 } else if (v.type === TYPE_STRING && v === ".") return cons(make_string("quote"), cons(cadr(l), GLOBAL_NULL));
-                                return cons(make_string("cons"), cons(cons(make_string("quote"), cons(v, GLOBAL_NULL)), cons(quasiquote(cdr(l)), GLOBAL_NULL)));
+                                    return cons(make_string("cons"),
+                                                cons(cons(make_string("quote"),
+                                                          cons(v, GLOBAL_NULL)),
+                                                     cons(quasiquote(cdr(l)),
+                                                          GLOBAL_NULL)));
                             }
                         return compiler(quasiquote(v), vt, macros, tail_call_flag, parent_func_name, functions_for_compilation, env);
                     }

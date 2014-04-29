@@ -482,13 +482,14 @@ Object *VM(unsigned short * instructions,
                         return GLOBAL_NULL;
                 }
             case PUSH_ARG: // push arguments
-                accumulator->use_count++; // increase use count
+                accumulator->use_count+=1; // increase use count
                 current_frame_pointer->array[current_frame_pointer->length] = accumulator; // push to env frame
-                current_frame_pointer->length++;
+                current_frame_pointer->length+=1;
                 pc = pc + 1;
                 continue;
                 
             case CALL:
+                // printf("CALL");
                 param_num = (0x0FFF & inst);
                 v = functions_list[functions_list_length - 1]; // get function
                 functions_list[functions_list_length - 1] = NULL; // clear
@@ -500,20 +501,28 @@ Object *VM(unsigned short * instructions,
                         func_ptr = v->data.Builtin_Lambda.func_ptr;
                         pc = pc + 1;
                         accumulator = (*func_ptr)(current_frame_pointer->array, param_num, current_frame_pointer->length - param_num); // call function
+                        
+                        accumulator->use_count++; //必须在pop parameters之前运行这个 eg (car '((x))) 得到了 (x)， 但是如果 accumulator->use_count不加加的话 (x)会被free掉，
+                        // 在 pop 完 parameters之后在 decrease accumulator->use_count
                         // pop parameters
                         for(i = 0; i < param_num; i++){
                             temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+
                             temp->use_count--; // －1 因为在push的时候加1了
-                            Object_free(temp);
                             
+                            Object_free(temp); // free object
+                            
+                            current_frame_pointer->array[current_frame_pointer->length - 1] = NULL; // clear
                             current_frame_pointer->length--; // decrease length
                         }
+                        accumulator->use_count--;
+                        
                         // free current_frame_pointer
                         free_current_frame_pointer(current_frame_pointer);
                         
                         frames_list_length--; // pop frame list
                         current_frame_pointer = frames_list[frames_list_length - 1];
-        
+                    
                         // free lambda
                         Object_free(v);
                         continue;

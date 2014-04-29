@@ -27,11 +27,46 @@ Object * quote_list(Object * l){
                                          cons(quote_list(cdr(l)),
                                               GLOBAL_NULL)));
     else if (v->type == STRING && str_eq(v->data.String.v, "."))
-        return cons(QUASIQUOTE_STRING, cons(cadr(l), GLOBAL_NULL));
+        return cons(QUOTE_STRING, cons(cadr(l), GLOBAL_NULL));
     return cons(CONS_STRING,
                 cons(cons(QUOTE_STRING, cons(v, GLOBAL_NULL)),
                      cons(quote_list(cdr(l)), GLOBAL_NULL)));
 }
+
+Object * quasiquote_list(Object * l){
+    if (l->type == NULL_) {
+        return GLOBAL_NULL;
+    }
+    Object * v = car(l);
+    if(v->type == PAIR){
+        if (car(v)->type == STRING
+            && str_eq(car(v)->data.String.v, "unquote")) {
+            return cons(CONS_STRING,
+                        cons(cadr(v),
+                             cons(quasiquote_list(cdr(l)),
+                                  GLOBAL_NULL)));
+        }
+        else if (car(v)->type == STRING
+                 && str_eq(car(v)->data.String.v, "unquote-splice")){
+            return cons(Object_initString("append", 6),
+                        cons(cadr(v),
+                             cons(quasiquote_list(cdr(l)),
+                                  GLOBAL_NULL)));
+        }
+        return cons(CONS_STRING,
+                    cons(quasiquote_list(v),
+                         cons(quasiquote_list(cdr(l)), GLOBAL_NULL)));
+    }
+    else if (v->type == STRING && str_eq(v->data.String.v, "."))
+        return cons(QUOTE_STRING, cons(cadr(l), GLOBAL_NULL));
+    else
+        return cons(CONS_STRING,
+                    cons(cons(QUOTE_STRING,
+                              cons(v, GLOBAL_NULL)),
+                         cons(quasiquote_list(cdr(l)),
+                              GLOBAL_NULL)));
+}
+
 void compiler(Instructions * insts,
              Object * l,
              Variable_Table * vt,
@@ -211,6 +246,38 @@ void compiler(Instructions * insts,
                 else if (v->type == PAIR){ // pair
                     return compiler(insts,
                                     quote_list(v),
+                                    vt,
+                                    tail_call_flag,
+                                    parent_func_name,
+                                    function_for_compilation);
+                }
+                else if(v->data.String.v[0] != '\''){
+                    
+                    string = string_append("\"", string_append(v->data.String.v, "\""));
+                    return compiler(insts,
+                                    Object_initString(string,
+                                                      strlen(string)),
+                                    vt,
+                                    tail_call_flag,
+                                    parent_func_name,
+                                    function_for_compilation);
+                }
+                return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation);
+            }
+            else if(str_eq(tag, "quasiquote")){
+                v = cadr(l);
+                // check integer float null
+                if(v->type == NULL_ || v->type == INTEGER || v->type == DOUBLE){
+                    return compiler(insts,
+                                    v,
+                                    vt,
+                                    tail_call_flag,
+                                    parent_func_name,
+                                    function_for_compilation);
+                }
+                else if (v->type == PAIR){ // pair
+                    return compiler(insts,
+                                    quasiquote_list(v),
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,

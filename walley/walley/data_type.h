@@ -232,8 +232,9 @@ Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object **, int, int)){
 Object * cons(Object * car, Object * cdr){
     Object * o = allocateObject();
     
-    car->use_count++; // increase use_count
-    cdr->use_count++; // increase use_count
+    // 只有 builtin_procedure 需要 增加
+    //car->use_count++; // increase use_count
+    //cdr->use_count++; // increase use_count
     
     o->type = PAIR;
     o->data.Pair.car = car;
@@ -426,11 +427,12 @@ void Object_free(Object * o){
                 return;
             case PAIR:
                 // decrement the use count
-                o->data.Pair.car->use_count--; 
-                o->data.Pair.cdr->use_count--;
+                o->data.Pair.car->use_count-=1;
+                o->data.Pair.cdr->use_count-=1;
                 
                 Object_free(o->data.Pair.car);
                 Object_free(o->data.Pair.cdr);
+                
                 free(o);
                 return;
             case USER_DEFINED_LAMBDA:
