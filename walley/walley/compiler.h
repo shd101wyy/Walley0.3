@@ -115,6 +115,7 @@ void compiler(Instructions * insts,
                 if(var_value!= GLOBAL_NULL){ // already exist
                     Insts_push(insts, CONST_LOAD); // load from table
                     Insts_push(insts, var_value->data.Integer.v);
+                    printf("%s already exist\n", s);
                     // free 'v'
                     free(v->data.String.v);
                     free(v);
@@ -124,6 +125,7 @@ void compiler(Instructions * insts,
                     Table_setval(CONSTANT_TABLE_FOR_COMPILATION,
                                  v,
                                  Object_initInteger(CONSTANT_TABLE_FOR_COMPILATION_LENGTH));
+                    printf("%s doesn't exist %ld\n", s, CONSTANT_TABLE_FOR_COMPILATION_LENGTH);
                     CONSTANT_TABLE_FOR_COMPILATION_LENGTH++;
                 }
                

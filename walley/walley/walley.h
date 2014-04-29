@@ -53,7 +53,7 @@ void Walley_Run_File(char * file_name){
     FILE* file = fopen(file_name,"r");
     if(file == NULL)
     {
-        printf("File to read file %s\n", file_name);
+        printf("Failed to read file %s\n", file_name);
         return; // fail to read
     }
     
@@ -94,7 +94,20 @@ void Walley_Run_File(char * file_name){
 #endif
     printf("\n\n");
     Environment * env = createEnvironment();
+
+#if WALLEY_DEBUG
+    Object * v = VM(insts->array, 0, insts->length, env);
+    if (v->type == USER_DEFINED_LAMBDA) {
+        printf("\nUser Defined Lambda\n");
+        printf("env length %d\n", v->data.User_Defined_Lambda.env->length);
+        printf("%d\n", v->data.User_Defined_Lambda.env->frames[0]->length);
+        if (v == v->data.User_Defined_Lambda.env->frames[0]->array[39]) {
+            printf("Equal %d\n", v->use_count);
+        }
+    }
+#else
     VM(insts->array, 0, insts->length, env);
+#endif
     return;
 }
 

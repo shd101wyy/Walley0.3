@@ -28,6 +28,10 @@ int main(int argc, char *argv[]){
     // ######################################################
     // ######################################################
     // ######################################################
+    
+    Walley_Run_File("/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/test.wa");
+    return 0;
+    
     if (str_eq(argv[1], "test")) {
         Walley_init();
         char s[1000] = "(def x {'a 12}) (x 'b 15) (x 'b)";

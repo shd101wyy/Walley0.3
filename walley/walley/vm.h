@@ -64,7 +64,7 @@ void Walley_init(){
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, LAMBDA_STRING, Object_initInteger(6));        // 6
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(7));          // 7
     
-    CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 8; // set length
+    CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 9; // set length
     
     // init Constant Pool according to CONSTANT_TABLE_FOR_COMPILATION
     Constant_Pool[0] = QUOTE_STRING;
@@ -73,10 +73,11 @@ void Walley_init(){
     Constant_Pool[3] = QUASIQUOTE_STRING;
     Constant_Pool[4] = CONS_STRING;
     Constant_Pool[5] = DEF_STRING;
-    Constant_Pool[6] = LAMBDA_STRING;
-    Constant_Pool[7] = GLOBAL_TRUE;
+    Constant_Pool[6] = SET_STRING;
+    Constant_Pool[7] = LAMBDA_STRING;
+    Constant_Pool[8] = GLOBAL_TRUE;
 
-    Constant_Pool_Length = 8; // set length
+    Constant_Pool_Length = 9; // set length
 }
 
 /*
@@ -275,6 +276,7 @@ Object *VM(unsigned short * instructions,
     short functions_list_length = 0;
     
     while(pc != end_pc){
+        printf("%lu, %x\n", pc, instructions[pc]);
         inst = instructions[pc];
         opcode = (inst & 0xF000) >> 12;
         //printf("%x\n", inst);
@@ -325,6 +327,7 @@ Object *VM(unsigned short * instructions,
                         pc = pc + 5;
                         continue;
                     case CONST_STRING:
+                        printf("\nCONSTANT STRING\n");
                         string_length = (long)instructions[pc + 1]; // string length maximum 2 bytes 
                         created_string = (char*)malloc(sizeof(char) * (string_length + 1));
                         pc = pc + 2;
@@ -356,6 +359,7 @@ Object *VM(unsigned short * instructions,
                         accumulator = Object_initString(created_string, string_length - 1);
                         accumulator->data.String.in_table = 1;
                         // push to Constant_Pool
+                        printf("PUSH %s %d\n", accumulator->data.String.v, Constant_Pool_Length);
                         Constant_Pool[Constant_Pool_Length] = accumulator;
                         Constant_Pool_Length++;
                         
@@ -366,6 +370,7 @@ Object *VM(unsigned short * instructions,
                         Object_free(accumulator);
                         
                         accumulator = Constant_Pool[instructions[pc + 1]]; // load constant
+                        printf("GET %s\n", accumulator->data.String.v);
                         pc = pc + 2;
                         continue;
                     case CONST_NULL: // null
