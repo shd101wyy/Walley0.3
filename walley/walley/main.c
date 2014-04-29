@@ -7,7 +7,7 @@
 //
 
 #include <stdio.h>
-#include "vm.h"
+#include "walley.h"
 int main(int argc, char *argv[]){
     printf("Walley Language 0.3.745\n");
     
@@ -28,37 +28,40 @@ int main(int argc, char *argv[]){
     // ######################################################
     // ######################################################
     // ######################################################
-    
-    Walley_init();
-    char s[1000] = "(def x {'a 12}) (x 'b 15) (x 'b)";
-    Lexer * p;
-    p = lexer((char*)s);
-    Lexer_Debug(p);
-    
-    Object * o;
-    o = parser(p);
-    parser_debug(o);
-    
-    Instructions * insts = Insts_init(); // init insts
-    compiler_begin(insts,
-                   o,
-                   VT_init(),
-                   NULL,
-                   NULL);
-    printInstructions(insts);
-    
-    printf("\n\n @@@ RUN VM @@@\n");
-    printf("Instruction Length %ld \n", insts->length);
-    Environment * env = createEnvironment();
-    Object * acc = VM(insts->array, 0, insts->length, env);
-    
-    printf("\n\n @@@ Finish @@@ \n\n");
-    //printf("%ld", acc->data.Vector.v[1]->data.Integer.v);
-    printf("%ld", acc->data.Integer.v);
-    // printf("%s", acc->data.String.v);
-    // printf("%ld\n", env->frames[0]->length);
-    // printf("%ld\n", env->frames[0]->array[38]->data.Integer.v);
-
+    if (str_eq(argv[1], "test")) {
+        Walley_init();
+        char s[1000] = "(def x {'a 12}) (x 'b 15) (x 'b)";
+        Lexer * p;
+        p = lexer((char*)s);
+        Lexer_Debug(p);
+        
+        Object * o;
+        o = parser(p);
+        parser_debug(o);
+        
+        Instructions * insts = Insts_init(); // init insts
+        compiler_begin(insts,
+                       o,
+                       VT_init(),
+                       NULL,
+                       NULL);
+        printInstructions(insts);
+        
+        printf("\n\n @@@ RUN VM @@@\n");
+        printf("Instruction Length %ld \n", insts->length);
+        Environment * env = createEnvironment();
+        Object * acc = VM(insts->array, 0, insts->length, env);
+        
+        printf("\n\n @@@ Finish @@@ \n\n");
+        //printf("%ld", acc->data.Vector.v[1]->data.Integer.v);
+        printf("%ld", acc->data.Integer.v);
+        // printf("%s", acc->data.String.v);
+        // printf("%ld\n", env->frames[0]->length);
+        // printf("%ld\n", env->frames[0]->array[38]->data.Integer.v);
+    }
+    else{ // run file
+        Walley_Run_File(argv[1]);
+    }
     return 0;
 }
 

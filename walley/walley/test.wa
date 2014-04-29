@@ -1,0 +1,8 @@
+(display-string "Hello World\n")
+(def factorial 
+     (lambda [n] 
+       (if (= n 0)
+	   1
+	 (* n (factorial (- n 1))))))
+(def n (factorial 12))
+(display-string (int->string n));

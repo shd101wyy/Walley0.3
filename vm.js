@@ -338,6 +338,7 @@ var new_lexer = function(input_string){
                 a++
             }
             output_list.push(input_string.slice(i, a + 1))
+            i = a;
         }
         else{
             var end = i;

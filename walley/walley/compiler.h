@@ -96,11 +96,12 @@ void compiler(Instructions * insts,
                                 break;
                             case '\\':
                                 s[j] = '\\';
+                                break;
                             default:
                                 printf("ERROR: Invalid String Slash\n");
                                 break;
-                            i++;
                         }
+                        i++;
                     }
                     else
                         s[j] = l->data.String.v[i];

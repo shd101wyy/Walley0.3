@@ -198,6 +198,7 @@ Lexer* lexer(char * input_string){
             }
             t = string_slice(input_string, i, a+1);
             Lexer_push(output_list, t);
+            i = a;
             free(t);
         }
         else{
