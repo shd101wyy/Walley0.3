@@ -42,6 +42,8 @@
 		F6C86B79190E351A0019820A /* vm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vm.h; sourceTree = "<group>"; };
 		F6C86B7A190F49240019820A /* builtin_procedures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = builtin_procedures.h; sourceTree = "<group>"; };
 		F6C86B7B190F5C6F0019820A /* walley.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = walley.h; sourceTree = "<group>"; };
+		F6C86B7C190F7C370019820A /* ratio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ratio.h; sourceTree = "<group>"; };
+		F6C86B7D190F7DF70019820A /* debug.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 				F6C86B71190E07E00019820A /* vm_c */,
 				F6C86B6D190E07830019820A /* parser.h */,
 				F6C86B60190E07240019820A /* main.c */,
+				F6C86B7C190F7C370019820A /* ratio.h */,
 				F6C86B7B190F5C6F0019820A /* walley.h */,
 				F6C86B77190E0DAF0019820A /* compiler_data_type.h */,
 				F6C86B78190E16670019820A /* compiler.h */,
@@ -87,6 +90,7 @@
 				F6C86B62190E07240019820A /* walley.1 */,
 				F6C86B69190E07390019820A /* data_type.h */,
 				F6C86B73190E0B110019820A /* Makefile */,
+				F6C86B7D190F7DF70019820A /* debug.h */,
 			);
 			path = walley;
 			sourceTree = "<group>";

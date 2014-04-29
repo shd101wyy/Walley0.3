@@ -2,7 +2,6 @@
  parser.c
  */
 #include "lexer.h"
-#define PARSER_DEBUG 1
 #ifndef PARSER_C
 #define PARSER_C
 

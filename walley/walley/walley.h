@@ -9,7 +9,6 @@
 #ifndef walley_walley_h
 #define walley_walley_h
 #include "vm.h"
-#define WALLEY_DEBUG 1
 
 /*
  read ints and return instructions

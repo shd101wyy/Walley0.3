@@ -10,14 +10,10 @@
  Released under MIT Licenses
  data_type.c
  */
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 
 #ifndef DATA_TYPE_C
 #define DATA_TYPE_C
-
+#include "debug.h"
 
 
 typedef struct Object Object;
@@ -52,7 +48,7 @@ typedef enum {
 	DOUBLE,
 	STRING,
 	PAIR,
-	// RATIO,
+	RATIO,
 	USER_DEFINED_LAMBDA,
 	BUILTIN_LAMBDA,
 	VECTOR,
@@ -78,13 +74,10 @@ struct Object {
         struct {
             double v;
         } Double;
-        /*
-         struct
-         {
-         long denom;
-         long numer;
+        struct{
+            long denom;
+            long numer;
          } Ratio;
-         */
         struct {
             unsigned long size;
             unsigned long length;

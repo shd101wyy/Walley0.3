@@ -7,7 +7,3 @@
 	 (if (eq? msg 'x)
 	     x
 	   (set! x 13)))))
-(def x (test2))
-(x 'x)
-(x 'a)
-(x 'x)

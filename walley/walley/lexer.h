@@ -3,8 +3,7 @@
  Released under MIT Licenses
  lexer
  */
-#include "data_type.h"
-#define LEXER_DEBUG 1
+#include "ratio.h"
 #ifndef LEXER_C
 #define LEXER_C
 
