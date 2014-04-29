@@ -43,7 +43,7 @@ Object * Object_initRatio(long numer, long denom){
         return o;
     }
 }
-
+/*
 // fraction arithematic
 Object * add_rat(Object* x, Object* y){
     return Object_initRatio( numer(x)*denom(y)+numer(y)*denom(x) , denom(x)*denom(y));
@@ -56,6 +56,18 @@ Object *  mul_rat(Object* x, Object* y){
 }
 Object *  div_rat(Object* x, Object* y){
     return Object_initRatio(numer(x)*denom(y),denom(x)*numer(y));
+}*/
+Object * add_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+    return Object_initRatio( numer_x*denom_y+numer_y*denom_x , denom_x*denom_y);
+}
+Object * sub_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+    return Object_initRatio( numer_x*denom_y-numer_y*denom_x , denom_x*denom_y);
+}
+Object *  mul_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+    return Object_initRatio(numer_x*numer_y, denom_x*denom_y);
+}
+Object *  div_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+    return Object_initRatio(numer_x*denom_y,denom_x*numer_y);
 }
 
 #if RATIO_DEBUG

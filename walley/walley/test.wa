@@ -1,9 +1,12 @@
 ;; Walley Language test file
-;;(display-string "Hello World\n")
+(display-string "Hello World\n")
 (def test2 
      (lambda []
        (def x 12)
-       (lambda [msg]
+       (lambda [msg a]
 	 (if (eq? msg 'x)
 	     x
-	   (set! x 13)))))
+	   (set! x 15)))))
+(def x (/ 6 15))
+(def y (/ 2 5))
+(= x y)

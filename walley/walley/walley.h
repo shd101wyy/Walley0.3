@@ -113,13 +113,25 @@ void Walley_Run_File(char * file_name){
     else if (v->type == INTEGER){
         printf("\nInteger\n");
         printf("use-count %d\n", v->use_count);
-        printf("%ld\n", v->data.Integer.v);
-        
+        number_debug(v);
+    }
+    else if (v->type == DOUBLE){
+        printf("\nDouble\n");
+        printf("use-count %d\n", v->use_count);
+        number_debug(v);
+    }
+    else if (v->type == RATIO){
+        printf("\nRatio\n");
+        printf("use-count %d\n", v->use_count);
+        number_debug(v);
     }
     else if (v->type == STRING){
         printf("\nString\n");
         printf("use-count %d\n", v->use_count);
         printf("%s\n", v->data.String.v);
+    }
+    else if (v == GLOBAL_NULL){
+        printf("\n()\n");
     }
 #else
     VM(insts->array, 0, insts->length, env);

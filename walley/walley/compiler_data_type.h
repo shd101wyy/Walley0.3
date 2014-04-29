@@ -186,7 +186,11 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "display-string");
     VT_push(vt, 0, "string->int");
     VT_push(vt, 0, "string->float");
-    
+    VT_push(vt, 0, "ratio?");
+    VT_push(vt, 0, "numer");
+
+    VT_push(vt, 0, "denom");
+
     return vt;
 }
 

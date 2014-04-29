@@ -37,7 +37,11 @@ int isInteger(char * s){
     if (s == NULL || *s == '\0' || isspace(*s))
         return 0;
     char * p;
-    strtol(s, &p, 10); // 只支持10进制
+    if (strlen(s) > 3 && s[0] == '0' && s[1] == 'x') {
+        strtol(s, &p, 16); // hex
+    }
+    else
+        strtol(s, &p, 10); // decimal
     return *p == '\0';
 }
 /*
@@ -100,8 +104,13 @@ Object * parser(Lexer * le){
         else{
             // check Math:add like (Math 'add)
             if(l[i][0] == '"' || l[i][0] == ':' || l[i][(int)strlen(l[i])-1] == ':'){
-                if(isInteger(l[i]))
-                    temp = Object_initInteger(strtol(l[i], &t, 10));
+                if(isInteger(l[i])){
+                    if (strlen(l[i]) >= 3 && l[i][0] == '0' && l[i][1] == 'x') { // hex
+                        temp = Object_initInteger(strtol(l[i], &t, 16));
+                    }
+                    else
+                        temp = Object_initInteger(strtol(l[i], &t, 10));
+                }
                 else if(isDouble(l[i]))
                     temp = Object_initDouble(strtod(l[i], &t));
                 else

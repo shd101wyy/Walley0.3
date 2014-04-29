@@ -28,39 +28,196 @@ Object *builtin_cdr(Object ** params, int param_num, int start_index){
 }
 // 3 +
 Object *builtin_add(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == INTEGER && params[start_index+1]->type == INTEGER)
-        return Object_initInteger(params[start_index]->data.Integer.v +
-                                  params[start_index+1]->data.Integer.v);
-    else
-        return Object_initDouble(params[start_index]->data.Double.v +
-                                 params[start_index+1]->data.Double.v);
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return Object_initInteger(p1->data.Integer.v + p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Integer.v + p2->data.Integer.v);
+                case RATIO:
+                    return add_rat(p1->data.Integer.v, 1,
+                                    p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: + invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v + p2->data.Integer.v);
+                case RATIO:
+                    return Object_initDouble(p1->data.Double.v + p2->data.Ratio.numer/p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: + invalid data type");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return add_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Integer.v, 1);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom + p2->data.Double.v);
+                case RATIO:
+                    return add_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: + invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: + invalid data type");
+            return GLOBAL_NULL;
+    }
 }
 // 4 -
 Object *builtin_sub(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == INTEGER && params[start_index+1]->type == INTEGER)
-        return Object_initInteger(params[start_index]->data.Integer.v -
-                                  params[start_index+1]->data.Integer.v);
-    else
-        return Object_initDouble(params[start_index]->data.Double.v -
-                                 params[start_index+1]->data.Double.v);
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return Object_initInteger(p1->data.Integer.v - p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Integer.v - p2->data.Integer.v);
+                case RATIO:
+                    return sub_rat(p1->data.Integer.v, 1,
+                                   p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: - invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v - p2->data.Integer.v);
+                case RATIO:
+                    return Object_initDouble(p1->data.Double.v - p2->data.Ratio.numer/p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: - invalid data type");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return sub_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Integer.v, 1);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom - p2->data.Double.v);
+                case RATIO:
+                    return sub_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: - invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: - invalid data type");
+            return GLOBAL_NULL;
+    }
 }
 // 5 *
 Object *builtin_mul(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == INTEGER && params[start_index+1]->type == INTEGER)
-        return Object_initInteger(params[start_index]->data.Integer.v *
-                                  params[start_index+1]->data.Integer.v);
-    else
-        return Object_initDouble(params[start_index]->data.Double.v *
-                                 params[start_index+1]->data.Double.v);
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return Object_initInteger(p1->data.Integer.v * p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Integer.v * p2->data.Integer.v);
+                case RATIO:
+                    return mul_rat(p1->data.Integer.v, 1,
+                                   p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: * invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v * p2->data.Integer.v);
+                case RATIO:
+                    return Object_initDouble(p1->data.Double.v * p2->data.Ratio.numer/p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: * invalid data type");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return mul_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Integer.v, 1);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom * p2->data.Double.v);
+                case RATIO:
+                    return mul_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: * invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: * invalid data type");
+            return GLOBAL_NULL;
+    }
 }
 // 6 /
 Object *builtin_div(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == INTEGER && params[start_index+1]->type == INTEGER)
-        return Object_initInteger(params[start_index]->data.Integer.v /
-                                  params[start_index+1]->data.Integer.v);
-    else
-        return Object_initDouble(params[start_index]->data.Double.v /
-                                 params[start_index+1]->data.Double.v);
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return div_rat(p1->data.Integer.v, 1, p2->data.Integer.v, 1); // only this one use div_rat
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Integer.v / p2->data.Integer.v);
+                case RATIO:
+                    return div_rat(p1->data.Integer.v, 1,
+                                   p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: / invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v / p2->data.Integer.v);
+                case RATIO:
+                    return Object_initDouble(p1->data.Double.v / p2->data.Ratio.numer/p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: / invalid data type");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return div_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Integer.v, 1);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom / p2->data.Double.v);
+                case RATIO:
+                    return div_rat(p1->data.Ratio.numer, p1->data.Ratio.denom, p2->data.Ratio.numer, p2->data.Ratio.denom);
+                default:
+                    printf("ERROR: + invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: + invalid data type");
+            return GLOBAL_NULL;
+    }
+
 }
 // 7 vector!
 Object *builtin_vector(Object ** params, int param_num, int start_index){
@@ -135,35 +292,150 @@ Object *builtin_vector_pop(Object ** params, int param_num, int start_index){
 }
 // 12 =
 Object *builtin_num_equal(Object ** params, int param_num, int start_index){
-    Object * param0 = params[start_index];
-    Object * param1 = params[start_index+1];
-    if((param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v)
-       ==
-       (param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v)){
-        return GLOBAL_TRUE;
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return (p1->data.Integer.v == p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case DOUBLE:
+                    return (p1->data.Integer.v == p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case RATIO:
+                    return (p1->data.Integer.v == p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
+                default:
+                    printf("ERROR: = invalid data type1");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return (p1->data.Double.v == p2->data.Integer.v) ?GLOBAL_TRUE : GLOBAL_NULL;
+
+                case RATIO:
+                    return (p1->data.Double.v == p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
+
+                default:
+                    printf("ERROR: = invalid data type2");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return (p1->data.Ratio.numer/p1->data.Ratio.denom == p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom == p2->data.Double.v)? GLOBAL_TRUE : GLOBAL_NULL;
+                case RATIO:
+                    return (p1->data.Ratio.numer/p1->data.Ratio.denom == p2->data.Ratio.numer/p2->data.Ratio.denom)? GLOBAL_TRUE : GLOBAL_NULL;
+                default:
+                    printf("ERROR: = invalid data type3");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: = invalid data type4");
+            return GLOBAL_NULL;
     }
-    return GLOBAL_NULL;
 }
 // 13 <
 Object *builtin_num_lt(Object ** params, int param_num, int start_index){
-    Object * param0 = params[start_index];
-    Object * param1 = params[start_index+1];
-    if((param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v)
-       <
-       (param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v)){
-        return GLOBAL_TRUE;
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return (p1->data.Integer.v < p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case DOUBLE:
+                    return (p1->data.Integer.v < p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case RATIO:
+                    return (p1->data.Integer.v < p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
+                default:
+                    printf("ERROR: = invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return (p1->data.Double.v < p2->data.Integer.v) ?GLOBAL_TRUE : GLOBAL_NULL;
+                    
+                case RATIO:
+                    return (p1->data.Double.v < p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
+                    
+                default:
+                    printf("ERROR: = invalid data type");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return (p1->data.Ratio.numer/p1->data.Ratio.denom < p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom < p2->data.Double.v)? GLOBAL_TRUE : GLOBAL_NULL;
+                case RATIO:
+                    return (p1->data.Ratio.numer/p1->data.Ratio.denom < p2->data.Ratio.numer/p2->data.Ratio.denom)? GLOBAL_TRUE : GLOBAL_NULL;
+                default:
+                    printf("ERROR: = invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: = invalid data type");
+            return GLOBAL_NULL;
     }
-    return GLOBAL_NULL;
 }
 // 14 <=
 Object *builtin_num_le(Object ** params, int param_num, int start_index){
-    Object * param0 = params[start_index];
-    Object * param1 = params[start_index+1];    if((param0->type == INTEGER ? param0->data.Integer.v : param0->data.Double.v)
-       <=
-       (param1->type == INTEGER ? param1->data.Integer.v : param1->data.Double.v)){
-        return GLOBAL_TRUE;
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return (p1->data.Integer.v <= p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case DOUBLE:
+                    return (p1->data.Integer.v <= p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case RATIO:
+                    return (p1->data.Integer.v <= p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
+                default:
+                    printf("ERROR: = invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER: case DOUBLE:
+                    return (p1->data.Double.v <= p2->data.Integer.v) ?GLOBAL_TRUE : GLOBAL_NULL;
+                    
+                case RATIO:
+                    return (p1->data.Double.v <= p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
+                    
+                default:
+                    printf("ERROR: = invalid data type");
+                    return GLOBAL_NULL;;
+            }
+            break;
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return (p1->data.Ratio.numer/p1->data.Ratio.denom <= p2->data.Integer.v) ? GLOBAL_TRUE : GLOBAL_NULL;
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Ratio.numer/p1->data.Ratio.denom <= p2->data.Double.v)? GLOBAL_TRUE : GLOBAL_NULL;
+                case RATIO:
+                    return (p1->data.Ratio.numer/p1->data.Ratio.denom <= p2->data.Ratio.numer/p2->data.Ratio.denom)? GLOBAL_TRUE : GLOBAL_NULL;
+                default:
+                    printf("ERROR: = invalid data type");
+                    return GLOBAL_NULL;
+            }
+            break;
+        default:
+            printf("ERROR: = invalid data type");
+            return GLOBAL_NULL;
     }
-    return GLOBAL_NULL;
 }
 // 15 eq?
 Object *builtin_eq(Object ** params, int param_num, int start_index){
@@ -381,5 +653,18 @@ Object * builtin_string_to_int(Object ** params, int param_num, int start_index)
 Object * builtin_string_to_float(Object ** params, int param_num, int start_index){
     return Object_initInteger(atof(params[start_index]->data.String.v));
 }
+// 38 ratio?
+Object * builtin_ratio_type(Object ** params, int param_num, int start_index){
+    return params[start_index]->type == RATIO ? GLOBAL_TRUE : GLOBAL_NULL;
+}
+// 39 numer
+Object * builtin_numer(Object ** params, int param_num, int start_index){
+    return Object_initInteger(params[start_index]->data.Ratio.numer);
+}
+// 40 denom
+Object * builtin_denom(Object ** params, int param_num, int start_index){
+    return Object_initInteger(params[start_index]->data.Ratio.denom);
+}
+
 
 #endif

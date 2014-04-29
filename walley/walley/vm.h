@@ -186,7 +186,11 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 36, &builtin_string_to_int);
     EF_set_builtin_lambda(frame, 37, &builtin_string_to_float);
     
-    frame->length = 38; // set length
+    EF_set_builtin_lambda(frame, 38, &builtin_ratio_type);
+    EF_set_builtin_lambda(frame, 39, &builtin_numer);
+    EF_set_builtin_lambda(frame, 40, &builtin_denom);
+
+    frame->length = 41; // set length
     return frame;
 }
 /*
@@ -236,8 +240,8 @@ Environment *copyEnvironmentAndPushFrame(Environment * old_env, Environment_Fram
     temp->use_count--; \
     Object_free(temp); \
     current_frame_pointer->length--;}
-#define free_current_frame_pointer(current_frame_pointer) (current_frame_pointer->use_count)--; \
-                                   EF_free((current_frame_pointer));
+#define free_current_frame_pointer(current_frame_pointer) ((current_frame_pointer)->use_count)--; \
+    EF_free((current_frame_pointer));
 
 /*
  Walley Language Virtual Machine
@@ -358,6 +362,8 @@ Object *VM(unsigned short * instructions,
             case GET:
                 frame_index = 0x0FFF & inst;
                 value_index = instructions[pc + 1];
+                
+                // printf("frame_index %d, value_index %d\n", frame_index, value_index);
                 
                 Object_free(accumulator);
                 
@@ -694,6 +700,7 @@ Object *VM(unsigned short * instructions,
                 continue;
             // 不知道到底用不用是有这个opcode
             case PUSH: // push to top frame
+                // printf("Push Index %d\n", env->frames[env->length-1]->length);
                 // set value and increase length
                 env->frames[env->length-1]->array[env->frames[env->length-1]->length] = accumulator;
                 env->frames[env->length-1]->length++;

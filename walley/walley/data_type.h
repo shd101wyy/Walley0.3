@@ -46,9 +46,9 @@ void Object_free(Object * o);
 typedef enum {
 	INTEGER,
 	DOUBLE,
+	RATIO,
 	STRING,
 	PAIR,
-	RATIO,
 	USER_DEFINED_LAMBDA,
 	BUILTIN_LAMBDA,
 	VECTOR,
@@ -415,10 +415,7 @@ void Object_free(Object * o){
     if(o->use_count == 0){
         // free
         switch (o->type){
-            case INTEGER:
-                free(o);
-                return;
-            case DOUBLE:
+            case INTEGER: case DOUBLE: case RATIO:
                 free(o);
                 return;
             case STRING:
