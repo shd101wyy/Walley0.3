@@ -340,10 +340,11 @@ MacroTable * MT_init(){
 void MT_find(MacroTable * mt, char * macro_name, int output[2]){
     unsigned int length = mt->length;
     unsigned int frame_length;
-    for (unsigned int i = 0; i < length; i++) {
+    unsigned int i, j;
+    for (i = 0; i < length; i++) {
         MacroTableFrame * frame = mt->frames[i];
         frame_length = frame->length;
-        for (unsigned int j = 0; j < frame_length; j++) {
+        for (j = 0; j < frame_length; j++) {
             if (str_eq(frame->array[j]->macro_name, macro_name)) {
                 output[0] = i;
                 output[1] = j;

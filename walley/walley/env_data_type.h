@@ -108,7 +108,8 @@ struct Environment_Frame {
  */
 void EF_free(Environment_Frame * ef){
     if (ef->use_count == 0) {
-        for (int i = 0; i < ef->length; i++) {
+        int i;
+        for (i = 0; i < ef->length; i++) {
             ef->array[i]->use_count--;
             Object_free(ef->array[i]);
         }
@@ -136,7 +137,8 @@ struct Environment{
 };
 
 void Env_free(Environment * env){
-    for (int i = 0; i < env->length; i++) {
+    int i;
+    for (i = 0; i < env->length; i++) {
         // env->frames[i]->use_count--;
         EF_free(env->frames[i]);
     }
@@ -227,7 +229,8 @@ Environment *copyEnvironment(Environment * old_env){
     Environment * new_env = malloc(sizeof(Environment));
     new_env->length = old_env->length;
     new_env->frames = malloc(sizeof(Environment_Frame*) * new_env->length);
-    for (int i = 0; i < new_env->length; i++) {
+    int i;
+    for (i = 0; i < new_env->length; i++) {
         new_env->frames[i] = old_env->frames[i]; // copy frame pointer
         new_env->frames[i]->use_count++; // increase use count
     }

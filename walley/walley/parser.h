@@ -74,7 +74,7 @@ Object * parser(Lexer * le){
     uint32_t length = le->array_length;
     Object * current_list_pointer = GLOBAL_NULL;
     int32_t i;
-    uint32_t j, k, n, start, end;
+    uint32_t j, k, n, start;
     Object * lists = cons(GLOBAL_NULL, GLOBAL_NULL);
     Object * temp;
     char * splitted_[100]; // max 100 string
@@ -120,7 +120,6 @@ Object * parser(Lexer * le){
                 // split string
                 n = 0; // splitted_length
                 start = 0;
-                end = 0;
                 for(j = 0; j < (int)strlen(l[i]); j++){
                     if(l[i][j] == ':'){
                         /*char */ t = (char*)malloc(sizeof(char)*(j - start + 1));
