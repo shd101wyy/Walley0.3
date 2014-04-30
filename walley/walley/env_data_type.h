@@ -34,31 +34,31 @@ void Walley_init(){
     GLOBAL_NULL = Object_initNull(); // init GLOBAL_NULL
     GLOBAL_NULL->use_count = 1;
     
-    QUOTE_STRING = Object_initString("quote", 5);
+    QUOTE_STRING = Object_initString("quote", 5); // 0
     QUOTE_STRING->use_count = 1;
     
-    UNQUOTE_STRING = Object_initString("unquote", 7);
+    UNQUOTE_STRING = Object_initString("unquote", 7); // 1
     UNQUOTE_STRING->use_count = 1;
     
-    UNQUOTE_SPLICE_STRING = Object_initString("unquote_splice", 14);
+    UNQUOTE_SPLICE_STRING = Object_initString("unquote-splice", 14); // 2
     UNQUOTE_SPLICE_STRING->use_count = 1;
     
-    QUASIQUOTE_STRING = Object_initString("quasiquote", 10);
+    QUASIQUOTE_STRING = Object_initString("quasiquote", 10); // 3
     QUASIQUOTE_STRING->use_count = 1;
     
-    CONS_STRING = Object_initString("cons", 4);
+    CONS_STRING = Object_initString("cons", 4); // 4
     CONS_STRING->use_count = 1;
     
-    DEF_STRING = Object_initString("def", 3);
+    DEF_STRING = Object_initString("def", 3); // 5
     DEF_STRING->use_count = 1;
     
-    SET_STRING = Object_initString("set", 3);
+    SET_STRING = Object_initString("set!", 4); // 6
     SET_STRING->use_count = 1;
     
-    LAMBDA_STRING = Object_initString("lambda", 6);
+    LAMBDA_STRING = Object_initString("lambda", 6); // 7
     LAMBDA_STRING->use_count = 1;
     
-    GLOBAL_TRUE = Object_initString("true", 4);
+    GLOBAL_TRUE = Object_initString("true", 4); // 8
     GLOBAL_TRUE->use_count = 1;
     
     
@@ -70,8 +70,9 @@ void Walley_init(){
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, QUASIQUOTE_STRING, Object_initInteger(3));    // 3
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, CONS_STRING, Object_initInteger(4));          // 4
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, DEF_STRING, Object_initInteger(5));           // 5
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, LAMBDA_STRING, Object_initInteger(6));        // 6
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(7));          // 7
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, SET_STRING, Object_initInteger(6));        // 6
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, LAMBDA_STRING, Object_initInteger(7));          // 7
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(8));
     
     CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 9; // set length
     

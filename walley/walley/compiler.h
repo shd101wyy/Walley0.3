@@ -89,6 +89,13 @@ Object * quasiquote_list(Object * l){
 
  */
 int macro_match(Object * a, Object * b, char **var_names, Object **var_values, int count){
+#if MACRO_DEBUG
+    printf("\nMacro Match\n");
+    printf("a:  \n");
+    parser_debug(a);
+    printf("\nb:  \n");
+    parser_debug(b);
+#endif
     if (a->type == NULL_ && b->type == NULL_) {
         return count; // match
     }
@@ -191,13 +198,14 @@ Object * macro_expansion_replacement(Object * expanded_value,
     (defmacro square ([x] `(* ~x ~x)))
     (square 12) => (* 12 12)
  */
-Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable * mt, Environment * global_env){
+Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable * mt, Environment * global_env, Instructions * insts){
     Object * clauses = macro->clauses;
     // macro 最多有 64 个 parameters
     char * var_names[64];
     Object * var_values[64];
     int match;
     int i;
+    unsigned long start_pc, insts_length;
     while (clauses != GLOBAL_NULL) {
         match = macro_match(car(car(clauses)),
                             exps,
@@ -239,36 +247,58 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             new_env = Env_init_with_size(64);
             new_env->frames[0] = global_env->frames[0]; // 指向第一个frame
             new_env->frames[1] = new_env_top_frame;
-            new_env_top_frame->use_count++;
+            new_env->length = 2; // set length
+            new_env_top_frame->use_count += 1 ;
             
             // add var name to top frame of new_vt;
             for (i = 0; i < match; i++) {
                 // 这里不用 VT_push了因为不用copy string了
                 new_vt_top_frame->var_names[i] = var_names[i];
                 new_env_top_frame->array[i] = var_values[i];
+                var_values[i]->use_count++; // in use
+                
+#if MACRO_DEBUG
+                printf("\nVar-Name  :%s\n", var_names[i]);
+                printf("Var-Value :\n");
+                if (var_values[i]->type == STRING) {
+                    printf("STRING: %s\n", var_values[i]->data.String.v);
+                }
+                else
+                    parser_debug(var_values[i]);
+#endif
+                
             }
             
-            // create new insts
-            Instructions * insts = Insts_init();
-            
+            // save start-pc and length
+            start_pc = insts->start_pc;
+            insts_length = insts->length;
+          
             // compile and run
             expanded_value = compiler_begin(insts,
                           cons(cadr(car(clauses)), GLOBAL_NULL)
-                          , new_vt,
+                          ,
+                          new_vt,
                           NULL,
                           NULL,
                           true,
                           new_env,
                           mt);
+           
 #if MACRO_DEBUG
-            printf("Finish Expansion");
+            printf("\n");
+            printInstructions(insts);
+            printf("\nFinish Expansion\n");
             // 这里结束可以用于 (macroexpand)
             parser_debug(expanded_value);
+            exit(0);
 #endif
-            // 只用 free insts
+
+            // restore start-pc and length
+            insts->start_pc = start_pc;
+            insts->length = insts_length;
+
             // 一改还得free其他的, var_names和var_values不用free
-            free(insts->array);
-            free(insts);
+            
             
             // 假设运行完了得到了 expanded_value
             // 根据 macro->vt 替换首项
@@ -488,6 +518,8 @@ void compiler(Instructions * insts,
                                     mt);
                 }
                 else if (v->type == PAIR){ // pair
+                    printf("\nQUASIQUOTE\n");
+                    parser_debug(quasiquote_list(v));
                     return compiler(insts,
                                     quasiquote_list(v),
                                     vt,
@@ -817,7 +849,7 @@ void compiler(Instructions * insts,
                     MT_find(mt, car(l)->data.String.v, vt_find);
                     if (vt_find[0] != -1) { // find macro
                         Object * expand = macro_expand_for_compilation(mt->frames[vt_find[0]]->array[vt_find[1]],
-                            cdr(l), mt, env);
+                            cdr(l), mt, env, insts);
                         return compiler(insts,
                                         expand,
                                         vt,
@@ -998,6 +1030,12 @@ Object * compiler_begin(Instructions * insts,
                      insts->length,
                      env); // run vm
             insts->start_pc = insts->length; // update start pc
+            
+#if COMPILER_DEBUG
+            printf("\n### COMPILER_BEGIN VM ####");
+            printf("\nGLOBAL FRAME => length %d", env->frames[0]->length);
+#endif
+
         }
     }
     parser_free(l); // free parser

@@ -117,7 +117,7 @@ Object *VM(unsigned short * instructions,
 
     pc = start_pc;
     while(pc != end_pc){
-        // printf("%lu, %x\n", pc, instructions[pc]);
+        printf("%lu, %x \n", pc, instructions[pc]);
         inst = instructions[pc];
         opcode = (inst & 0xF000) >> 12;
         //printf("%x\n", inst);

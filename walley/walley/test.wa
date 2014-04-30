@@ -1,3 +1,20 @@
 ;;(car (car (quote ((x)) )  ) )
-(def x 12)
-(car (cdr (car  `((~x x)) )))
+(def append 
+     (lambda (a b)
+       (if (null? a)
+	   b
+	 (cons (car a)
+	       (append (cdr a)
+		       b)))))
+(defmacro defn
+  [(var_name args . body)
+  ;`(def ~var_name (lambda ~args ~@body))
+  `(~@body)
+  ]
+  )
+;(def x (append '(x y) '(z)) )
+
+(defn add [a b] (+ a b))
+;(add 3 4)
+
+;(append '((+ a b)) '())

@@ -62,6 +62,11 @@ Object * v // vm output
       else if (v == GLOBAL_NULL){
           printf("\n()\n");
       }
+      else if (v->type == PAIR){
+          printf("\nPair\n");
+          printf("Attention: only print integer double string pair\n");
+          parser_debug(v);
+      }
 }
 
 #endif
@@ -227,6 +232,11 @@ void Walley_Run_File(char * file_name){
     }
     else if (v == GLOBAL_NULL){
         printf("\n()\n");
+    }
+    else if (v->type == PAIR){
+        printf("\nPair\n");
+        printf("Attention: only print integer double string pair\n");
+        parser_debug(v);
     }
 #else
     VM(insts->array, 0, insts->length, env);
