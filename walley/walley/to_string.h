@@ -10,12 +10,13 @@
 #define walley_to_string_h
 #include "ratio.h"
 
+#define TO_STRING_BUFFER_SIZE 4098
 /*
     Object to string
  */
 
 char * number_to_string(Object * x){
-    char buffer[1024];
+    char buffer[TO_STRING_BUFFER_SIZE];
     strcpy(buffer, "");
 
     switch (x->type) {
@@ -42,7 +43,7 @@ char * table_to_string(Object * t);
 char * clean_string(Object * s);
 
 char * clean_string(Object * s){
-    char buffer[1024];
+    char buffer[TO_STRING_BUFFER_SIZE];
     strcpy(buffer, "");
 
     unsigned long i = 0;
@@ -90,11 +91,12 @@ char * clean_string(Object * s){
     return return_s;
 }
 char * list_to_string(Object * l){
-    char buffer[1024]; // maximum 1024
+    char buffer[TO_STRING_BUFFER_SIZE]; // maximum 1024
     strcpy(buffer, "(");
 
     Object * p = l;
     Object * v;
+    char * s;
     /*
         这里可能得free .
      */
@@ -102,22 +104,32 @@ char * list_to_string(Object * l){
         v = car(p);
         switch (v->type) {
             case INTEGER: case DOUBLE: case RATIO:
-                strcat(buffer, number_to_string(v));
+                s = number_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case NULL_:
                 strcat(buffer, "()");
                 break;
             case VECTOR:
-                strcat(buffer, vector_to_string(v));
+                s = vector_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case TABLE:
-                strcat(buffer, table_to_string(v));
+                s = table_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case STRING:
-                strcat(buffer, clean_string(v));
+                s = clean_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case PAIR:
-                strcat(buffer, list_to_string(v));
+                s = list_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
@@ -140,7 +152,7 @@ char * list_to_string(Object * l){
     return return_s;
 }
 char * vector_to_string(Object * l){
-    char buffer[1024]; // maximum 1024
+    char buffer[TO_STRING_BUFFER_SIZE]; // maximum 1024
     strcpy(buffer, "");
 
     Object * v;
@@ -149,6 +161,7 @@ char * vector_to_string(Object * l){
      */
     unsigned long length = l->data.Vector.length;
     unsigned long i;
+    char * s;
     if (l->data.Vector.resizable) {
         strcat(buffer, "#[");
     }
@@ -158,22 +171,32 @@ char * vector_to_string(Object * l){
         v = l->data.Vector.v[i];
         switch (v->type) {
             case INTEGER: case DOUBLE: case RATIO:
-                strcat(buffer, number_to_string(v));
+                s = number_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case NULL_:
                 strcat(buffer, "()");
                 break;
             case VECTOR:
-                strcat(buffer, vector_to_string(v));
+                s = vector_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case TABLE:
-                strcat(buffer, table_to_string(v));
+                s = table_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case STRING:
-                strcat(buffer, clean_string(v));
+                s = clean_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case PAIR:
-                strcat(buffer, list_to_string(v));
+                s = list_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
@@ -202,11 +225,11 @@ char * vector_to_string(Object * l){
 }
 
 char * table_to_string(Object * l){
-    char buffer[1024]; // maximum 1024
+    char buffer[TO_STRING_BUFFER_SIZE]; // maximum 1024
     strcpy(buffer, "");
     
     Object * v;
-    
+    char * s;
     Object * keys = table_getKeys(l); // it is pair
     strcat(buffer, "{");
     while (keys!=GLOBAL_NULL) {
@@ -216,22 +239,32 @@ char * table_to_string(Object * l){
         strcat(buffer, " ");
         switch (v->type) {
             case INTEGER: case DOUBLE: case RATIO:
-                strcat(buffer, number_to_string(v));
+                s = number_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case NULL_:
                 strcat(buffer, "()");
                 break;
             case VECTOR:
-                strcat(buffer, vector_to_string(v));
+                s = vector_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case TABLE:
-                strcat(buffer, table_to_string(v));
+                s = table_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case STRING:
-                strcat(buffer, clean_string(v));
+                s = clean_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case PAIR:
-                strcat(buffer, list_to_string(v));
+                s = list_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
@@ -256,7 +289,7 @@ char * table_to_string(Object * l){
 }
 
 char * to_string(Object * v){
-    char buffer[1024];
+    char buffer[TO_STRING_BUFFER_SIZE];
     strcpy(buffer, "");
     switch (v->type) {
         case INTEGER: case DOUBLE: case RATIO:
