@@ -47,16 +47,40 @@ char * clean_string(Object * s){
 
     unsigned long i = 0;
     unsigned long length = s->data.String.length;
+    char c;
     int has_space = 0;
+    char temp_buffer[1]; // single char buffer
     for (i = 0; i < length; i++) {
-        if (s->data.String.v[i] == ' ') {
+        c = s->data.String.v[i];
+        if (c == ' ' || c == '\n' || c == '\t' || c == '\a') {
             has_space = 1; break;
         }
     }
     if (has_space) {
-        strcat(buffer, "#str{");
-        strcat(buffer, s->data.String.v);
-        strcat(buffer, "}");
+        strcat(buffer, "\"");
+        for (i = 0; i < length; i++) {
+            c = s->data.String.v[i];
+            switch (c) {
+                case '\n':
+                    strcat(buffer, "\\n");
+                    break;
+                case '\t':
+                    strcat(buffer, "\\t");
+                    break;
+                    //case '\\':
+                case '\a':
+                    strcat(buffer, "\\a");
+                    break;
+                default:
+                    temp_buffer[0] = c;
+                    strcat(buffer, temp_buffer);
+                    break;
+            }
+        }
+        //strcat(buffer, "#str{");
+        //strcat(buffer, s->data.String.v);
+        //strcat(buffer, "}");
+        strcat(buffer, "\"");
     }
     else{
         strcat(buffer, s->data.String.v);
@@ -248,7 +272,8 @@ char * to_string(Object * v){
             strcat(buffer, table_to_string(v));
             break;
         case STRING:
-            strcat(buffer, clean_string(v));
+            // strcat(buffer, clean_string(v));
+            strcat(buffer, v->data.String.v);
             break;
         case PAIR:
             strcat(buffer, list_to_string(v));
