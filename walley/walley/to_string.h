@@ -67,7 +67,7 @@ char * clean_string(Object * s){
 }
 char * list_to_string(Object * l){
     char buffer[1024]; // maximum 1024
-    strcpy(buffer, "");
+    strcpy(buffer, "(");
 
     Object * p = l;
     Object * v;
@@ -91,6 +91,9 @@ char * list_to_string(Object * l){
                 break;
             case STRING:
                 strcat(buffer, clean_string(v));
+                break;
+            case PAIR:
+                strcat(buffer, list_to_string(v));
                 break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
@@ -144,6 +147,9 @@ char * vector_to_string(Object * l){
                 break;
             case STRING:
                 strcat(buffer, clean_string(v));
+                break;
+            case PAIR:
+                strcat(buffer, list_to_string(v));
                 break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
@@ -200,6 +206,9 @@ char * table_to_string(Object * l){
             case STRING:
                 strcat(buffer, clean_string(v));
                 break;
+            case PAIR:
+                strcat(buffer, list_to_string(v));
+                break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
                 break;
@@ -240,6 +249,9 @@ char * to_string(Object * v){
             break;
         case STRING:
             strcat(buffer, clean_string(v));
+            break;
+        case PAIR:
+            strcat(buffer, list_to_string(v));
             break;
         case BUILTIN_LAMBDA:
             strcat(buffer, "< builtin-lambda >");

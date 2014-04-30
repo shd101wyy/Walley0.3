@@ -72,7 +72,7 @@ Object *VM(unsigned short * instructions,
         // 目前只支持string
         switch (inst) {
             case CONST_STRING: // push string to constant table
-                string_length = (long)instructions[pc + 1]; // string length maximum 2 bytes
+                string_length = (long)CONSTANT_TABLE_INSTRUCTIONS->array[pc + 1]; // string length maximum 2 bytes
                 created_string = (char*)malloc(sizeof(char) * (string_length + 1));
                 pc = pc + 2;
                 i = 0;
@@ -98,7 +98,7 @@ Object *VM(unsigned short * instructions,
                 
                 
                 // create string
-                accumulator = Object_initString(created_string, string_length - 1);
+                accumulator = Object_initString(created_string, string_length);
                 accumulator->use_count = 1;
                 // push to Constant_Pool
                 // printf("PUSH %s %d\n", accumulator->data.String.v, Constant_Pool_Length);
