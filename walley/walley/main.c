@@ -10,7 +10,9 @@
 #include "walley.h"
 
 int main(int argc, char *argv[]){
-    printf("Walley Language 0.3.827\n");
+    printf("\nWalley Language 0.3.827\n");
+    printf("Copyright (c) 2012-2014 Yiyi Wang\n");
+    printf("All Rights Reserved\n\n");
     
     // ######################################################
     // ######################################################
@@ -48,17 +50,20 @@ int main(int argc, char *argv[]){
         o = parser(p);
         parser_debug(o);
         
+        Environment * env = createEnvironment();
         Instructions * insts = Insts_init(); // init insts
         compiler_begin(insts,
                        o,
                        VT_init(),
                        NULL,
+                       NULL,
+                       false,
+                       env,
                        NULL);
         printInstructions(insts);
         
         printf("\n\n @@@ RUN VM @@@\n");
         printf("Instruction Length %ld \n", insts->length);
-        Environment * env = createEnvironment();
         Object * acc = VM(insts->array, 0, insts->length, env);
         
         printf("\n\n @@@ Finish @@@ \n\n");

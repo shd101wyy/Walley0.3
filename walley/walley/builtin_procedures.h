@@ -1,6 +1,6 @@
 #ifndef builtin_procedures_h
 #define builtin_procedures_h
-#include "compiler.h"
+#include "ratio.h"
 
 
 /*

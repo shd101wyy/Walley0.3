@@ -111,6 +111,7 @@ void Walley_Repl(){
     Variable_Table * vt = VT_init();
     Environment * env = createEnvironment();
     Object * v;
+    MacroTable * mt = MT_init();
     char * buffer = malloc(sizeof(char)*512);
     while (1) {
         fputs("walley> ", stdout);
@@ -118,14 +119,14 @@ void Walley_Repl(){
         p = lexer(buffer);
         o = parser(p);
         // compile
-        compiler_begin(insts,
+        v = compiler_begin(insts,
                        o,
                        vt,
                        NULL,
-                       NULL);
-        // run
-        v = VM(insts->array, insts->start_pc, insts->length, env);
-        insts->start_pc = insts->length; // update start pc
+                       NULL,
+                       true,
+                       env,
+                       mt);
         
 #if WALLEY_DEBUG
         Walley_Debug(v);
@@ -159,7 +160,7 @@ void Walley_Run_File(char * file_name){
     
     // init walley
     Walley_init();
-    
+    Environment * env = createEnvironment();
     Lexer * p = lexer(content);
     printf("\n\n@@@ LEXER @@@\n");
 #if WALLEY_DEBUG
@@ -173,11 +174,14 @@ void Walley_Run_File(char * file_name){
 #endif
     
     Instructions * insts = Insts_init(); // init insts
-    compiler_begin(insts,
+    Object * v = compiler_begin(insts,
                    o,
                    VT_init(),
                    NULL,
-                   NULL);
+                   NULL,
+                   true,
+                   env,
+                   MT_init());
     printf("\n\n@@@ INSTRUCTIONS with length %ld \n", insts->length);
 #if WALLEY_DEBUG
     printf("@@@@ CONSTANTS TABLE \n");
@@ -186,10 +190,8 @@ void Walley_Run_File(char * file_name){
     printInstructions(insts);
 #endif
     printf("\n\n");
-    Environment * env = createEnvironment();
 
 #if WALLEY_DEBUG
-    Object * v = VM(insts->array, 0, insts->length, env);
     printf("\n@@@@ Finish Running VM \n");
     if (v->type == USER_DEFINED_LAMBDA) {
         printf("\nUser Defined Lambda\n");

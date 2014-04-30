@@ -277,6 +277,108 @@ void LFC_free(Lambda_for_Compilation * func){
         VT_free(func->vt);
 }
 
+/*
+    Macro Data Type
+ */
+
+typedef struct Macro{
+    char * macro_name;
+    Object * clauses;
+    Variable_Table * vt;
+}Macro;
+
+Macro * Macro_init(char * macro_name, Object * clauses, Variable_Table * vt){
+    Macro * m = malloc(sizeof(Macro));
+    char * s = malloc(sizeof(char)*(strlen(macro_name)+1));
+    strcpy(s, macro_name);
+
+    m->macro_name = s;
+    m->clauses = clauses;
+    m->vt = vt;
+    
+    clauses->use_count++;
+
+    return m;
+}
+
+void Macro_free(Macro * macro){
+    free(macro->macro_name);
+    macro->clauses->use_count--;
+    Object_free(macro->clauses);
+    free(macro);
+}
+/*
+    Macro Table Frame
+ */
+typedef struct MacroTableFrame{
+    Macro ** array;
+    unsigned int size;
+    unsigned int length;
+}MacroTableFrame;
+
+MacroTableFrame * MTF_init(int size){
+    MacroTableFrame * o = malloc(sizeof(MacroTableFrame));
+    o->size = size;
+    o->length = 0;
+    o->array = malloc(sizeof(Macro*) * (o->size));
+    return o;
+}
+/*
+    Macro Table
+ */
+typedef struct MacroTable {
+    MacroTableFrame * frames[VARIABLE_TABLE_MAX_SIZE];
+    unsigned int length;
+}MacroTable;
+
+MacroTable * MT_init(){
+    MacroTable * o = malloc(sizeof(MacroTable));
+    o->length = 1; // only have one frame
+    o->frames[0] = MTF_init(64);
+    return o;
+}
+void MT_find(MacroTable * mt, char * macro_name, int output[2]){
+    unsigned int length = mt->length;
+    unsigned int frame_length;
+    for (unsigned int i = 0; i < length; i++) {
+        MacroTableFrame * frame = mt->frames[i];
+        frame_length = frame->length;
+        for (unsigned int j = 0; j < frame_length; j++) {
+            if (str_eq(frame->array[j]->macro_name, macro_name)) {
+                output[0] = i;
+                output[1] = j;
+                return;
+            }
+        }
+    }
+    output[0] = -1;
+    output[1] = -1;
+    return;
+}
+
+/* append empty frame */
+void MT_add_new_empty_frame(MacroTable * mt){
+    MacroTableFrame * frame = MTF_init(64);
+    //frame->use_count = 1; // increase use_count of vtf
+    mt->frames[mt->length] = frame;
+    mt->length+=1;
+}
+/*
+ 克隆 Variable Table
+ */
+MacroTable * MT_copy(MacroTable * mt){
+    MacroTable * return_mt;
+    unsigned int length = mt->length;
+    unsigned int i;
+    return_mt = malloc(sizeof(MacroTable));
+    return_mt->length = length;
+    for (i = 0; i < length; i++) {
+        return_mt->frames[i] = mt->frames[i]; // 没有copy frame deeply
+        //vt->frames[i]->use_count++; // in use ++
+    }
+    return return_mt;
+}
+
 #endif
 
 

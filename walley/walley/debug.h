@@ -17,5 +17,6 @@
 #define LEXER_DEBUG 1   // lexer debug
 #define PARSER_DEBUG 1  // parser debug
 #define WALLEY_DEBUG 1  // walley program debug
+#define MACRO_DEBUG 0   // macro debug
 
 #endif

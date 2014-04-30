@@ -3,7 +3,7 @@
  Released under MIT Licenses
  lexer
  */
-#include "ratio.h"
+#include "builtin_procedures.h"
 #ifndef LEXER_C
 #define LEXER_C
 

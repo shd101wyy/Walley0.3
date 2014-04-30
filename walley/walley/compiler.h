@@ -8,16 +8,31 @@
 
 #ifndef walley_compiler_h
 #define walley_compiler_h
-#include "compiler_data_type.h"
-
-static Object* CONSTANT_TABLE_FOR_COMPILATION;
-static unsigned long CONSTANT_TABLE_FOR_COMPILATION_LENGTH;
-
-// instructions used to save contant...
-static Instructions * CONSTANT_TABLE_INSTRUCTIONS;
-static unsigned long CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX; // 保存上次的运行PC
+#include "env_data_type.h"
 
 // static int CONSTANT_TABLE_LENGTH = 0;
+void compiler(Instructions * insts,
+              Object * l,
+              Variable_Table * vt,
+              int tail_call_flag,
+              char * parent_func_name,
+              Lambda_for_Compilation * function_for_compilation,
+              Environment * env,
+              MacroTable * mt);
+
+Object * compiler_begin(Instructions * insts,
+                        Object * l,
+                        Variable_Table * vt,
+                        char * parent_func_name,
+                        Lambda_for_Compilation * function_for_compilation,
+                        int eval_flag,
+                        Environment * env,
+                        MacroTable * mt);
+
+Object *VM(unsigned short * instructions,
+           unsigned long start_pc,
+           unsigned long end_pc,
+           Environment * env);
 
 Object * quote_list(Object * l){
     if(l->type == NULL_) return GLOBAL_NULL;
@@ -67,17 +82,205 @@ Object * quasiquote_list(Object * l){
                               GLOBAL_NULL)));
 }
 
-void compiler(Instructions * insts,
-             Object * l,
-             Variable_Table * vt,
-             int tail_call_flag,
-             char * parent_func_name,
-              Lambda_for_Compilation * function_for_compilation);
-void compiler_begin(Instructions * insts,
-                    Object * l,
-                    Variable_Table * vt,
-                    char * parent_func_name,
-                    Lambda_for_Compilation * function_for_compilation);
+/*
+    macro_match
+    return length of var_names
+   (defmacro test [(x) x] [(#hi x) y] [(x y) x])
+
+ */
+int macro_match(Object * a, Object * b, char **var_names, Object **var_values, int count){
+    if (a->type == NULL_ && b->type == NULL_) {
+        return count; // match
+    }
+    else if ((a == GLOBAL_NULL && b != GLOBAL_NULL)
+             || (a != GLOBAL_NULL && b == GLOBAL_NULL)){
+        return 0; // doesn't match
+    }
+    else if(car(a)->type == PAIR && car(b)->type == PAIR){
+        int match = macro_match(car(a), car(b), var_names, var_values, count);
+        if (!match) return 0; // doesn't match
+        return macro_match(cdr(a),
+                           cdr(b),
+                           var_names,
+                           var_values,
+                           match);
+    }
+    else if(car(a)->type == PAIR && car(b)->type != PAIR)
+        return 0;
+    else{
+        if (car(a)->type == STRING && car(a)->data.String.v[0] == '#') {
+            // constant
+            if (str_eq(string_slice(car(a)->data.String.v, 1, (int)strlen(car(a)->data.String.v)), car(b)->data.String.v)) {
+                return macro_match(cdr(a),
+                                   cdr(b),
+                                   var_names,
+                                   var_values,
+                                   count);
+            }
+            else return 0;
+        }
+        if (car(a)->type == STRING &&
+            str_eq(car(a)->data.String.v, ".")) {
+            var_names[count] = cadr(a)->data.String.v; // save var name
+            var_values[count] = b; // save var value
+            count++;
+            return count;
+        }
+        var_names[count] = car(a)->data.String.v; // save var_name
+        var_values[count] = car(b); // save var_value
+        count++;
+        return macro_match(cdr(a),
+                           cdr(b),
+                           var_names,
+                           var_values,
+                           count);
+    }
+}
+
+Object * macro_expansion_replacement(Object * expanded_value,
+                                Variable_Table * vt,
+                                 int is_head){
+    if (expanded_value == GLOBAL_NULL) {
+        return GLOBAL_NULL;
+    }
+    if (expanded_value->type != PAIR) {
+        return expanded_value;
+    }
+    Object * v = car(expanded_value);
+    if (v->type == PAIR) {
+        return cons(macro_expansion_replacement(v, vt, true),
+                    macro_expansion_replacement(cdr(expanded_value),
+                                                vt, false));
+    }
+    else{
+        if (v->type == STRING && is_head) { // check in vt
+            if (str_eq(v->data.String.v, "quote")
+                ||str_eq(v->data.String.v, "quasiquote")) {// is quote function, so no replacement
+                return expanded_value;
+            }
+            int find[2];
+            VT_find(vt, v->data.String.v, find);
+            if (find[0] != -1) { // find
+                return cons(cons(Object_initInteger(0),
+                                 cons(Object_initInteger(find[0]),
+                                      cons(Object_initInteger(find[1]),
+                                           GLOBAL_NULL))),
+                            macro_expansion_replacement(cdr(expanded_value),
+                                vt, false));
+            }
+            else
+                return cons(v, macro_expansion_replacement(cdr(expanded_value), vt, false));
+        }
+        else
+            return cons(v, macro_expansion_replacement(cdr(expanded_value), vt, false));
+    }
+}
+
+/*
+    I need to think about it
+ 
+    (defn test []
+        (defn hi [] (display "Hi"))
+        (defmacro t [] '(hi))
+        (t)
+        )
+    (t) => cause error because hi is defined inside test
+ */
+/*
+    展开 macro
+    (defmacro square ([x] `(* ~x ~x)))
+    (square 12) => (* 12 12)
+ */
+Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable * mt, Environment * global_env){
+    Object * clauses = macro->clauses;
+    // macro 最多有 64 个 parameters
+    char * var_names[64];
+    Object * var_values[64];
+    int match;
+    int i;
+    while (clauses != GLOBAL_NULL) {
+        match = macro_match(car(car(clauses)),
+                            exps,
+                            var_names,
+                            var_values,
+                            0);
+        if (match) {
+#if MACRO_DEBUG
+            printf("Macro Match\n");
+            printf("Match length %d\n", match);
+#endif
+            
+            // return value
+            Object * expanded_value;
+            
+            // 只用 env 和 vt 的第一个frame
+            // 这里我手动写吧。。
+            Variable_Table * new_vt;
+            Environment * new_env;
+            Variable_Table_Frame * new_vt_top_frame;
+            Environment_Frame * new_env_top_frame;
+            
+            // init vt frame
+            new_vt_top_frame = malloc(sizeof(Variable_Table_Frame));
+            // new_vt_top_frame->use_count = 1; // 后面要被使用
+            new_vt_top_frame->var_names = malloc(sizeof(char*)*match);
+            new_vt_top_frame->length = match; // set length directly
+            
+            // init vt
+            new_vt = malloc(sizeof(Variable_Table));
+            new_vt->frames[0] = macro->vt->frames[0];
+            new_vt->frames[1] = new_vt_top_frame;
+            new_vt->length = 2; // set length
+            
+            // init env frame
+            new_env_top_frame = EF_init_with_size(match+1);
+            
+            // init env
+            new_env = Env_init_with_size(64);
+            new_env->frames[0] = global_env->frames[0]; // 指向第一个frame
+            new_env->frames[1] = new_env_top_frame;
+            new_env_top_frame->use_count++;
+            
+            // add var name to top frame of new_vt;
+            for (i = 0; i < match; i++) {
+                // 这里不用 VT_push了因为不用copy string了
+                new_vt_top_frame->var_names[i] = var_names[i];
+                new_env_top_frame->array[i] = var_values[i];
+            }
+            
+            // create new insts
+            Instructions * insts = Insts_init();
+            
+            // compile and run
+            expanded_value = compiler_begin(insts,
+                          cons(cadr(car(clauses)), GLOBAL_NULL)
+                          , new_vt,
+                          NULL,
+                          NULL,
+                          true,
+                          new_env,
+                          mt);
+#if MACRO_DEBUG
+            printf("Finish Expansion");
+            // 这里结束可以用于 (macroexpand)
+            parser_debug(expanded_value);
+#endif
+            // 只用 free insts
+            // 一改还得free其他的, var_names和var_values不用free
+            free(insts->array);
+            free(insts);
+            
+            // 假设运行完了得到了 expanded_value
+            // 根据 macro->vt 替换首项
+            return macro_expansion_replacement(expanded_value, macro->vt, true);
+        }
+        clauses = cdr(clauses);
+        continue;
+    }
+    printf("ERROR: Macro: %s expansion failed", macro->macro_name);
+    return GLOBAL_NULL;
+}
+
 
 Object * list_append(Object * a, Object * b){
     if(a == GLOBAL_NULL) return b;
@@ -92,7 +295,9 @@ void compiler(Instructions * insts,
               Variable_Table * vt,
               int tail_call_flag,
               char * parent_func_name,
-              Lambda_for_Compilation * function_for_compilation){
+              Lambda_for_Compilation * function_for_compilation,
+              Environment * env,
+              MacroTable * mt){
     /*if(l->type == PAIR){
         printf("\n##");
         parser_debug(l);
@@ -116,7 +321,6 @@ void compiler(Instructions * insts,
         case NULL_:
             Insts_push(insts, CONST_NULL); // push null;
             return;
-            break;
         /*
             关于 string, 存在于 CONSTANT_TABLE_INSTRUCTIONS 而不是 insts
          */
@@ -228,7 +432,7 @@ void compiler(Instructions * insts,
             if(car(l)->type == INTEGER && car(l)->data.Integer.v == 0){
                 // set
                 Insts_push(insts, (GET << 12) | (0x0FFF & cadr(l)->data.Integer.v));
-                Insts_push(insts, cadddr(l)->data.Integer.v);
+                Insts_push(insts, caddr(l)->data.Integer.v);
                 return;
             }
             tag = car(l)->data.String.v;
@@ -241,7 +445,9 @@ void compiler(Instructions * insts,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
-                                    function_for_compilation);
+                                    function_for_compilation,
+                                    env,
+                                    mt);
                 }
                 else if (v->type == PAIR){ // pair
                     return compiler(insts,
@@ -249,7 +455,9 @@ void compiler(Instructions * insts,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
-                                    function_for_compilation);
+                                    function_for_compilation,
+                                    env,
+                                    mt);
                 }
                 else if(v->data.String.v[0] != '\''){
                     
@@ -260,9 +468,11 @@ void compiler(Instructions * insts,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
-                                    function_for_compilation);
+                                    function_for_compilation,
+                                    env,
+                                    mt);
                 }
-                return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation);
+                return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation,env,mt);
             }
             else if(str_eq(tag, "quasiquote")){
                 v = cadr(l);
@@ -273,7 +483,9 @@ void compiler(Instructions * insts,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
-                                    function_for_compilation);
+                                    function_for_compilation,
+                                    env,
+                                    mt);
                 }
                 else if (v->type == PAIR){ // pair
                     return compiler(insts,
@@ -281,7 +493,9 @@ void compiler(Instructions * insts,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
-                                    function_for_compilation);
+                                    function_for_compilation,
+                                    env,
+                                    mt);
                 }
                 else if(v->data.String.v[0] != '\''){
                     
@@ -292,9 +506,11 @@ void compiler(Instructions * insts,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
-                                    function_for_compilation);
+                                    function_for_compilation,
+                                    env,
+                                    mt);
                 }
-                return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation);
+                return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation,env, mt);
             }
             else if(str_eq(tag, "def")){
                 var_name = cadr(l);
@@ -326,7 +542,9 @@ void compiler(Instructions * insts,
                          vt,
                          tail_call_flag,
                          parent_func_name,
-                         function_for_compilation);
+                         function_for_compilation,
+                         env,
+                         mt);
                 // add instruction
                 Insts_push(insts, PUSH << 12);
                 return;
@@ -350,7 +568,9 @@ void compiler(Instructions * insts,
                              vt,
                              tail_call_flag,
                              parent_func_name,
-                             function_for_compilation);
+                             function_for_compilation,
+                             env,
+                             mt);
                     Insts_push(insts, SET << 12 | (0x0FFF & vt_find[0])); // frame_index
                     
                     Insts_push(insts, vt_find[1]); // value index
@@ -368,7 +588,9 @@ void compiler(Instructions * insts,
                          vt,
                          false,
                          parent_func_name,
-                         function_for_compilation);
+                         function_for_compilation,
+                         env,
+                         mt);
                 // push test, but now we don't know jump steps
                 Insts_push(insts, TEST << 12); // jump over consequence
                 index1 = insts->length;
@@ -382,7 +604,10 @@ void compiler(Instructions * insts,
                                cons(conseq, GLOBAL_NULL),
                                vt,
                                parent_func_name,
-                               function_for_compilation);
+                               function_for_compilation,
+                               false, // cannot eval
+                               env,
+                               mt);
                 //printf("\n@ %ld\n", insts->length);
                 
                 index2 = insts->length;
@@ -397,7 +622,10 @@ void compiler(Instructions * insts,
                                cons(alter, GLOBAL_NULL),
                                vt,
                                parent_func_name,
-                               function_for_compilation);
+                               function_for_compilation,
+                               vt->length == 1 ? true : false,
+                               env,
+                               mt);
                 
                 index3 = insts->length;
                 jump_steps = index3 - index2;
@@ -411,7 +639,10 @@ void compiler(Instructions * insts,
                                cdr(l),
                                vt,
                                parent_func_name,
-                               function_for_compilation);
+                               function_for_compilation,
+                               vt->length == 1 ? true : false,
+                               env,
+                               mt);
                 return;
             }
             else if (str_eq(tag, "let")){
@@ -457,7 +688,9 @@ void compiler(Instructions * insts,
                          vt,
                          tail_call_flag,
                          parent_func_name,
-                         function_for_compilation);
+                         function_for_compilation,
+                         env,
+                         mt);
                 return;
             }
             else if (str_eq(tag, "lambda")){
@@ -465,9 +698,10 @@ void compiler(Instructions * insts,
                 int variadic_place = -1; // variadic place
                 int counter = 0; // count of parameter num
                 Variable_Table * vt_ = VT_copy(vt); // new variable table
-                //var macros_ = macros.slice(0); // new macro table
-                //var env_ = env.slice(0);
+                MacroTable * mt_ = MT_copy(mt); // new macro table
                 VT_add_new_empty_frame(vt_); // we add a new frame
+                MT_add_new_empty_frame(mt_); // we add a new frame
+                
                 //macros_.push([]); // add new frame
                 //env_.push([]); // 必须加上这个， 要不然((lambda [] (defmacro square ([x] `[* ~x ~x])) (square 12))) macro 会有错
                 while (true) {
@@ -516,7 +750,10 @@ void compiler(Instructions * insts,
                                cddr(l),
                                vt_,
                                parent_func_name,
-                               function_);
+                               function_,
+                               false,
+                               env,
+                               mt_);
                 // return
                 Insts_push(insts, RETURN << 12);
                 index2 = insts->length;
@@ -533,6 +770,14 @@ void compiler(Instructions * insts,
                 free(vt_->frames[vt_->length - 1]);
                 free(vt_);
                 
+                MacroTableFrame * top_frame = mt_->frames[mt_->length - 1];
+                for (i = 0; i < top_frame->length; i++) {
+                    Macro_free(top_frame->array[i]);
+                }
+                
+                free(top_frame);
+                free(mt_);
+                
                 vt_ = NULL;
                 free(function_); // free lambda for compilation
                 function_ = NULL;
@@ -540,13 +785,52 @@ void compiler(Instructions * insts,
                 return;
             }
             else if (str_eq(tag, "defmacro")){
+                var_name = cadr(l);
+                Object * clauses = cddr(l);
+                MacroTableFrame * frame = mt->frames[mt->length-1]; // get op frame
+                length = frame->length;
+                for (i = frame->length - 1; i >= 0; i--) {
+                    if (str_eq(var_name->data.String.v, frame->array[i]->macro_name)) { // already existed
+                        free(frame->array[i]->macro_name);
+                        frame->array[i]->clauses->use_count--;
+                        Object_free(frame->array[i]->clauses);
+                        
+                        frame->array[i] = Macro_init(var_name->data.String.v, clauses, VT_copy(vt));
+                    }
+                    return;
+                }
+                // is not defined
+                // resize if size is not enough
+                if (frame->length == frame->size) {
+                    frame->size*=2;
+                    frame->array = realloc(frame->array, frame->size);
+                }
+                
+                frame->array[frame->length] = Macro_init(var_name->data.String.v, clauses, VT_copy(vt));
+                frame->length++;
                 return;
             }
             // call function
             else{
+                // check is macro
+                if (car(l)->type == STRING) {
+                    MT_find(mt, car(l)->data.String.v, vt_find);
+                    if (vt_find[0] != -1) { // find macro
+                        Object * expand = macro_expand_for_compilation(mt->frames[vt_find[0]]->array[vt_find[1]],
+                            cdr(l), mt, env);
+                        return compiler(insts,
+                                        expand,
+                                        vt,
+                                        tail_call_flag,
+                                        parent_func_name,
+                                        function_for_compilation,
+                                        env,
+                                        mt);
+                    }
+                }
+                //printf("IT IS NOT MACRO");
                 // 咱不支持 macro
                 if(tail_call_flag){
-                    printf("TAIL CALL!");
                     // so no new frame
                     int start_index = vt->frames[vt->length - 1]->length;
                     int track_index = start_index;
@@ -576,7 +860,9 @@ void compiler(Instructions * insts,
                                      vt,
                                      false,
                                      parent_func_name,
-                                     function_for_compilation); // each argument is not tail call
+                                     function_for_compilation,
+                                     env,
+                                     mt); // each argument is not tail call
                             // set tp current frame
                             Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                             Insts_push(insts, 0x0000FFFF & track_index);
@@ -589,7 +875,9 @@ void compiler(Instructions * insts,
                                      vt,
                                      false,
                                      parent_func_name,
-                                     function_for_compilation); // this argument is not tail call
+                                     function_for_compilation,
+                                     env,
+                                     mt); // this argument is not tail call
                             // set to current frame
                             Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                             Insts_push(insts, 0x0000FFFF & track_index);
@@ -630,7 +918,9 @@ void compiler(Instructions * insts,
                              vt,
                              false,
                              parent_func_name,
-                             function_for_compilation); // compile lambda, save to accumulator
+                             function_for_compilation,
+                             env,
+                             mt); // compile lambda, save to accumulator
                     Insts_push(insts, NEWFRAME << 12); // create new frame
                     // compile paremeters
                     int param_num = 0;
@@ -648,7 +938,9 @@ void compiler(Instructions * insts,
                                  vt,
                                  false,
                                  parent_func_name,
-                                 function_for_compilation);// each argument is not tail call
+                                 function_for_compilation,
+                                 env,
+                                 mt);// each argument is not tail call
                         Insts_push(insts, PUSH_ARG << 12);
                     }
                     Insts_push(insts, (CALL << 12) | (0x0FFF & param_num));
@@ -664,12 +956,15 @@ void compiler(Instructions * insts,
 /*
     compile a series of expression
  */
-void compiler_begin(Instructions * insts,
+Object * compiler_begin(Instructions * insts,
                     Object * l,
                     Variable_Table * vt,
                     char * parent_func_name,
-                    Lambda_for_Compilation * function_for_compilation){
-    // Object * acc = GLOBAL_NULL;
+                    Lambda_for_Compilation * function_for_compilation,
+                    int eval_flag,
+                    Environment * env,
+                    MacroTable * mt){
+    Object * acc = GLOBAL_NULL;
     while (l != GLOBAL_NULL) {
         if (cdr(l) == GLOBAL_NULL
             && car(l)->type == PAIR
@@ -681,7 +976,9 @@ void compiler_begin(Instructions * insts,
                      vt,
                      1,
                      NULL,
-                     function_for_compilation);
+                     function_for_compilation,
+                     env,
+                     mt);
         }
         else{
             compiler(insts,
@@ -689,9 +986,19 @@ void compiler_begin(Instructions * insts,
                      vt,
                      0,
                      parent_func_name,
-                     function_for_compilation);
+                     function_for_compilation,
+                     env,
+                     mt);
         }
         l = cdr(l);
+        
+        if (eval_flag == true) {
+            acc = VM(insts->array,
+                     insts->start_pc,
+                     insts->length,
+                     env); // run vm
+            insts->start_pc = insts->length; // update start pc
+        }
     }
     parser_free(l); // free parser
     l = NULL;
@@ -700,7 +1007,7 @@ void compiler_begin(Instructions * insts,
     //LFC_free(function_for_compilation); // free function_for_compilation
     //free(function_for_compilation);
     //function_for_compilation = NULL;
-    return;
+    return acc;
 }
 
 
