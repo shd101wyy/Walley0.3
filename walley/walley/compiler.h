@@ -290,7 +290,7 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             printf("\nFinish Expansion\n");
             // 这里结束可以用于 (macroexpand)
             parser_debug(expanded_value);
-            exit(0);
+            //exit(0);
 #endif
 
             // restore start-pc and length
@@ -298,7 +298,10 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             insts->length = insts_length;
 
             // 一改还得free其他的, var_names和var_values不用free
-            
+            free(new_vt);
+            free(new_vt_top_frame);
+            free(new_env);
+            free(new_env_top_frame);
             
             // 假设运行完了得到了 expanded_value
             // 根据 macro->vt 替换首项

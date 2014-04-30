@@ -8,13 +8,11 @@
 		       b)))))
 (defmacro defn
   [(var_name args . body)
-  ;`(def ~var_name (lambda ~args ~@body))
-  `(~@body)
+  `(def ~var_name (lambda ~args ~@body))
   ]
   )
-;(def x (append '(x y) '(z)) )
 
 (defn add [a b] (+ a b))
-;(add 3 4)
-
-;(append '((+ a b)) '())
+(add 3 4)
+(defn sub [a b] (- a b))
+(sub (/ 3 6) (+ 3 4))
