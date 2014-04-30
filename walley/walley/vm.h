@@ -114,7 +114,7 @@ Object *VM(unsigned short * instructions,
         }
     }
     CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX = CONSTANT_TABLE_INSTRUCTIONS->length; // update track index for constant table instructions.
-
+    
     pc = start_pc;
     while(pc != end_pc){
         // printf("%lu, %x \n", pc, instructions[pc]);
@@ -227,13 +227,13 @@ Object *VM(unsigned short * instructions,
                         
                         // save to frames_list
                         frames_list[frames_list_length] = current_frame_pointer;
-                        frames_list_length++;
-                        current_frame_pointer->use_count++; // current frame pointer is used
+                        frames_list_length+=1;
+                        current_frame_pointer->use_count+=1; // current frame pointer is used
 
                         // save to function list
                         functions_list[functions_list_length] = accumulator;
-                        functions_list_length++;
-                        accumulator->use_count++;
+                        functions_list_length+=1;
+                        accumulator->use_count+=1;
                         
                         pc = pc + 1;
                         continue;
@@ -321,6 +321,7 @@ Object *VM(unsigned short * instructions,
                                 
                                 // free lambda
                                 Object_free(v);
+                                
                                 continue;
                             case 2: // vector set
                                 temp = current_frame_pointer->array[current_frame_pointer->length - 2]; // index
@@ -352,7 +353,7 @@ Object *VM(unsigned short * instructions,
                                 
                                 // free lambda
                                 Object_free(v);
-                                
+
                                 continue;
                             default: // wrong parameters
                                 printf("ERROR: Invalid vector operation\n");
@@ -466,7 +467,9 @@ Object *VM(unsigned short * instructions,
                         current_frame_pointer = frames_list[frames_list_length - 1];
                         
                         // free lambda
-                        Object_free(v);
+                        if(accumulator != v) //这里是处理 ((lambda [] 'x))的 bug
+                            Object_free(v);
+                        
                         continue;
                     default:
                         printf("ERROR: Invalid Lambda\n");

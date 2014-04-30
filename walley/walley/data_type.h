@@ -439,8 +439,8 @@ void Object_free(Object * o){
                 free(o);
                 return;
             case USER_DEFINED_LAMBDA:
-                printf("Free User Defined Lambda");
-                Env_free(o->data.User_Defined_Lambda.env);
+                // Env_free(o->data.User_Defined_Lambda.env);
+                free(o->data.User_Defined_Lambda.env);
                 free(o);
                 return;
             case BUILTIN_LAMBDA:

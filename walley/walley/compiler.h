@@ -1028,6 +1028,9 @@ Object * compiler_begin(Instructions * insts,
         l = cdr(l);
         
         if (eval_flag == true) {
+#if COMPILER_DEBUG
+            printInstructions(insts);
+#endif
             acc = VM(insts->array,
                      insts->start_pc,
                      insts->length,
