@@ -185,7 +185,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "int->string");
     VT_push(vt, 0, "float->string");
     VT_push(vt, 0, "input");
-    VT_push(vt, 0, "display-string");
+    VT_push(vt, 0, "display");
     VT_push(vt, 0, "string->int");
     VT_push(vt, 0, "string->float");
     VT_push(vt, 0, "ratio?");

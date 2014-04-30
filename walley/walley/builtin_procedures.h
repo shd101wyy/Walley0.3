@@ -640,9 +640,11 @@ Object * builtin_input(Object ** params, int param_num, int start_index){
     return Object_initString(buffer, strlen(buffer) - 1  // 我测试了下貌似得减1要不然length错了
                              );
 }
-// 35 display-string
+// 35 display  原先是 display-string
 Object * builtin_display_string(Object ** params, int param_num, int start_index){
-    printf("%s", params[start_index]->data.String.v);
+    char * s = to_string(params[start_index]);
+    printf("%s", s);
+    free(s);
     return GLOBAL_NULL;
 }
 // 36 string->int

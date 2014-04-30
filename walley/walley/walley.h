@@ -118,6 +118,7 @@ void Walley_Repl(){
     Object * v;
     MacroTable * mt = MT_init();
     char * buffer = malloc(sizeof(char)*512);
+    char * s;
     while (1) {
         fputs("walley> ", stdout);
         fgets(buffer, 512, stdin);
@@ -132,7 +133,9 @@ void Walley_Repl(){
                        true,
                        env,
                        mt);
-        printf("%s\n", to_string(v));
+        s = to_string(v);
+        printf("\n        %s\n", (s));
+        free(s);
         
 #if WALLEY_DEBUG
         Walley_Debug(v);
