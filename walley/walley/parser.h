@@ -75,7 +75,7 @@ Object * parser(Lexer * le){
     Object * current_list_pointer = GLOBAL_NULL;
     int32_t i;
     uint32_t j, k, n, start;
-    Object * lists = cons(GLOBAL_NULL, GLOBAL_NULL);
+    Object * lists = GLOBAL_NULL;//cons(GLOBAL_NULL, GLOBAL_NULL);
     Object * temp;
     char * splitted_[100]; // max 100 string
     char * t;
@@ -133,21 +133,23 @@ Object * parser(Lexer * le){
                     }
                 }
                 // append last
-                /*char **/ t = (char*)malloc(sizeof(char)*(j - start + 1));
+                t = (char*)malloc(sizeof(char)*(j - start + 1));
                 for(k = start; k < j; k++){
                     t[k-start] = l[i][k];
                 }
                 t[k-start] = 0;
-                start = j+1;
+                // start = j+1;
                 splitted_[n] = t;
                 n++; // increase size
                 
                 ns = splitted_[0]; // get ns. eg x:a => ns 'x' keys ['a']
                 if(n == 1){ // 没有找到 :
-                    if(isInteger(l[i]))
+                    if(isInteger(l[i])){
                         temp = Object_initInteger(strtol(l[i], &t, 10));
-                    else if(isDouble(l[i]))
+                    }
+                    else if(isDouble(l[i])){
                         temp = Object_initDouble(strtod(l[i], &t));
+                    }
                     else
                         temp = Object_initString(l[i], strlen(l[i]));
                 }
@@ -161,6 +163,13 @@ Object * parser(Lexer * le){
                                                             cons(Object_initString(splitted_[1], strlen(splitted_[1])),
                                                                  GLOBAL_NULL)),
                                                        GLOBAL_NULL)));
+                }
+                // free splitted_
+                // also t, which is the last element of splitted_
+                // will be freed
+                for (j = 0; j < n; j++) {
+                    free(splitted_[j]);
+                    splitted_[j] = NULL;
                 }
             }
             

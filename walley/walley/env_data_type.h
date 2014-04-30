@@ -148,7 +148,7 @@ void Env_free(Environment * env){
 }
 Environment * Env_init_with_size(int size){
     Environment * env = malloc(sizeof(Environment));
-    env->frames = malloc(sizeof(Environment_Frame) * size);
+    env->frames = (Environment_Frame**)malloc(sizeof(Environment_Frame*) * size);
     env->length = 0;
     return env;
 }

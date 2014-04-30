@@ -68,7 +68,7 @@ Object *VM(unsigned short * instructions,
     // run CONSTANT_TABLE_INSTRUCTIONS first to load constant
     while (pc != CONSTANT_TABLE_INSTRUCTIONS->length) {
         inst = CONSTANT_TABLE_INSTRUCTIONS->array[pc];
-        opcode = (inst & 0xF000) >> 12;
+        // opcode = (inst & 0xF000) >> 12;
         // 目前只支持string
         switch (inst) {
             case CONST_STRING: // push string to constant table

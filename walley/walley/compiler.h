@@ -631,7 +631,6 @@ void compiler(Instructions * insts,
                 
                 //printf("\n@ %ld\n", insts->length);
                 //parser_debug(conseq);
-                v = cons(conseq, GLOBAL_NULL);
                 // compiler_begin ...
                 compiler_begin(insts,
                                cons(conseq, GLOBAL_NULL),
@@ -821,7 +820,7 @@ void compiler(Instructions * insts,
                 var_name = cadr(l);
                 Object * clauses = cddr(l);
                 MacroTableFrame * frame = mt->frames[mt->length-1]; // get op frame
-                length = frame->length;
+                // length = frame->length;
                 for (i = frame->length - 1; i >= 0; i--) {
                     if (str_eq(var_name->data.String.v, frame->array[i]->macro_name)) { // already existed
                         free(frame->array[i]->macro_name);

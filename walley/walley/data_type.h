@@ -455,7 +455,7 @@ void Object_free(Object * o){
                 free(o);
             case TABLE:
                 size = o->data.Table.size;
-                length = o->data.Table.length;
+                // length = o->data.Table.length;
                 for(i = 0; i < size; i++){
                     if(o->data.Table.vec[i]){ // exist
                         p = o->data.Table.vec[i]; // get Table_Pair;

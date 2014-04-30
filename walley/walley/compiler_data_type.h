@@ -43,10 +43,10 @@ typedef struct Instructions{
     init insts
  */
 Instructions * Insts_init(){
-    Instructions * insts = malloc(sizeof(Instructions));
+    Instructions * insts = (Instructions*)malloc(sizeof(Instructions));
     insts->length = 0;
     insts->size = 1024;
-    insts->array = malloc(sizeof(short)*insts->size);
+    insts->array = (unsigned short*)malloc(sizeof(unsigned short)*(insts->size));
     insts->start_pc = 0;
     return insts;
 }
@@ -56,7 +56,7 @@ Instructions * Insts_init(){
 void Insts_push(Instructions * insts, short v){
     if(insts->length == insts->size){ // reach maximum
         insts->size*=2;
-        insts = realloc(insts, sizeof(short)*insts->size);
+        insts->array = (unsigned short*)realloc(insts->array, sizeof(unsigned short)*insts->size);
     }
     insts->array[insts->length] = v;
     insts->length++;

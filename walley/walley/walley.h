@@ -94,7 +94,7 @@ int read_ints (const char* file_name, unsigned short ** instructions, int * len)
             case 1:
                 length = length | num;
                 *len = length; // get length
-                (*instructions) = malloc(sizeof(int) * length); // init instructions
+                (*instructions) = (unsigned short*)malloc(sizeof(unsigned short) * length); // init instructions
                 break;
             default:
                 (*instructions)[i - 2] = num;
@@ -112,18 +112,21 @@ void Walley_Repl(){
     Walley_init();
     Lexer * p;
     Object * o;
+    /*
     Instructions * insts = Insts_init();
     Variable_Table * vt = VT_init();
     Environment * env = createEnvironment();
     Object * v;
     MacroTable * mt = MT_init();
-    char * buffer = malloc(sizeof(char)*512);
+    */
+    char buffer[512];
     char * s;
     while (1) {
         fputs("walley> ", stdout);
         fgets(buffer, 512, stdin);
         p = lexer(buffer);
         o = parser(p);
+        /*
         // compile
         v = compiler_begin(insts,
                        o,
@@ -137,6 +140,12 @@ void Walley_Repl(){
         printf("\n        %s\n", (s));
         free(s);
         Object_free(v);
+        */
+        
+        // free parser
+        // 但是如果这里free掉的话可能会使得 macro出错
+        parser_free(o);
+        
         
 #if WALLEY_DEBUG
         Walley_Debug(v);
