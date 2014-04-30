@@ -162,14 +162,16 @@ void Walley_Run_File(char * file_name){
     Walley_init();
     Environment * env = createEnvironment();
     Lexer * p = lexer(content);
-    printf("\n\n@@@ LEXER @@@\n");
+    Object * o;
+    
 #if WALLEY_DEBUG
+    printf("\n\n@@@ LEXER @@@\n");
     Lexer_Debug(p);
 #endif
-    printf("\n@@@ PARSER @@@\n");
-    Object * o;
+    
     o = parser(p);
 #if WALLEY_DEBUG
+    printf("\n@@@ PARSER @@@\n");
     parser_debug(o);
 #endif
     

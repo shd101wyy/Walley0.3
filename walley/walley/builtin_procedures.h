@@ -660,11 +660,29 @@ Object * builtin_ratio_type(Object ** params, int param_num, int start_index){
 }
 // 39 numer
 Object * builtin_numer(Object ** params, int param_num, int start_index){
-    return Object_initInteger(params[start_index]->data.Ratio.numer);
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER: case DOUBLE:
+            return p;
+        case RATIO:
+            return Object_initInteger(p->data.Ratio.numer);
+        default:
+            printf("ERROR: Function numer invalid parameter");
+            return GLOBAL_NULL;
+    }
 }
 // 40 denom
 Object * builtin_denom(Object ** params, int param_num, int start_index){
-    return Object_initInteger(params[start_index]->data.Ratio.denom);
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER: case DOUBLE:
+            return Object_initInteger(1);
+        case RATIO:
+            return Object_initInteger(p->data.Ratio.denom);
+        default:
+            printf("ERROR: Function denom invalid parameter");
+            return GLOBAL_NULL;
+    }
 }
 
 
