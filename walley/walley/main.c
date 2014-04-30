@@ -44,12 +44,14 @@ int main(int argc, char *argv[]){
         char s[1000] = "(def x {'a 12}) (x 'b 15) (x 'b)";
         Lexer * p;
         p = lexer((char*)s);
+#if LEXER_DEBUG
         Lexer_Debug(p);
-        
+#endif
         Object * o;
         o = parser(p);
+#if PARSER_DEBUG
         parser_debug(o);
-        
+#endif
         Environment * env = createEnvironment();
         Instructions * insts = Insts_init(); // init insts
         compiler_begin(insts,

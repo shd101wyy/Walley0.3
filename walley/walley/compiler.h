@@ -521,8 +521,6 @@ void compiler(Instructions * insts,
                                     mt);
                 }
                 else if (v->type == PAIR){ // pair
-                    printf("\nQUASIQUOTE\n");
-                    parser_debug(quasiquote_list(v));
                     return compiler(insts,
                                     quasiquote_list(v),
                                     vt,

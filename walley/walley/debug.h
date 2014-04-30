@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define RATIO_DEBUG 1   // ratio number debug
-#define LEXER_DEBUG 1   // lexer debug
-#define PARSER_DEBUG 1  // parser debug
-#define WALLEY_DEBUG 1  // walley program debug
+#define RATIO_DEBUG 0   // ratio number debug
+#define LEXER_DEBUG 0   // lexer debug
+#define PARSER_DEBUG 0  // parser debug
+#define WALLEY_DEBUG 0  // walley program debug
 #define MACRO_DEBUG 0   // macro debug
 #define COMPILER_DEBUG 0 // compile debug
 #endif

@@ -45,6 +45,7 @@
 		F6C86B7C190F7C370019820A /* ratio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ratio.h; sourceTree = "<group>"; };
 		F6C86B7D190F7DF70019820A /* debug.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
 		F6C86B7E19109DD60019820A /* env_data_type.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = env_data_type.h; sourceTree = "<group>"; };
+		F6C86B7F1910BC390019820A /* to_string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = to_string.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				F6C86B7A190F49240019820A /* builtin_procedures.h */,
+				F6C86B7F1910BC390019820A /* to_string.h */,
 				F6C86B75190E0CB40019820A /* vm.js */,
 				F6C86B6F190E07C00019820A /* lexer.h */,
 				F6C86B71190E07E00019820A /* vm_c */,

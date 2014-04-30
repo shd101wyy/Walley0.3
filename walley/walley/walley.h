@@ -132,6 +132,7 @@ void Walley_Repl(){
                        true,
                        env,
                        mt);
+        printf("%s\n", to_string(v));
         
 #if WALLEY_DEBUG
         Walley_Debug(v);
@@ -181,7 +182,10 @@ void Walley_Run_File(char * file_name){
 #endif
     
     Instructions * insts = Insts_init(); // init insts
-    Object * v = compiler_begin(insts,
+#if WALLEY_DEBUG   
+    Object * v =
+#endif
+    compiler_begin(insts,
                    o,
                    VT_init(),
                    NULL,
