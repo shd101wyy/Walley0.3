@@ -136,6 +136,7 @@ void Walley_Repl(){
         s = to_string(v);
         printf("\n        %s\n", (s));
         free(s);
+        Object_free(v);
         
 #if WALLEY_DEBUG
         Walley_Debug(v);
