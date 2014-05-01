@@ -905,7 +905,7 @@ void compiler(Instructions * insts,
                     if (vt_find[0] != -1) { // find macro
                         Object * expand = macro_expand_for_compilation(mt->frames[vt_find[0]]->array[vt_find[1]],
                             cdr(l), mt, env, insts);
-                        return compiler(insts,
+                        compiler(insts,
                                         expand,
                                         vt,
                                         tail_call_flag,
@@ -913,6 +913,8 @@ void compiler(Instructions * insts,
                                         function_for_compilation,
                                         env,
                                         mt);
+                        Object_free(expand);
+                        return;
                     }
                 }
                 //printf("IT IS NOT MACRO");
