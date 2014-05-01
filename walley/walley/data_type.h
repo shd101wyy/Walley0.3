@@ -90,7 +90,6 @@ struct Object {
         struct {
             char * v;
             unsigned long length;
-            char in_table; // in contant table. 我可能以后不用这个, 直接把use_count设置为1
         } String;
         struct {
             Object * car;

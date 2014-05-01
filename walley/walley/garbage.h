@@ -24,10 +24,8 @@ void Object_free(Object * o){
                 free(o);
                 return;
             case STRING:
-                if(!o->data.String.in_table){ // can only free string that is not in table
-                    free(o->data.String.v);
-                    free(o);
-                }
+                free(o->data.String.v);
+                free(o);
                 return;
             case PAIR:
                 // decrement the use count
