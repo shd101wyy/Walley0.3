@@ -236,8 +236,8 @@ Object * cons(Object * car, Object * cdr){
     Object * o = allocateObject();
     
     // 只有 builtin_procedure 需要 增加
-    //car->use_count++; // increase use_count
-    //cdr->use_count++; // increase use_count
+    car->use_count += 1; // increase use_count
+    cdr->use_count += 1; // increase use_count
     
     o->type = PAIR;
     o->data.Pair.car = car;

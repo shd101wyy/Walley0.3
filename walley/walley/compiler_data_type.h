@@ -89,7 +89,7 @@ typedef struct Variable_Table_Frame{
  */
 Variable_Table_Frame * VTF_init(unsigned int size){
     Variable_Table_Frame * vtf = malloc(sizeof(Variable_Table_Frame));
-    vtf->var_names = malloc(sizeof(char*)*size);
+    vtf->var_names = (char**)malloc(sizeof(char*)*size);
     vtf->length = 0;
     vtf->use_count = 0;
     return vtf;
@@ -98,7 +98,8 @@ Variable_Table_Frame * VTF_init(unsigned int size){
     push var_name to vtf
  */
 void VTF_push(Variable_Table_Frame * vtf, char * value){
-    char * s = malloc(sizeof(char)* (strlen(value)+ 1));
+    // printf("VTF_push %s %ld\n", value, strlen(value));
+    char * s = (char*)malloc(sizeof(char)* (strlen(value)+ 1));
     strcpy(s, value);
     vtf->var_names[vtf->length] = s;
     vtf->length++;
@@ -300,6 +301,30 @@ Macro * Macro_init(char * macro_name, Object * clauses, Variable_Table * vt){
 
     return m;
 }
+/*
+Object * Macro_copy_clauses(Object * clauses){
+    if (clauses == GLOBAL_NULL) {
+        return GLOBAL_NULL;
+    }
+    Object * v = car(clauses);
+    switch (v->type) {
+        case NULL_:
+            return cons(GLOBAL_NULL,
+                        Macro_copy_clauses(cdr(clauses)));
+        case INTEGER:
+            return cons(Object_initInteger(v->data.Integer.v), Macro_copy_clauses(cdr(clauses)));
+        case DOUBLE:
+            return cons(Object_initDouble(v->data.Double.v), Macro_copy_clauses(cdr(clauses)));
+        case PAIR:
+            return cons(Macro_copy_clauses(v),
+                        Macro_copy_clauses(cdr(clauses)));
+        case STRING:
+            return cons(Object_initString(v->data.String.v, v->data.String.length), Macro_copy_clauses(cdr(clauses)));
+        default:
+            printf("### ERROR please report bug: Macro_copy_clauses");
+            return GLOBAL_NULL;
+    }
+}*/
 
 void Macro_free(Macro * macro){
     free(macro->macro_name);

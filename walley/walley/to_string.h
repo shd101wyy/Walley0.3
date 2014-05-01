@@ -291,25 +291,33 @@ char * table_to_string(Object * l){
 char * to_string(Object * v){
     char buffer[TO_STRING_BUFFER_SIZE];
     strcpy(buffer, "");
+    char * s;
     switch (v->type) {
         case INTEGER: case DOUBLE: case RATIO:
-            strcat(buffer, number_to_string(v));
+            s = number_to_string(v);
+            strcat(buffer, s);
+            free(s);
             break;
         case NULL_:
             strcat(buffer, "()");
             break;
         case VECTOR:
-            strcat(buffer, vector_to_string(v));
+            s = vector_to_string(v);
+            strcat(buffer, (s));
+            free(s);
             break;
         case TABLE:
-            strcat(buffer, table_to_string(v));
+            s = table_to_string(v);
+            strcat(buffer, s);
+            free(s);
             break;
         case STRING:
-            // strcat(buffer, clean_string(v));
             strcat(buffer, v->data.String.v);
             break;
         case PAIR:
-            strcat(buffer, list_to_string(v));
+            s = list_to_string(v);
+            strcat(buffer, (s));
+            free(s);
             break;
         case BUILTIN_LAMBDA:
             strcat(buffer, "< builtin-lambda >");

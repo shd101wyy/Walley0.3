@@ -823,11 +823,13 @@ void compiler(Instructions * insts,
                 // length = frame->length;
                 for (i = frame->length - 1; i >= 0; i--) {
                     if (str_eq(var_name->data.String.v, frame->array[i]->macro_name)) { // already existed
+                        
                         free(frame->array[i]->macro_name);
                         frame->array[i]->clauses->use_count--;
                         Object_free(frame->array[i]->clauses);
                         
-                        frame->array[i] = Macro_init(var_name->data.String.v, clauses, VT_copy(vt));
+                        clauses->use_count+=1; // 必须+1
+                        frame->array[i] = Macro_init(var_name->data.String.v, (clauses), VT_copy(vt));
                     }
                     return;
                 }
@@ -838,7 +840,8 @@ void compiler(Instructions * insts,
                     frame->array = realloc(frame->array, frame->size);
                 }
                 
-                frame->array[frame->length] = Macro_init(var_name->data.String.v, clauses, VT_copy(vt));
+                clauses->use_count+=1; // 必须+1
+                frame->array[frame->length] = Macro_init(var_name->data.String.v, (clauses), VT_copy(vt));
                 frame->length++;
                 return;
             }

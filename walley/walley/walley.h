@@ -112,13 +112,21 @@ void Walley_Repl(){
     Walley_init();
     Lexer * p;
     Object * o;
-    /*
+    
+    
     Instructions * insts = Insts_init();
     Variable_Table * vt = VT_init();
+    
     Environment * env = createEnvironment();
+    int run_eval = true;
+    
+    //Environment * env = NULL;
+    //int run_eval = false;
+    
     Object * v;
     MacroTable * mt = MT_init();
-    */
+    
+
     char buffer[512];
     char * s;
     while (1) {
@@ -126,25 +134,29 @@ void Walley_Repl(){
         fgets(buffer, 512, stdin);
         p = lexer(buffer);
         o = parser(p);
-        /*
+        
+        
         // compile
         v = compiler_begin(insts,
                        o,
                        vt,
                        NULL,
                        NULL,
-                       true,
+                       run_eval,
                        env,
                        mt);
         s = to_string(v);
         printf("\n        %s\n", (s));
-        free(s);
+        free(s); // need to free that value
         Object_free(v);
-        */
         
-        // free parser
-        // 但是如果这里free掉的话可能会使得 macro出错
-        parser_free(o);
+        /*
+        s = to_string(o);
+        printf("%s\n", s);
+        free(s);
+        */
+
+        Object_free(o); // free parser
         
         
 #if WALLEY_DEBUG

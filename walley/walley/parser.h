@@ -48,6 +48,10 @@ int isInteger(char * s){
     free parser
  */
 void parser_free(Object * p){
+    /*
+     这个函数有问题， 以后用object_free
+     */
+    /*
     Object * v;
     Object * temp;
     while(p!=GLOBAL_NULL){
@@ -60,14 +64,21 @@ void parser_free(Object * p){
             case INTEGER:case DOUBLE:
                 free(v);
                 break;
+            case PAIR:
+                parser_free(v);
+                break;
+            case NULL_:
+                break;
             default:
+                printf("## ERROR please report bug:\n    parser_free error.");
                 break;
         }
         temp = p;
         p = cdr(p);
         free(temp);
         temp = NULL;
-    }
+    }*/
+    Object_free(p);
 }
 Object * parser(Lexer * le){
     char ** l = le->string_array;
@@ -96,10 +107,22 @@ Object * parser(Lexer * le){
                 i--;
             }
             else{
-                temp = cons(current_list_pointer, car(lists)); // append list
-                current_list_pointer = temp;
+                current_list_pointer = cons(current_list_pointer, car(lists)); // append list
             }
+            // need to free lists here
+            // because that pointer is not used anymore
+            temp = lists;
+            cdr(lists)->use_count += 1; // has to add that, otherwise it will be freed when calling Object_free(temp);
             lists = cdr(lists);
+            Object_free(temp);
+            (lists)->use_count -= 1; // restore use count
+/*
+    lists    current_list_pointer
+    (())           ()
+    (() ())        ()
+    (())          (())
+     ()          ((()))
+ */
         }
         else{
             // check Math:add like (Math 'add)
@@ -138,18 +161,20 @@ Object * parser(Lexer * le){
                     t[k-start] = l[i][k];
                 }
                 t[k-start] = 0;
-                // start = j+1;
                 splitted_[n] = t;
                 n++; // increase size
                 
                 ns = splitted_[0]; // get ns. eg x:a => ns 'x' keys ['a']
                 if(n == 1){ // 没有找到 :
                     if(isInteger(l[i])){
-                        temp = Object_initInteger(strtol(l[i], &t, 10));
+                        if (strlen(l[i]) >= 3 && l[i][0] == '0' && l[i][1] == 'x') { // hex
+                            temp = Object_initInteger(strtol(l[i], &t, 16));
+                        }
+                        else
+                            temp = Object_initInteger(strtol(l[i], &t, 10));
                     }
-                    else if(isDouble(l[i])){
+                    else if(isDouble(l[i]))
                         temp = Object_initDouble(strtod(l[i], &t));
-                    }
                     else
                         temp = Object_initString(l[i], strlen(l[i]));
                 }
@@ -186,6 +211,7 @@ Object * parser(Lexer * le){
             }
         }
     }
+    //Object_free(lists);
     // after parsing, free lexer
     Lexer_free(le);
     return current_list_pointer;
