@@ -405,11 +405,11 @@ void compiler(Instructions * insts,
                         s[j] = l->data.String.v[i];
                     j++;
                 }
+                s[j] = 0; // end of string
                 // init key save to 'v'
                 v = Object_initString(s, j/*j is length*/);
                 var_value = Table_getval(CONSTANT_TABLE_FOR_COMPILATION,
                                         v);
-                free(s);
                 // check s in CONSTANT_TABLE_FOR_COMPILATION
                 if(var_value!= GLOBAL_NULL){ // already exist
                     Insts_push(insts, CONST_LOAD); // load from table
@@ -417,6 +417,7 @@ void compiler(Instructions * insts,
                     // free 'v'
                     free(v->data.String.v);
                     free(v);
+                    free(s);
                     return;
                 }
                 else{ // doesn't exist, save to table
@@ -449,6 +450,7 @@ void compiler(Instructions * insts,
                 if(find_end == false){
                     Insts_push(CONSTANT_TABLE_INSTRUCTIONS, 0x0000); // add end
                 }
+                free(s);
                 return;
             }
             else{
