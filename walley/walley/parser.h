@@ -87,9 +87,9 @@ Object * parser(Lexer * le){
     int32_t i;
     uint32_t j, k, n, start;
     Object * lists = GLOBAL_NULL;//cons(GLOBAL_NULL, GLOBAL_NULL);
-    Object * temp;
+    Object * temp = NULL;
     char * splitted_[100]; // max 100 string
-    char * t;
+    char * t = NULL;
     char * ns;
     for(i = length - 1; i >= 0; i--){
         // printf("@ %s\n", l[i]);
@@ -100,10 +100,10 @@ Object * parser(Lexer * le){
         else if (str_eq(l[i], "(")){
             if(i!=0 &&
                (str_eq(l[i-1], "~@") || str_eq(l[i-1], "'") || str_eq(l[i-1], "~") || str_eq(l[i-1], "`"))){
-                temp = cons(cons(parser_get_tag(l[i-1]),
-                                 cons(current_list_pointer, GLOBAL_NULL)),
-                            car(lists));
-                current_list_pointer = temp;
+
+                current_list_pointer = cons(cons(parser_get_tag(l[i-1]),
+                                                   cons(current_list_pointer, GLOBAL_NULL)),
+                                              car(lists));;
                 i--;
             }
             else{
@@ -211,7 +211,7 @@ Object * parser(Lexer * le){
             }
         }
     }
-    //Object_free(lists);
+
     // after parsing, free lexer
     Lexer_free(le);
     return current_list_pointer;

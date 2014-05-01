@@ -655,7 +655,7 @@ void compiler(Instructions * insts,
                                vt,
                                parent_func_name,
                                function_for_compilation,
-                               vt->length == 1 ? true : false,
+                               /*vt->length == 1 ? true :*/false,
                                env,
                                mt);
                 
@@ -663,6 +663,19 @@ void compiler(Instructions * insts,
                 jump_steps = index3 - index2;
                 Insts_set(insts, index2 + 1, (0xFFFF0000 & jump_steps) >> 16);
                 Insts_set(insts, index2 + 2, (0x0000FFFF & jump_steps));
+                
+                // run if if necessary
+                /*
+                 // cannot set acc,
+                 // so this way doesn't work
+                if (vt->length == 1) {
+                    VM(insts->array,
+                       insts->start_pc,
+                       insts->length,
+                       env);
+                    insts->start_pc = insts->length;
+                }
+                 */
                 return;
             }
             else if (str_eq(tag, "begin")){
@@ -1003,6 +1016,7 @@ Object * compiler_begin(Instructions * insts,
                     Environment * env,
                     MacroTable * mt){
     Object * acc = GLOBAL_NULL;
+    Object * l_ = l; // make a copy of l, so that we can free it later
     while (l != GLOBAL_NULL) {
         if (cdr(l) == GLOBAL_NULL
             && car(l)->type == PAIR
@@ -1047,13 +1061,9 @@ Object * compiler_begin(Instructions * insts,
 
         }
     }
-    parser_free(l); // free parser
-    l = NULL;
-    //VT_free(vt);    // free vt
-    //vt = NULL;
-    //LFC_free(function_for_compilation); // free function_for_compilation
-    //free(function_for_compilation);
-    //function_for_compilation = NULL;
+    
+    Object_free(l_); // free parser
+    
     return acc;
 }
 

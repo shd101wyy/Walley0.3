@@ -161,7 +161,8 @@ void Walley_Repl(){
         Object_free(v); // free accumulator
         
 
-        Object_free(o); // free parser
+        // parser will be freed after compiler_begin finished
+        //Object_free(o); // free parser
         
         
 #if WALLEY_DEBUG
