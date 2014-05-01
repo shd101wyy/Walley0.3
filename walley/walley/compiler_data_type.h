@@ -415,7 +415,6 @@ MacroTable * MT_copy(MacroTable * mt){
     return_mt->length = length;
     for (i = 0; i < length; i++) {
         return_mt->frames[i] = mt->frames[i]; // 没有copy frame deeply
-        //vt->frames[i]->use_count++; // in use ++
     }
     return return_mt;
 }

@@ -807,10 +807,13 @@ void compiler(Instructions * insts,
                 for (i = 0; i < top_frame->length; i++) {
                     Macro_free(top_frame->array[i]);
                 }
+                free(top_frame->array);
                 free(top_frame);
                 free(mt_);
                 
                 vt_ = NULL;
+                mt_ = NULL;
+                
                 free(function_); // free lambda for compilation
                 function_ = NULL;
                 
