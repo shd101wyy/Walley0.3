@@ -145,17 +145,21 @@ void Walley_Repl(){
                        run_eval,
                        env,
                        mt);
-        s = to_string(v);
-        printf("\n        %s\n", (s));
-        free(s); // need to free that value
-        // printf("\nuse count %d\n", v->use_count);
-        Object_free(v);
         
         /*
+         // print parser
         s = to_string(o);
         printf("%s\n", s);
         free(s);
         */
+        
+        s = to_string(v);
+        printf("\n        %s\n", (s));
+        free(s); // need to free that value
+        
+        // printf("\nuse count %d\n", v->use_count);
+        Object_free(v); // free accumulator
+        
 
         Object_free(o); // free parser
         

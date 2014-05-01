@@ -60,7 +60,9 @@ void Object_free(Object * o){
                     v[i]->use_count--; // decrease use count
                     Object_free(v[i]);
                 }
+                free(o->data.Vector.v);
                 free(o);
+                return;
             case TABLE:
                 size = o->data.Table.size;
                 // length = o->data.Table.length;
