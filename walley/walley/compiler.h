@@ -298,10 +298,21 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             insts->length = insts_length;
 
             // 一改还得free其他的, var_names和var_values不用free
+            // 因为 var_names 是保存在 macro 里面的
+            //     var_values 会随着 parser 而free掉
+            // free new_vt
             free(new_vt);
+            /*
+            for (i = 0; i < new_vt_top_frame->length; i++) {
+                free(new_vt_top_frame->var_names[i]);
+            }*/
+            free(new_vt_top_frame->var_names);
             free(new_vt_top_frame);
+            
+            // free new_env
             free(new_env);
-            free(new_env_top_frame);
+            new_env_top_frame->use_count-=1;
+            EF_free(new_env_top_frame);
             
             // 假设运行完了得到了 expanded_value
             // 根据 macro->vt 替换首项

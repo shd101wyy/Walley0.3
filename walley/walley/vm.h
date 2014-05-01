@@ -109,7 +109,9 @@ Object *VM(unsigned short * instructions,
                 break;
             default:
                 printf("ERROR: Invalid opcode for constant table");
-                return  NULL;
+                Object_free(accumulator);
+                accumulator = GLOBAL_NULL;
+                goto VM_END;
                 break;
         }
     }
@@ -189,7 +191,9 @@ Object *VM(unsigned short * instructions,
                         continue;
                     default:
                         printf("ERROR: Invalid constant\n");
-                        return GLOBAL_NULL;
+                        Object_free(accumulator);
+                        accumulator = GLOBAL_NULL;
+                    goto VM_END;
                 }
             case MAKELAMBDA: // make lambda
                 param_num = (0x0FC0 & inst) >> 6;
@@ -254,7 +258,9 @@ Object *VM(unsigned short * instructions,
                         continue;
                     default:
                         printf("ERROR: NEWFRAME error");
-                        return GLOBAL_NULL;
+                        Object_free(accumulator);
+                        accumulator = GLOBAL_NULL;
+                    goto VM_END;
                 }
             case PUSH_ARG: // push arguments
                 accumulator->use_count+=1; // increase use count
@@ -357,7 +363,9 @@ Object *VM(unsigned short * instructions,
                                 continue;
                             default: // wrong parameters
                                 printf("ERROR: Invalid vector operation\n");
-                                return GLOBAL_NULL;
+                                Object_free(accumulator);
+                                accumulator = GLOBAL_NULL;
+                            goto VM_END;
                         }
                     
                     case TABLE: // table
@@ -414,7 +422,9 @@ Object *VM(unsigned short * instructions,
                                 continue;
                             default: // wrong parameters
                                 printf("ERROR: Invalid table operation\n");
-                                return GLOBAL_NULL;
+                                Object_free(accumulator);
+                                accumulator = GLOBAL_NULL;
+                            goto VM_END;
                         }
                     case USER_DEFINED_LAMBDA: // user defined function
                         required_param_num = v->data.User_Defined_Lambda.param_num;
@@ -426,7 +436,9 @@ Object *VM(unsigned short * instructions,
                         
                         if(required_variadic_place == -1 && param_num - 1 > required_param_num){
                             printf("ERROR: Too many parameters provided\n");
-                            return NULL;
+                            Object_free(accumulator);
+                            accumulator = GLOBAL_NULL;
+                            goto VM_END;
                         }
                         if(required_variadic_place != -1){
                             v = GLOBAL_NULL;
@@ -473,7 +485,9 @@ Object *VM(unsigned short * instructions,
                         continue;
                     default:
                         printf("ERROR: Invalid Lambda\n");
-                        return GLOBAL_NULL;
+                        Object_free(accumulator);
+                        accumulator = GLOBAL_NULL;
+                        goto VM_END;
                 }
             case JMP:
                 //printf("JUMP STEPS %d\n", (signed int)((instructions[pc + 1] << 16) | instructions[pc + 2]));
@@ -499,9 +513,13 @@ Object *VM(unsigned short * instructions,
                 continue;
             default:
                 printf("ERROR: Invalid opcode %d\n", opcode);
-                return GLOBAL_NULL;
+                Object_free(accumulator);
+                accumulator = GLOBAL_NULL;
+                goto VM_END;
         }
     }
+    
+VM_END:
     // free BUILTIN_PRIMITIVE_PROCEDURE_STACK
     accumulator->use_count+=1;
     

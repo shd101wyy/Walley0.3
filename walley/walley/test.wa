@@ -12,4 +12,6 @@
   ]
   )
 
-((lambda [] 'x))
+(display "Hello World\n")
+(defn add [a b] (+ a b))
+(display (add 3 4))

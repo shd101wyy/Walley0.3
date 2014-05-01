@@ -110,9 +110,9 @@ int read_ints (const char* file_name, unsigned short ** instructions, int * len)
 void Walley_Repl(){
     // init walley
     Walley_init();
+    
     Lexer * p;
     Object * o;
-    
     
     Instructions * insts = Insts_init();
     Variable_Table * vt = VT_init();
@@ -197,85 +197,36 @@ void Walley_Run_File(char * file_name){
     
     // init walley
     Walley_init();
-    Environment * env = createEnvironment();
-    Lexer * p = lexer(content);
+    
+    Lexer * p;
     Object * o;
     
-#if WALLEY_DEBUG
-    printf("\n\n@@@ LEXER @@@\n");
-    Lexer_Debug(p);
-#endif
+    Instructions * insts = Insts_init();
+    Variable_Table * vt = VT_init();
     
+    Environment * env = createEnvironment();
+    int run_eval = true;
+    
+    //Environment * env = NULL;
+    //int run_eval = false;
+    
+    Object * v;
+    MacroTable * mt = MT_init();
+    
+    p = lexer(content);
     o = parser(p);
-#if WALLEY_DEBUG
-    printf("\n@@@ PARSER @@@\n");
-    parser_debug(o);
-#endif
     
-    Instructions * insts = Insts_init(); // init insts
-#if WALLEY_DEBUG   
-    Object * v =
-#endif
-    compiler_begin(insts,
-                   o,
-                   VT_init(),
-                   NULL,
-                   NULL,
-                   true,
-                   env,
-                   MT_init());
-    printf("\n\n@@@ INSTRUCTIONS with length %ld \n", insts->length);
-#if WALLEY_DEBUG
-    printf("@@@@ CONSTANTS TABLE \n");
-    printInstructions(CONSTANT_TABLE_INSTRUCTIONS);
-    printf("\n@@@@ Proram \n");
-    printInstructions(insts);
-#endif
-    printf("\n\n");
-
-#if WALLEY_DEBUG
-    printf("\n@@@@ Finish Running VM \n");
-    if (v->type == USER_DEFINED_LAMBDA) {
-        printf("\nUser Defined Lambda\n");
-        printf("env length %d\n", v->data.User_Defined_Lambda.env->length);
-        printf("%d\n", v->data.User_Defined_Lambda.env->frames[0]->length);
-        if (v == v->data.User_Defined_Lambda.env->frames[0]->array[39]) {
-            printf("Equal %d\n", v->use_count);
-            printf("top frame length %d\n", v->data.User_Defined_Lambda.env->frames[1]->length);
-            printf("fuck %ld\n", v->data.User_Defined_Lambda.env->frames[1]->array[0]->data.Integer.v);
-        }
-    }
-    else if (v->type == INTEGER){
-        printf("\nInteger\n");
-        printf("use-count %d\n", v->use_count);
-        number_debug(v);
-    }
-    else if (v->type == DOUBLE){
-        printf("\nDouble\n");
-        printf("use-count %d\n", v->use_count);
-        number_debug(v);
-    }
-    else if (v->type == RATIO){
-        printf("\nRatio\n");
-        printf("use-count %d\n", v->use_count);
-        number_debug(v);
-    }
-    else if (v->type == STRING){
-        printf("\nString\n");
-        printf("use-count %d\n", v->use_count);
-        printf("%s\n", v->data.String.v);
-    }
-    else if (v == GLOBAL_NULL){
-        printf("\n()\n");
-    }
-    else if (v->type == PAIR){
-        printf("\nPair\n");
-        printf("Attention: only print integer double string pair\n");
-        parser_debug(v);
-    }
-#else
-    VM(insts->array, 0, insts->length, env);
-#endif
+    // compile
+    v = compiler_begin(insts,
+                       o,
+                       vt,
+                       NULL,
+                       NULL,
+                       run_eval,
+                       env,
+                       mt);
+    
+    free(content);
     return;
 }
 
