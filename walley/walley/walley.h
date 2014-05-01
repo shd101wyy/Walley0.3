@@ -210,14 +210,14 @@ void Walley_Run_File(char * file_name){
     //Environment * env = NULL;
     //int run_eval = false;
     
-    Object * v;
+    //Object * v;
     MacroTable * mt = MT_init();
     
     p = lexer(content);
     o = parser(p);
     
     // compile
-    v = compiler_begin(insts,
+    /*v = */compiler_begin(insts,
                        o,
                        vt,
                        NULL,
