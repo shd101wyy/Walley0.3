@@ -200,6 +200,7 @@ Object * macro_expansion_replacement(Object * expanded_value,
  */
 Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable * mt, Environment * global_env, Instructions * insts){
     Object * clauses = macro->clauses;
+    Object * expanded_value_after_replacement;
     // macro 最多有 64 个 parameters
     char * var_names[64];
     Object * var_values[64];
@@ -316,7 +317,9 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             
             // 假设运行完了得到了 expanded_value
             // 根据 macro->vt 替换首项
-            return macro_expansion_replacement(expanded_value, macro->vt, true);
+            expanded_value_after_replacement = macro_expansion_replacement(expanded_value, macro->vt, true);
+            Object_free(expanded_value);
+            return expanded_value_after_replacement;
         }
         clauses = cdr(clauses);
         continue;
@@ -359,6 +362,7 @@ void compiler(Instructions * insts,
     Object * v;
     Object * var_name, * var_value;
     Object * test, * conseq, * alter;
+    Object * temp;
     int var_existed/*, var_index*/;
     Variable_Table_Frame * frame;
     switch (l->type) {
@@ -494,14 +498,17 @@ void compiler(Instructions * insts,
                                     mt);
                 }
                 else if (v->type == PAIR){ // pair
-                    return compiler(insts,
-                                    quote_list(v),
+                    temp = quote_list(v);
+                    compiler(insts,
+                                    temp,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
                                     function_for_compilation,
                                     env,
                                     mt);
+                    Object_free(temp);
+                    return;
                 }
                 else if(v->data.String.v[0] != '\''){
                     string = malloc(sizeof(char) * (2 + v->data.String.length + 1));
@@ -538,14 +545,17 @@ void compiler(Instructions * insts,
                                     mt);
                 }
                 else if (v->type == PAIR){ // pair
-                    return compiler(insts,
-                                    quasiquote_list(v),
+                    temp = quasiquote_list(v);
+                    compiler(insts,
+                                    temp,
                                     vt,
                                     tail_call_flag,
                                     parent_func_name,
                                     function_for_compilation,
                                     env,
                                     mt);
+                    Object_free(temp);
+                    return;
                 }
                 else if(v->data.String.v[0] != '\''){
                     
@@ -748,18 +758,20 @@ void compiler(Instructions * insts,
                     assignments = cons(def_array[i],
                                        assignments);
                 }
+                temp =  cons(cons(LAMBDA_STRING,
+                                  cons(GLOBAL_NULL,
+                                       list_append(assignments,
+                                                   cddr(l)))),
+                             GLOBAL_NULL);
                 compiler(insts,
-                         cons(cons(LAMBDA_STRING,
-                                   cons(GLOBAL_NULL,
-                                        list_append(assignments,
-                                                    cddr(l)))),
-                              GLOBAL_NULL),
+                         temp,
                          vt,
                          tail_call_flag,
                          parent_func_name,
                          function_for_compilation,
                          env,
                          mt);
+                Object_free(temp);
                 return;
             }
             else if (str_eq(tag, "lambda")){
