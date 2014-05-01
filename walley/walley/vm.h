@@ -105,6 +105,8 @@ Object *VM(unsigned short * instructions,
                 Constant_Pool[Constant_Pool_Length] = accumulator;
                 Constant_Pool_Length++;
                 pc = pc + 1;
+                
+                free(created_string);
                 continue;
                 break;
             default:

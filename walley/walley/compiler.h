@@ -402,11 +402,11 @@ void compiler(Instructions * insts,
                 v = Object_initString(s, j/*j is length*/);
                 var_value = Table_getval(CONSTANT_TABLE_FOR_COMPILATION,
                                         v);
+                free(s);
                 // check s in CONSTANT_TABLE_FOR_COMPILATION
                 if(var_value!= GLOBAL_NULL){ // already exist
                     Insts_push(insts, CONST_LOAD); // load from table
                     Insts_push(insts, var_value->data.Integer.v);
-                    // printf("%s already exist\n", s);
                     // free 'v'
                     free(v->data.String.v);
                     free(v);
@@ -504,17 +504,23 @@ void compiler(Instructions * insts,
                                     mt);
                 }
                 else if(v->data.String.v[0] != '\''){
-                    
-                    string = string_append("\"", string_append(v->data.String.v, "\""));
-                    return compiler(insts,
-                                    Object_initString(string,
-                                                      strlen(string)),
-                                    vt,
-                                    tail_call_flag,
-                                    parent_func_name,
-                                    function_for_compilation,
-                                    env,
-                                    mt);
+                    string = malloc(sizeof(char) * (2 + v->data.String.length + 1));
+                    strcpy(string, "\"");
+                    strcat(string, v->data.String.v);
+                    strcat(string, "\"");
+                    v = Object_initString(string,
+                                          strlen(string));
+                    compiler(insts,
+                             v,
+                             vt,
+                             tail_call_flag,
+                             parent_func_name,
+                             function_for_compilation,
+                             env,
+                             mt);
+                    Object_free(v);
+                    free(string);
+                    return;
                 }
                 return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation,env,mt);
             }
@@ -543,16 +549,23 @@ void compiler(Instructions * insts,
                 }
                 else if(v->data.String.v[0] != '\''){
                     
-                    string = string_append("\"", string_append(v->data.String.v, "\""));
-                    return compiler(insts,
-                                    Object_initString(string,
-                                                      strlen(string)),
-                                    vt,
-                                    tail_call_flag,
-                                    parent_func_name,
-                                    function_for_compilation,
-                                    env,
-                                    mt);
+                    string = malloc(sizeof(char) * (2 + v->data.String.length + 1));
+                    strcpy(string, "\"");
+                    strcat(string, v->data.String.v);
+                    strcat(string, "\"");
+                    v = Object_initString(string,
+                                          strlen(string));
+                    compiler(insts,
+                            v,
+                            vt,
+                            tail_call_flag,
+                            parent_func_name,
+                            function_for_compilation,
+                            env,
+                            mt);
+                    Object_free(v);
+                    free(string);
+                    return;
                 }
                 return compiler(insts, v, vt, tail_call_flag, parent_func_name, function_for_compilation,env, mt);
             }

@@ -125,9 +125,21 @@ Object * parser(Lexer * le){
  */
         }
         else{
+            temp = NULL;
             // check Math:add like (Math 'add)
             if(l[i][0] == '"' || l[i][0] == ':' || l[i][(int)strlen(l[i])-1] == ':'){
-                if(isInteger(l[i])){
+                if (l[i][0] == ':') { // :a  =>  "a"
+                    t = malloc(sizeof(char) * strlen(l[i]+2)); // " " 0
+                    t[0] = '"';
+                    for (j = 1; j < strlen(l[i]); j++) {
+                        t[j] = l[i][j];
+                    }
+                    t[j] = '"';
+                    t[j+1] = 0;
+                    temp = Object_initString(t, j+1);
+                    free(t);
+                }
+                else if(isInteger(l[i])){
                     if (strlen(l[i]) >= 3 && l[i][0] == '0' && l[i][1] == 'x') { // hex
                         temp = Object_initInteger(strtol(l[i], &t, 16));
                     }

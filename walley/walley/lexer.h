@@ -50,7 +50,7 @@ void Lexer_set(Lexer * l, int index, char * value){
 
 // free lexer
 void Lexer_free(Lexer * l){
-    uint32_t i;
+    unsigned long i;
     for(i = 0; i < l->array_length; i++){
         free(l->string_array[i]);
         l->string_array[i] = NULL;
