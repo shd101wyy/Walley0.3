@@ -315,11 +315,14 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             new_env_top_frame->use_count-=1;
             EF_free(new_env_top_frame);
             
+            //return expanded_value;
+            
             // 假设运行完了得到了 expanded_value
             // 根据 macro->vt 替换首项
             expanded_value_after_replacement = macro_expansion_replacement(expanded_value, macro->vt, true);
             Object_free(expanded_value);
             return expanded_value_after_replacement;
+             
         }
         clauses = cdr(clauses);
         continue;
@@ -904,7 +907,10 @@ void compiler(Instructions * insts,
                     MT_find(mt, car(l)->data.String.v, vt_find);
                     if (vt_find[0] != -1) { // find macro
                         Object * expand = macro_expand_for_compilation(mt->frames[vt_find[0]]->array[vt_find[1]],
-                            cdr(l), mt, env, insts);
+                                                                       cdr(l),
+                                                                       mt,
+                                                                       env,
+                                                                       insts);
                         compiler(insts,
                                         expand,
                                         vt,
@@ -952,6 +958,9 @@ void compiler(Instructions * insts,
                                      function_for_compilation,
                                      env,
                                      mt); // each argument is not tail call
+                            
+                            Object_free(p);
+                            
                             // set tp current frame
                             Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                             Insts_push(insts, 0x0000FFFF & track_index);
