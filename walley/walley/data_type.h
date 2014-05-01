@@ -25,6 +25,7 @@ void Env_free(Environment * env);
 Environment * Env_init_with_size(int size);
 Environment_Frame * EF_init_with_size(int size);
 
+void Object_free(Object * o);
 
 static Object * GLOBAL_NULL;
 static Object * GLOBAL_TRUE;
@@ -408,83 +409,6 @@ Object * table_getKeys(Object * t){
 }
 
 
-
-/*
- free
- */
-void Object_free(Object * o){
-    unsigned long i, length, size;
-    Table_Pair * temp;
-    Table_Pair * p;
-    if(o->use_count == 0){
-        // free
-        switch (o->type){
-            case INTEGER: case DOUBLE: case RATIO:
-                free(o);
-                return;
-            case STRING:
-                if(!o->data.String.in_table){ // can only free string that is not in table
-                    free(o->data.String.v);
-                    free(o);
-                }
-                return;
-            case PAIR:
-                // decrement the use count
-                o->data.Pair.car->use_count-=1;
-                o->data.Pair.cdr->use_count-=1;
-                
-                Object_free(o->data.Pair.car);
-                Object_free(o->data.Pair.cdr);
-                
-                free(o);
-                return;
-            case USER_DEFINED_LAMBDA:
-                // Env_free(o->data.User_Defined_Lambda.env);
-                free(o->data.User_Defined_Lambda.env);
-                free(o);
-                return;
-            case BUILTIN_LAMBDA:
-                return; // cannt free builtin lambda
-            case VECTOR:
-                length = o->data.Vector.length;
-                Object ** v = o->data.Vector.v;
-                for(i = 0; i < length; i++){
-                    v[i]->use_count--; // decrease use count
-                    Object_free(v[i]);
-                }
-                free(o);
-            case TABLE:
-                size = o->data.Table.size;
-                // length = o->data.Table.length;
-                for(i = 0; i < size; i++){
-                    if(o->data.Table.vec[i]){ // exist
-                        p = o->data.Table.vec[i]; // get Table_Pair;
-                        while(p != NULL){
-                            p->key->use_count--;     // decrease use_count
-                            Object_free(p->key);     // free key
-                            p->value->use_count--;   // decrease use_count
-                            Object_free(p->value);   // free value
-                            temp = p;
-                            p = p->next;
-                            free(temp); // free that Table_Pair
-                        }
-                    }
-                }
-                free(o->data.Table.vec); // free table vector
-                free(o);
-                return;
-            case NULL_:
-                return; // cannot free null;
-                // null will be stored in string_table(constant_table) index0;
-            default:
-                printf("ERROR: Object_free invalid data type\n");
-                return;
-        }
-    }
-    //else{
-    //  o->use_count--; // decrease use_count
-    //}
-}
 
 
 #endif

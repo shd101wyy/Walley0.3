@@ -8,7 +8,7 @@
 
 #ifndef walley_vm_h
 #define walley_vm_h
-#include "compiler.h"
+#include "garbage.h"
 
 #define pop_param for(i = 0; i < param_num; i++){\
     temp = current_frame_pointer->array[current_frame_pointer->length - 1];\
@@ -502,6 +502,15 @@ Object *VM(unsigned short * instructions,
                 return GLOBAL_NULL;
         }
     }
+    // free BUILTIN_PRIMITIVE_PROCEDURE_STACK
+    accumulator->use_count+=1;
+    
+    BUILTIN_PRIMITIVE_PROCEDURE_STACK->use_count--;
+    EF_free(BUILTIN_PRIMITIVE_PROCEDURE_STACK);
+    
+    accumulator->use_count-=1;
+    
+
     return accumulator;
 }
 

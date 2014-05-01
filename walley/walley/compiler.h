@@ -802,11 +802,11 @@ void compiler(Instructions * insts,
                 free(vt_->frames[vt_->length - 1]);
                 free(vt_);
                 
+                // free macro table
                 MacroTableFrame * top_frame = mt_->frames[mt_->length - 1];
                 for (i = 0; i < top_frame->length; i++) {
                     Macro_free(top_frame->array[i]);
                 }
-                
                 free(top_frame);
                 free(mt_);
                 

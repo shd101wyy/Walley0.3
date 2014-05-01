@@ -114,6 +114,7 @@ void EF_free(Environment_Frame * ef){
             Object_free(ef->array[i]);
         }
         free(ef->array);
+        free(ef);
     }
     return;
 }

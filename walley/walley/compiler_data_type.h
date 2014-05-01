@@ -327,9 +327,24 @@ Object * Macro_copy_clauses(Object * clauses){
 }*/
 
 void Macro_free(Macro * macro){
+    // free macro name
     free(macro->macro_name);
+    
+    // free clauses
     macro->clauses->use_count--;
     Object_free(macro->clauses);
+    
+    // only need to free top frame
+    Variable_Table_Frame * top_frame = macro->vt->frames[macro->vt->length - 1];
+    int length = top_frame->length;
+    int i = 0;
+    for (i = 0; i < length; i++) {
+        free(top_frame->var_names[i]);
+    }
+    free(top_frame->var_names);
+    free(top_frame);
+    free(macro->vt);
+    
     free(macro);
 }
 /*
