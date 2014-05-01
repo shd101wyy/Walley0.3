@@ -129,7 +129,7 @@ Object * parser(Lexer * le){
             // check Math:add like (Math 'add)
             if(l[i][0] == '"' || l[i][0] == ':' || l[i][(int)strlen(l[i])-1] == ':'){
                 if (l[i][0] == ':') { // :a  =>  "a"
-                    t = malloc(sizeof(char) * strlen(l[i]+2)); // " " 0
+                    t = malloc(sizeof(char) * strlen(l[i])+2); // " " 0
                     t[0] = '"';
                     for (j = 1; j < strlen(l[i]); j++) {
                         t[j] = l[i][j];
