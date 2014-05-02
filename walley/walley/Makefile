@@ -1,4 +1,6 @@
 all:
+	gcc main.c -o walley
+test:
 	gcc main.c -g -Wall -Werror -o walley
 parser:
 	gcc parser.h -g -Wall -Werror -o walley

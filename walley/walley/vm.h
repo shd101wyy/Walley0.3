@@ -453,7 +453,8 @@ Object *VM(unsigned short * instructions,
                         }
                         if(required_variadic_place != -1){
                             v = GLOBAL_NULL;
-                            for(int m = current_frame_pointer->length - 1; m >= required_variadic_place; m=m-1){
+                            int m; // I used to use i, but it somehow will cause problem... showed 64 bit integer 18...
+                            for(m = current_frame_pointer->length - 1; m >= required_variadic_place; m=m-1){
                                 current_frame_pointer->array[m]->use_count--; // 因为 cons的时候会再增加
                                 v = cons(current_frame_pointer->array[m], v);
                                 //current_frame_pointer->array[i] = NULL; // clear
