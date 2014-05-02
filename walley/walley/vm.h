@@ -129,9 +129,11 @@ Object *VM(unsigned short * instructions,
             case SET:
                 frame_index = 0x0FFF & inst;
                 value_index = instructions[pc + 1];
-
-                v = env->frames[frame_index]->array[value_index];
-                if(v){ //因为 v 可能不存在, 所以得检查
+                if ( value_index >= env->frames[frame_index]->length) {
+                    // value doesn't exist so doesn't need to free
+                }
+                else{ // free the existed value
+                    v = env->frames[frame_index]->array[value_index];
                     v->use_count--; // decrement use_count
                     Object_free(v);
                 }

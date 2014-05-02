@@ -187,8 +187,8 @@ t1397283512
 s6000
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o
-t1398913753
-s196208
+t1399005530
+s196136
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/walley.LinkFileList
 c0000000053618D89000000000000008E
@@ -196,11 +196,11 @@ t1398902153
 s142
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley
-t1398913753
+t1399005530
 s63480
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM
-t1398912750
+t1399005121
 s102
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/builtin_procedures.h
@@ -209,8 +209,8 @@ t1398836788
 s26467
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/compiler.h
-c000000005361BAA1000000000000B0CE
-t1398913697
+c00000000536320EA000000000000B0CE
+t1399005418
 s45262
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/compiler_data_type.h
@@ -249,8 +249,8 @@ t1398908396
 s1496
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h
-c000000005361AB990000000000002448
-t1398909849
+c000000005361BD0B0000000000002448
+t1398914315
 s9288
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/ratio.h
@@ -264,9 +264,9 @@ t1398902917
 s9167
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/vm.h
-c000000005361A8B50000000000006528
-t1398909109
-s25896
+c0000000053631F5100000000000065B5
+t1399005009
+s26037
 
 N/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/walley.h
 c000000005361AC80000000000000165E
@@ -278,11 +278,11 @@ r0
 
 CCheck dependencies
 r0
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies18"Check dependencies6f47ec58f211b941^7ff9f058f211b941^-473"warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h' of type sourcecode.c.h for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h' of type sourcecode.c.h for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h' of type sourcecode.c.h for architecture x86_643(21%IDEActivityLogMessage2@155"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h' of type sourcecode.c.h for architecture x86_64-420606552#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@156"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h' of type sourcecode.c.h for architecture x86_64-420606552#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@159"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h' of type sourcecode.c.h for architecture x86_64-420606552#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--0#1#1#--18"Check dependencies36"5E3A4776-78B7-48FF-A756-B6511091DE06-
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies18"Check dependenciesaa7c83d95813b941^28b987d95813b941^-473"warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h' of type sourcecode.c.h for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h' of type sourcecode.c.h for architecture x86_64warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h' of type sourcecode.c.h for architecture x86_643(21%IDEActivityLogMessage2@155"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/lexer.h' of type sourcecode.c.h for architecture x86_64-420698329#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@156"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/parser.h' of type sourcecode.c.h for architecture x86_64-420698329#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--2@159"Warning: no rule to process file '/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h' of type sourcecode.c.h for architecture x86_64-420698329#18446744073709551615#0#-1#27"com.apple.dt.IDE.LogMessage-27"Dependency Analysis Warning--0#1#1#--18"Check dependencies36"1B0B55DD-2288-436D-97B4-7E07128AE0E4-
 
 CCompileC Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler
-s420606552.941963
-e420606553.637974
+s420698329.530861
+e420698330.195443
 r1
 xCompileC
 xBuild/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o
@@ -305,22 +305,22 @@ d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/to_string.h
 d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/ratio.h
 d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/data_type.h
 d/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/debug.h
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection80"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c165"CompileC Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compilerd732f158f211b941^5c54a359f211b941^---0#0#1#-19%DVTDocumentLocation2@115"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/main.c0000000000000000^2561"CompileC Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -fmodules -fmodules-cache-path=/Users/wangyiyi/Library/Developer/Xcode/DerivedData/ModuleCache -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -fvisibility=hidden -Wno-sign-conversion -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/walley.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c -o /Users/wangyiyi/百度36"CE63149B-D3AF-498C-BF5C-1E59DD37F832-
-bA2C0A317-48B2-46B5-A9DF-108B8EFFA0EC
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection80"Compile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c165"CompileC Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler66f487d95813b941^a60a32da5813b941^---0#0#1#-19%DVTDocumentLocation2@115"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/walley/main.c0000000000000000^2561"CompileC Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.o walley/main.c normal x86_64 c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export LANG=en_US.US-ASCII    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x c -arch x86_64 -fmessage-length=0 -fdiagnostics-show-note-include-stack -fmacro-backtrace-limit=0 -std=gnu99 -fmodules -fmodules-cache-path=/Users/wangyiyi/Library/Developer/Xcode/DerivedData/ModuleCache -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Werror=return-type -Werror=deprecated-objc-isa-usage -Werror=objc-root-class -Wno-missing-braces -Wparentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wconditional-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wconstant-conversion -Wint-conversion -Wbool-conversion -Wenum-conversion -Wshorten-64-to-32 -Wpointer-sign -Wno-newline-eof -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -mmacosx-version-min=10.9 -g -fvisibility=hidden -Wno-sign-conversion -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/walley.hmap -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/DerivedSources/x86_64 -I/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/DerivedSources -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -MMD -MT dependencies -MF /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.d --serialize-diagnostics /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/main.dia -c /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/main.c -o /Users/wangyiyi/百度36"76D40D07-37AE-4BBC-A09C-B854B078B275-
+b18861CA2-0B5A-4251-B884-DA03466CA50E
 
 CGenerateDSYMFile /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley
-s420606553.660586
-e420606553.697407
+s420698330.214289
+e420698330.257920
 r1
 xGenerateDSYMFile
 x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM
 x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection102"Generate /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM81"GenerateDSYMFile Build/Products/Release/walley.dSYM Build/Products/Release/walley5226a959f211b941^2f8ab259f211b941^---0#0#1#-19%DVTDocumentLocation2@137"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM/0000000000000000^434"GenerateDSYMFile Build/Products/Release/walley.dSYM Build/Products/Release/walley    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley -o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM36"C497B0F3-C9EF-405E-89C7-9DF8AE21A7F0-
-bA2C0A317-48B2-46B5-A9DF-108B8EFFA0EC
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection102"Generate /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM81"GenerateDSYMFile Build/Products/Release/walley.dSYM Build/Products/Release/walley9be536da5813b941^c40742da5813b941^---0#0#1#-19%DVTDocumentLocation2@137"file:///Users/wangyiyi/%E7%99%BE%E5%BA%A6%E4%BA%91%E5%90%8C%E6%AD%A5%E7%9B%98/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM/0000000000000000^434"GenerateDSYMFile Build/Products/Release/walley.dSYM Build/Products/Release/walley    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley -o /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley.dSYM36"C483BFF7-D58C-4924-A0D4-54FCFA9E5B67-
+b18861CA2-0B5A-4251-B884-DA03466CA50E
 
 CLd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley normal x86_64
-s420606553.639228
-e420606553.659980
+s420698330.196675
+e420698330.213656
 r1
 xLd
 x/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley
@@ -360,6 +360,6 @@ d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/
 d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunc.dylib
 d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libunwind.dylib
 d/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/lib/system/libxpc.dylib
-lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection93"Link /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley46"Ld Build/Products/Release/walley normal x86_647db1a359f211b941^0af5a859f211b941^---0#0#1#--1061"Ld Build/Products/Release/walley normal x86_64    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export MACOSX_DEPLOYMENT_TARGET=10.9    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -L/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -filelist /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/walley.LinkFileList -mmacosx-version-min=10.9 -Xlinker -dependency_info -Xlinker /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/walley_dependency_info.dat -o /Users/wangyiyi/36"BC063C19-0C1E-408C-92EE-63FA1F156000-
-bA2C0A317-48B2-46B5-A9DF-108B8EFFA0EC
+lSLF06#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection93"Link /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release/walley46"Ld Build/Products/Release/walley normal x86_64176532da5813b941^9ab336da5813b941^---0#0#1#--1061"Ld Build/Products/Release/walley normal x86_64    cd /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley    export MACOSX_DEPLOYMENT_TARGET=10.9    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk -L/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release -F/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Products/Release -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include -filelist /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/walley.LinkFileList -mmacosx-version-min=10.9 -Xlinker -dependency_info -Xlinker /Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/Build/Intermediates/walley.build/Release/walley.build/Objects-normal/x86_64/walley_dependency_info.dat -o /Users/wangyiyi/36"5CC10779-DAB0-4133-B370-B05A08380A1A-
+b18861CA2-0B5A-4251-B884-DA03466CA50E
 
