@@ -38,7 +38,7 @@ Object *builtin_add(Object ** params, int param_num, int start_index){
                 case INTEGER:
                     return Object_initInteger(p1->data.Integer.v + p2->data.Integer.v);
                 case DOUBLE:
-                    return Object_initDouble(p1->data.Integer.v + p2->data.Integer.v);
+                    return Object_initDouble(p1->data.Integer.v + p2->data.Double.v);
                 case RATIO:
                     return add_rat(p1->data.Integer.v, 1,
                                     p2->data.Ratio.numer, p2->data.Ratio.denom);
@@ -86,7 +86,7 @@ Object *builtin_sub(Object ** params, int param_num, int start_index){
                 case INTEGER:
                     return Object_initInteger(p1->data.Integer.v - p2->data.Integer.v);
                 case DOUBLE:
-                    return Object_initDouble(p1->data.Integer.v - p2->data.Integer.v);
+                    return Object_initDouble(p1->data.Integer.v - p2->data.Double.v);
                 case RATIO:
                     return sub_rat(p1->data.Integer.v, 1,
                                    p2->data.Ratio.numer, p2->data.Ratio.denom);
@@ -134,7 +134,7 @@ Object *builtin_mul(Object ** params, int param_num, int start_index){
                 case INTEGER:
                     return Object_initInteger(p1->data.Integer.v * p2->data.Integer.v);
                 case DOUBLE:
-                    return Object_initDouble(p1->data.Integer.v * p2->data.Integer.v);
+                    return Object_initDouble(p1->data.Integer.v * p2->data.Double.v);
                 case RATIO:
                     return mul_rat(p1->data.Integer.v, 1,
                                    p2->data.Ratio.numer, p2->data.Ratio.denom);
@@ -182,7 +182,7 @@ Object *builtin_div(Object ** params, int param_num, int start_index){
                 case INTEGER:
                     return div_rat(p1->data.Integer.v, 1, p2->data.Integer.v, 1); // only this one use div_rat
                 case DOUBLE:
-                    return Object_initDouble(p1->data.Integer.v / p2->data.Integer.v);
+                    return Object_initDouble(p1->data.Integer.v / p2->data.Double.v);
                 case RATIO:
                     return div_rat(p1->data.Integer.v, 1,
                                    p2->data.Ratio.numer, p2->data.Ratio.denom);
