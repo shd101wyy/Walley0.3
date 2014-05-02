@@ -100,6 +100,7 @@ eg:
 MAKELAMBDA 0011 000000      00000            0     ;; make lambda
   	    1- op param-num variadic-place has-variadic : 4 6 5 1
 				2- next-pc. jump over the lambda body 跳过内容
+				3- frame-length.  the length of frame that need to be created...
 ----------------------------------------------------------------
 RETURN 0100 000000000000				       ;; return accumulator
   	     op             		               ;; get 1 => last-env

@@ -118,7 +118,12 @@ Object *VM(unsigned short * instructions,
         }
     }
     CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX = CONSTANT_TABLE_INSTRUCTIONS->length; // update track index for constant table instructions.
-    
+    /*
+    for (i = start_pc; i < end_pc; i++) {
+        printf("%x ", instructions[i]);
+    }
+    printf("\n");
+    */
     pc = start_pc;
     while(pc != end_pc){
         // printf("%lu, %x \n", pc, instructions[pc]);
@@ -202,23 +207,24 @@ Object *VM(unsigned short * instructions,
             case MAKELAMBDA: // make lambda
                 param_num = (0x0FC0 & inst) >> 6;
                 variadic_place = (0x0001 & inst) ? ((0x003E & inst) >> 1) : -1;
-                start_pc = pc + 2;
+                start_pc = pc + 3;
                 jump_steps = instructions[pc + 1];
                 
                 // free accumulator is necessary
                 Object_free(accumulator);
                 
-                accumulator = Object_initUserDefinedLambda(param_num, variadic_place, start_pc, copyEnvironment(env));
-                pc = pc + jump_steps + 1;
+                accumulator = Object_initUserDefinedLambda(param_num, variadic_place, start_pc, copyEnvironment(env), (unsigned char)instructions[pc + 2]);
+                pc = pc + jump_steps;
                 continue;
             case RETURN:
-                
+                accumulator->use_count++; // because accumulator may exist on frame
                 // free top frame
                 temp_frame = env->frames[env->length - 1]; // get top frame
                 temp_frame->use_count--;
                 EF_free(temp_frame);
                 free(env->frames);
                 free(env);
+                accumulator->use_count--; // restore accumulator use count
                 
                 
                 pc = continuation_return_pc[continuation_return_pc_length - 1]; // get old pc
@@ -231,7 +237,7 @@ Object *VM(unsigned short * instructions,
                 switch (accumulator->type){
                     case USER_DEFINED_LAMBDA: // user defined function
                         // create new frame with length 64
-                        current_frame_pointer = EF_init_with_size(64);
+                        current_frame_pointer = EF_init_with_size(accumulator->data.User_Defined_Lambda.frame_size);
                         
                         // save to frames_list
                         frames_list[frames_list_length] = current_frame_pointer;

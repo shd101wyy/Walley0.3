@@ -100,6 +100,7 @@ struct Object {
             char variadic_place;
             unsigned long start_pc;
             Environment * env;
+            unsigned char frame_size;
         } User_Defined_Lambda;
         struct {
             Object ** v;   // array of pointers
@@ -212,13 +213,14 @@ Object * Object_initNull(){
 /*
  initialize user defined lambda
  */
-Object * Object_initUserDefinedLambda(char param_num, char variadic_place, unsigned long start_pc, Environment * env){
+Object * Object_initUserDefinedLambda(char param_num, char variadic_place, unsigned long start_pc, Environment * env, unsigned char frame_length){
     Object * o = allocateObject();
     o->type = USER_DEFINED_LAMBDA;
     o->data.User_Defined_Lambda.param_num = param_num;
     o->data.User_Defined_Lambda.variadic_place = variadic_place;
     o->data.User_Defined_Lambda.start_pc = start_pc;
     o->data.User_Defined_Lambda.env = env;
+    o->data.User_Defined_Lambda.frame_size = frame_length;
     return o;
 }
 Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object **, int, int)){

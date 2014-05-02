@@ -820,6 +820,7 @@ void compiler(Instructions * insts,
                            | (variadic_place == -1 ? 0 : 1));
                 index1 = insts->length;
                 Insts_push(insts, 0x0000); // steps that needed to jump over lambda
+                Insts_push(insts, 0x0000); // used to save frame-length
                 start_pc = insts->length; // get start_pc
                 
                 // set function_for_compilation
@@ -828,6 +829,7 @@ void compiler(Instructions * insts,
                 function_->param_num = counter;
                 function_->variadic_place = variadic_place;
                 function_->vt = vt_;
+                function_->is_tail_call = 0; // for tail call
                 
                 // compile body
                 // 关于这里 compiler_begin 不用 free function_里面的vt_
@@ -843,14 +845,17 @@ void compiler(Instructions * insts,
                 // return
                 Insts_push(insts, RETURN << 12);
                 index2 = insts->length;
-                insts->array[index1] = index2 - index1; // set jump steps
-                
+                insts->array[index1] = index2 - index1 + 1; // set jump steps
+                insts->array[index1 + 1] = vt_->frames[vt_->length - 1] -> length; // save frame length
                 
                 // 这里出错了, 因该只用free 最top的
                 // VT_free(vt_); // free vt_;
                 // free(vt_);
                 for (i = 0; i < vt_->frames[vt_->length-1]->length; i++) {
-                    free(vt_->frames[vt_->length - 1]->var_names[i]);
+                    // because I might set it to NULL when doing tail call
+                    if (vt_->frames[vt_->length - 1]->var_names[i] != NULL) {
+                        free(vt_->frames[vt_->length - 1]->var_names[i]);
+                    }
                 }
                 free(vt_->frames[vt_->length - 1]->var_names);
                 free(vt_->frames[vt_->length - 1]);
@@ -985,6 +990,25 @@ void compiler(Instructions * insts,
                         }
                         track_index++;
                     }
+                    // set tail_call flag
+                    if (!(function_for_compilation->is_tail_call)) {
+                        // change vt length
+                        for (i = 0; i < count_params; i++) {
+                            VT_push(function_for_compilation->vt,
+                                    function_for_compilation->vt->length - 1,
+                                    NULL);
+                        }
+                        if (function_for_compilation->variadic_place == -1 && i < function_for_compilation->param_num) {
+                            for (; i < function_for_compilation->param_num; i++) {
+                                VT_push(function_for_compilation->vt,
+                                        function_for_compilation->vt->length - 1,
+                                        NULL);
+                            }
+                        }
+                        function_for_compilation->is_tail_call = 1;
+                    }
+                    
+                    
                     // move parameters
                     for (i = 0; i < count_params; i++) {
                         // get value

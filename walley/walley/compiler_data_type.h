@@ -98,6 +98,11 @@ Variable_Table_Frame * VTF_init(unsigned int size){
     push var_name to vtf
  */
 void VTF_push(Variable_Table_Frame * vtf, char * value){
+    if (value == NULL) {
+        vtf->var_names[vtf->length] = NULL;
+        vtf->length++;
+        return;
+    }
     // printf("VTF_push %s %ld\n", value, strlen(value));
     char * s = (char*)malloc(sizeof(char)* (strlen(value)+ 1));
     strcpy(s, value);
@@ -271,6 +276,7 @@ typedef struct Lambda_for_Compilation{
     unsigned int variadic_place;
     unsigned long start_pc;
     Variable_Table * vt;
+    int is_tail_call : 1;
 }Lambda_for_Compilation;
 
 void LFC_free(Lambda_for_Compilation * func){
