@@ -208,8 +208,9 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 38, &builtin_ratio_type);
     EF_set_builtin_lambda(frame, 39, &builtin_numer);
     EF_set_builtin_lambda(frame, 40, &builtin_denom);
-    
-    frame->length = 41; // set length
+    EF_set_builtin_lambda(frame, 41, &builtin_gensym);
+
+    frame->length = 42; // set length
     return frame;
 }
 /*

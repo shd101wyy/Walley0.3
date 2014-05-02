@@ -878,6 +878,9 @@ void compiler(Instructions * insts,
                 
                 return;
             }
+            /*
+               (defmacro macro_name [var0 pattern0] [var1 pattern1] ...)
+             */
             else if (str_eq(tag, "defmacro")){
                 var_name = cadr(l);
                 Object * clauses = cddr(l);
@@ -892,8 +895,8 @@ void compiler(Instructions * insts,
                         
                         clauses->use_count+=1; // 必须+1
                         frame->array[i] = Macro_init(var_name->data.String.v, (clauses), VT_copy(vt));
+                        return;
                     }
-                    return;
                 }
                 // is not defined
                 // resize if size is not enough
@@ -904,7 +907,7 @@ void compiler(Instructions * insts,
                 
                 clauses->use_count+=1; // 必须+1
                 frame->array[frame->length] = Macro_init(var_name->data.String.v, (clauses), VT_copy(vt));
-                frame->length++;
+                frame->length+=1;
                 return;
             }
             // call function

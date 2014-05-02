@@ -198,6 +198,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "numer");
 
     VT_push(vt, 0, "denom");
+    VT_push(vt, 0, "gensym");
 
     return vt;
 }

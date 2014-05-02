@@ -3,6 +3,7 @@
 #include "to_string.h"
 
 
+static int GEN_SYM_COUNT = 0;
 /*
  builtin lambdas
  */
@@ -685,6 +686,14 @@ Object * builtin_denom(Object ** params, int param_num, int start_index){
             printf("ERROR: Function denom invalid parameter");
             return GLOBAL_NULL;
     }
+}
+
+// 41 gensym
+Object * builtin_gensym(Object ** params, int param_num, int start_index){
+    char buffer[48];
+    sprintf(buffer, "__toy__%d", GEN_SYM_COUNT);
+    GEN_SYM_COUNT+=6; // I like 6
+    return Object_initString(buffer, strlen(buffer));
 }
 
 

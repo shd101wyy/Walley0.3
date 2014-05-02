@@ -123,6 +123,7 @@ Object *VM(unsigned short * instructions,
         printf("%x ", instructions[i]);
     }
     printf("\n");
+
     */
     pc = start_pc;
     while(pc != end_pc){
