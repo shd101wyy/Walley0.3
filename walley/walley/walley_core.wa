@@ -1,0 +1,78 @@
+;; walley_core.wa 
+;; walley language 
+;; created by Yiyi Wang 
+;; Copyright (c) Yiyi Wang. All rights reserved.
+
+;; append and reverse functions.
+;; which will be used for macro expansion
+(def append 
+     (lambda (a b)
+       (if (null? a)
+	   b
+	 (cons (car a)
+	       (append (cdr a)
+		       b)))))
+(def reverse 
+     (def reverse_iter 
+     	  (lambda (a result)
+	  	  (if (null? a)
+                    result
+                    (reverse_iter (cdr a)
+                                  (cons (car a)
+                                        result)))))
+     (reverse_iter a ()))
+
+;; list macro
+(defmacro list 
+  [() ()]
+  [(a) `(cons ~a ())]
+  [(a . b) `(cons ~a (list ~@b))])
+
+
+(defmacro defn
+  [(var_name args . body)
+  `(def ~var_name (lambda ~args ~@body))
+  ]
+  )
+
+(defmacro defm 
+	  [(macro-name args pattern)
+	   `(defmacro ~macro-name (~args ~pattern))])
+
+
+;; logic > macro
+(defm > [a b] `(< ~b ~a))
+(defm >= [a b] `(<= ~b ~a))
+
+
+;(display "TEST +\n")
+;; + - * / lambda extension
+;; where ! means doesn't replace to lambda
+;; so (!+ ~@b) means still use macro
+(defmacro +
+  [() 0]
+  [(a) a] 
+  [(a b) `(+ ~a ~b)]
+  [(a . b) `(+ ~a (!+ ~@b))])
+
+(defmacro -
+  [(a) `(- 0 ~a)]
+  [(a . b) `(- ~a (+ ~@b))])
+
+(defmacro * 
+  [() 1]
+  [(a) a]
+  [(a . b) `(* ~a (!* ~@b))])
+
+(defmacro / 
+  [(a) `(/ 1 a)]
+  [(a . b) `(/ ~a (* ~@b))])
+
+;; str
+(defn str [. b]
+  (defn str-iter [b]
+    (if (null? b)
+    ""
+    (string-append (car b)
+                   (str-iter (cdr b)))))
+  (str-iter b))

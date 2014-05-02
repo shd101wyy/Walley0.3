@@ -12,6 +12,5 @@
   ]
   )
 
-(display "Hello World\n")
-(defn add [a b] (+ a b))
-(display (add 3 4))
+(def f (lambda [n] (if (= n 0) 1 (begin (display "Hi\n") (f (- n 1))))))
+(f 1000000)

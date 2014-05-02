@@ -239,7 +239,7 @@ Object *VM(unsigned short * instructions,
                     case USER_DEFINED_LAMBDA: // user defined function
                         // create new frame with length 64
                         current_frame_pointer = EF_init_with_size(accumulator->data.User_Defined_Lambda.frame_size);
-                        
+
                         // save to frames_list
                         frames_list[frames_list_length] = current_frame_pointer;
                         frames_list_length+=1;
@@ -453,10 +453,10 @@ Object *VM(unsigned short * instructions,
                         }
                         if(required_variadic_place != -1){
                             v = GLOBAL_NULL;
-                            for(i = (current_frame_pointer->length) - 1; i >= required_variadic_place; i--){
-                                current_frame_pointer->array[i]->use_count--; // 因为 cons的时候会再增加
-                                v = cons(current_frame_pointer->array[i], v);
-                                current_frame_pointer->array[i] = NULL; // clear
+                            for(int m = current_frame_pointer->length - 1; m >= required_variadic_place; m=m-1){
+                                current_frame_pointer->array[m]->use_count--; // 因为 cons的时候会再增加
+                                v = cons(current_frame_pointer->array[m], v);
+                                //current_frame_pointer->array[i] = NULL; // clear
                             }
                             current_frame_pointer->array[required_variadic_place] = v;
                             v->use_count++;

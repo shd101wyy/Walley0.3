@@ -306,7 +306,8 @@ Object *builtin_num_equal(Object ** params, int param_num, int start_index){
                 case RATIO:
                     return (p1->data.Integer.v == p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
                 default:
-                    printf("ERROR: = invalid data type1");
+                    printf("ERROR: = invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;
             }
             break;
@@ -319,7 +320,8 @@ Object *builtin_num_equal(Object ** params, int param_num, int start_index){
                     return (p1->data.Double.v == p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
 
                 default:
-                    printf("ERROR: = invalid data type2");
+                    printf("ERROR: = invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;;
             }
             break;
@@ -332,12 +334,14 @@ Object *builtin_num_equal(Object ** params, int param_num, int start_index){
                 case RATIO:
                     return (p1->data.Ratio.numer/p1->data.Ratio.denom == p2->data.Ratio.numer/p2->data.Ratio.denom)? GLOBAL_TRUE : GLOBAL_NULL;
                 default:
-                    printf("ERROR: = invalid data type3");
+                    printf("ERROR: = invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;
             }
             break;
         default:
-            printf("ERROR: = invalid data type4");
+            printf("ERROR: = invalid data type\n");
+            printf("     :%s\n", to_string(p1));
             return GLOBAL_NULL;
     }
 }
@@ -355,7 +359,8 @@ Object *builtin_num_lt(Object ** params, int param_num, int start_index){
                 case RATIO:
                     return (p1->data.Integer.v < p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
                 default:
-                    printf("ERROR: = invalid data type");
+                    printf("ERROR: < invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;
             }
             break;
@@ -368,7 +373,8 @@ Object *builtin_num_lt(Object ** params, int param_num, int start_index){
                     return (p1->data.Double.v < p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
                     
                 default:
-                    printf("ERROR: = invalid data type");
+                    printf("ERROR: < invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;;
             }
             break;
@@ -381,12 +387,14 @@ Object *builtin_num_lt(Object ** params, int param_num, int start_index){
                 case RATIO:
                     return (p1->data.Ratio.numer/p1->data.Ratio.denom < p2->data.Ratio.numer/p2->data.Ratio.denom)? GLOBAL_TRUE : GLOBAL_NULL;
                 default:
-                    printf("ERROR: = invalid data type");
+                    printf("ERROR: < invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;
             }
             break;
         default:
-            printf("ERROR: = invalid data type");
+            printf("ERROR: < invalid data type\n");
+            printf("     :%s\n", to_string(p1));
             return GLOBAL_NULL;
     }
 }
@@ -404,7 +412,8 @@ Object *builtin_num_le(Object ** params, int param_num, int start_index){
                 case RATIO:
                     return (p1->data.Integer.v <= p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
                 default:
-                    printf("ERROR: = invalid data type");
+                    printf("ERROR: <= invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;
             }
             break;
@@ -417,7 +426,8 @@ Object *builtin_num_le(Object ** params, int param_num, int start_index){
                     return (p1->data.Double.v <= p2->data.Ratio.numer/p2->data.Ratio.denom) ? GLOBAL_TRUE : GLOBAL_NULL;
                     
                 default:
-                    printf("ERROR: = invalid data type");
+                    printf("ERROR: <= invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;;
             }
             break;
@@ -430,12 +440,14 @@ Object *builtin_num_le(Object ** params, int param_num, int start_index){
                 case RATIO:
                     return (p1->data.Ratio.numer/p1->data.Ratio.denom <= p2->data.Ratio.numer/p2->data.Ratio.denom)? GLOBAL_TRUE : GLOBAL_NULL;
                 default:
-                    printf("ERROR: = invalid data type");
+                    printf("ERROR: <= invalid data type\n");
+                    printf("     :%s\n", to_string(p2));
                     return GLOBAL_NULL;
             }
             break;
         default:
-            printf("ERROR: = invalid data type");
+            printf("ERROR: <= invalid data type\n");
+            printf("     :%s\n", to_string(p1));
             return GLOBAL_NULL;
     }
 }
@@ -510,12 +522,14 @@ Object *builtin_string_length(Object ** params, int param_num, int start_index){
 Object *builtin_string_append(Object ** params, int param_num, int start_index){
     Object * s1 = params[start_index];
     Object * s2 = params[start_index+1];
-    unsigned long sum_length = string_Length(s1) + string_Length(s2);
-    char *out = (char*)malloc(sizeof(char)*(sum_length));
-    strcat(out, s1->data.String.v);
-    strcat(out, s2->data.String.v);
-    out[sum_length] = 0;
-    return Object_initString(out, sum_length);
+    unsigned long sum_length = string_Length(s1) + string_Length(s2) + 1;
+    char *out_ = (char*)malloc(sizeof(char)*(sum_length));
+    strcpy(out_, s1->data.String.v);
+    strcat(out_, s2->data.String.v);
+    //out[sum_length] = 0;
+    s1 = Object_initString(out_, sum_length);
+    free(out_);
+    return s1;
 }
 // 26 table
 // (table 'a 12 'b 16)

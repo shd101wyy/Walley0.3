@@ -165,6 +165,13 @@ Object * macro_expansion_replacement(Object * expanded_value,
                 ||str_eq(v->data.String.v, "quasiquote")) {// is quote function, so no replacement
                 return expanded_value;
             }
+            if (v->data.String.v[0] == '!') { // means not replace
+                char buffer[v->data.String.length];
+                strcpy(buffer, &v->data.String.v[1]);
+                // printf("BUFFER! %s\n", buffer);
+                return cons(Object_initString(buffer, strlen(buffer)),
+                            macro_expansion_replacement(cdr(expanded_value), vt, false));
+            }
             int find[2];
             VT_find(vt, v->data.String.v, find);
             if (find[0] != -1) { // find
@@ -178,8 +185,16 @@ Object * macro_expansion_replacement(Object * expanded_value,
             else
                 return cons(v, macro_expansion_replacement(cdr(expanded_value), vt, false));
         }
-        else
+        else if(v->type == STRING ||
+                v->type == INTEGER ||
+                v->type == DOUBLE ||
+                v->type == NULL_)
             return cons(v, macro_expansion_replacement(cdr(expanded_value), vt, false));
+        else{
+            printf("ERROR: Macro expansion failed. Invalid Data Type\n");
+            printf("     :%s\n", to_string(v));
+            return GLOBAL_NULL;
+        }
     }
 }
 
@@ -213,7 +228,7 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
                             var_names,
                             var_values,
                             0);
-        if (match) {
+        if (match || (exps == GLOBAL_NULL && car(car(clauses)) == GLOBAL_NULL)) {
 #if MACRO_DEBUG
             printf("Macro Match\n");
             printf("Match length %d\n", match);
@@ -261,11 +276,7 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
 #if MACRO_DEBUG
                 printf("\nVar-Name  :%s\n", var_names[i]);
                 printf("Var-Value :\n");
-                if (var_values[i]->type == STRING) {
-                    printf("STRING: %s\n", var_values[i]->data.String.v);
-                }
-                else
-                    parser_debug(var_values[i]);
+                printf("%s\n", to_string(var_values[i]));
 #endif
                 
             }
@@ -274,16 +285,23 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             start_pc = insts->start_pc;
             insts_length = insts->length;
           
+          
             // compile and run
-            expanded_value = compiler_begin(insts,
+            compiler_begin(insts,
                           cons(cadr(car(clauses)), GLOBAL_NULL)
                           ,
                           new_vt,
                           NULL,
                           NULL,
-                          true,
+                          false,
                           new_env,
                           mt);
+            
+            // cannot run in compiler_begin,
+            // because the default insts->start_pc is wrong
+            // should use insts_length as start_pc;
+            expanded_value = VM(insts->array, insts_length, insts->length, new_env);
+            
            
 #if MACRO_DEBUG
             printf("\n");
@@ -293,7 +311,6 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             parser_debug(expanded_value);
             //exit(0);
 #endif
-
             // restore start-pc and length
             insts->start_pc = start_pc;
             insts->length = insts_length;
@@ -327,7 +344,7 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
         clauses = cdr(clauses);
         continue;
     }
-    printf("ERROR: Macro: %s expansion failed", macro->macro_name);
+    printf("ERROR: Macro: %s expansion failed\n", macro->macro_name);
     return GLOBAL_NULL;
 }
 
@@ -846,7 +863,14 @@ void compiler(Instructions * insts,
                 Insts_push(insts, RETURN << 12);
                 index2 = insts->length;
                 insts->array[index1] = index2 - index1 + 1; // set jump steps
-                insts->array[index1 + 1] = vt_->frames[vt_->length - 1] -> length; // save frame length
+                
+                // save frame length
+                if (variadic_place != -1) { // variadic
+                    insts->array[index1 + 1] = 64; // 64 maximum
+                }
+                else{
+                    insts->array[index1 + 1] = vt_->frames[vt_->length - 1] -> length; // save frame length
+                }
                 
                 // 这里出错了, 因该只用free 最top的
                 // VT_free(vt_); // free vt_;
@@ -1008,7 +1032,6 @@ void compiler(Instructions * insts,
                                         NULL);
                             }
                         }
-                        function_for_compilation->is_tail_call = 1;
                     }
                     
                     
