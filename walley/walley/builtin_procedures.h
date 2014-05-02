@@ -710,5 +710,16 @@ Object * builtin_gensym(Object ** params, int param_num, int start_index){
     return Object_initString(buffer, strlen(buffer));
 }
 
+// 42 table-add-tag
+Object * builtin_table_add_tag(Object ** params, int param_num, int start_index){
+    params[start_index]->data.Table.tag = params[start_index+1];
+    params[start_index + 1]->use_count += 1;
+    return GLOBAL_NULL;
+}
+
+// 43 table-tag
+Object * builtin_table_tag(Object ** params, int param_num, int start_index){
+    return params[start_index]->data.Table.tag;
+}
 
 #endif

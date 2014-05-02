@@ -86,6 +86,7 @@ struct Object {
             unsigned long size;
             unsigned long length;
             Table_Pair **vec; // array to save Table_Pairs
+            Object * tag;
         } Table;
         struct {
             char * v;
@@ -257,6 +258,7 @@ Object * Object_initTable(unsigned int size){
     o->data.Table.length = 0;
     o->data.Table.size = size;
     o->data.Table.vec = calloc(size, sizeof(Table_Pair*));
+    o->data.Table.tag = GLOBAL_NULL;
     o->use_count = 0;
     return o;
 }

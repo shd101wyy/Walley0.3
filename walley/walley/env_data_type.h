@@ -209,8 +209,10 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 39, &builtin_numer);
     EF_set_builtin_lambda(frame, 40, &builtin_denom);
     EF_set_builtin_lambda(frame, 41, &builtin_gensym);
+    EF_set_builtin_lambda(frame, 42, &builtin_table_add_tag);
+    EF_set_builtin_lambda(frame, 43, &builtin_table_tag);
 
-    frame->length = 42; // set length
+    frame->length = 44; // set length
     return frame;
 }
 /*
