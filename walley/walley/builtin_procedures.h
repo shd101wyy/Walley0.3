@@ -255,12 +255,12 @@ Object *builtin_vector_length(Object ** params, int param_num, int start_index){
 }
 // 10 vector-push!
 Object *builtin_vector_push(Object ** params, int param_num, int start_index){
-    unsigned long i = 0;
+    long i = 0;
     Object * vec = params[start_index];
     Object * temp;
     unsigned long length = vector_Length(vec);
     unsigned long size = vector_Size(vec);
-    for(i = 0; i < param_num; i++){
+    for(i = 1; i < param_num; i++){
         if(length == size){
             if(vec->data.Vector.resizable){
                 vec->data.Vector.v = realloc(vec->data.Vector.v, sizeof(Object*) * (size * 2)); // increase size
@@ -271,7 +271,7 @@ Object *builtin_vector_push(Object ** params, int param_num, int start_index){
                 return GLOBAL_NULL;
             }
         }
-        temp = params[start_index+1+i];
+        temp = params[start_index+i];
         vector_Set(vec, length, temp);
         temp->use_count++; // increase use count
         length++;
@@ -459,6 +459,10 @@ Object *builtin_eq(Object ** params, int param_num, int start_index){
     }
     return (param0 == param1) ? GLOBAL_TRUE : GLOBAL_NULL;
 }
+/*
+    16 ~ 21 will be changed in the future.
+    because I am now using "typeof" function to determine the data type
+ */
 // 16 string?
 Object *builtin_string_type(Object ** params, int param_num, int start_index){
     if(params[start_index]->type == STRING)
@@ -720,6 +724,30 @@ Object * builtin_table_add_tag(Object ** params, int param_num, int start_index)
 // 43 table-tag
 Object * builtin_table_tag(Object ** params, int param_num, int start_index){
     return params[start_index]->data.Table.tag;
+}
+
+// 44 typeof
+Object * builtin_typeof(Object ** params, int param_num, int start_index){
+    switch (params[start_index]->type) {
+        case INTEGER:
+            return INTEGER_STRING;
+        case DOUBLE:
+            return FLOAT_STRING;
+        case RATIO:
+            return RATIO_STRING;
+        case STRING:
+            return STRING_STRING;
+        case PAIR:
+            return PAIR_STRING;
+        case USER_DEFINED_LAMBDA:case BUILTIN_LAMBDA:
+            return LAMBDA_STRING;
+        case VECTOR:
+            return VECTOR_STRING;
+        case TABLE:
+            return TABLE_STRING;
+        default:
+            return GLOBAL_NULL;
+    }
 }
 
 #endif

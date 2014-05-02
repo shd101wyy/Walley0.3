@@ -118,13 +118,14 @@ Object *VM(unsigned short * instructions,
         }
     }
     CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX = CONSTANT_TABLE_INSTRUCTIONS->length; // update track index for constant table instructions.
+
     /*
     for (i = start_pc; i < end_pc; i++) {
         printf("%x ", instructions[i]);
     }
     printf("\n");
-
     */
+    
     pc = start_pc;
     while(pc != end_pc){
         // printf("%lu, %x \n", pc, instructions[pc]);

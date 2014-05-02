@@ -201,6 +201,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "gensym");
     VT_push(vt, 0, "table-add-tag");
     VT_push(vt, 0, "table-tag");
+    VT_push(vt, 0, "typeof");
 
     return vt;
 }

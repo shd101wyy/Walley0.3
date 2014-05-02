@@ -61,6 +61,28 @@ void Walley_init(){
     GLOBAL_TRUE = Object_initString("true", 4); // 8
     GLOBAL_TRUE->use_count = 1;
     
+    INTEGER_STRING = Object_initString("integer", 7);// 9
+    INTEGER_STRING->use_count = 1;
+ 
+    FLOAT_STRING = Object_initString("float", 5); // 10
+    FLOAT_STRING->use_count = 1;
+    
+    RATIO_STRING = Object_initString("ratio", 5); // 11
+    RATIO_STRING->use_count = 1;
+    
+    STRING_STRING = Object_initString("string", 6); // 12
+    STRING_STRING->use_count = 1;
+    
+    PAIR_STRING = Object_initString("pair", 4); // 13
+    PAIR_STRING->use_count = 1;
+    
+    VECTOR_STRING = Object_initString("vector", 6); // 14
+    VECTOR_STRING->use_count = 1;
+    
+    TABLE_STRING = Object_initString("table", 5); // 15
+    TABLE_STRING->use_count = 1;
+    
+    
     
     CONSTANT_TABLE_FOR_COMPILATION = Object_initTable(1024); // init constant table
     // add those constants to table
@@ -72,9 +94,16 @@ void Walley_init(){
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, DEF_STRING, Object_initInteger(5));           // 5
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, SET_STRING, Object_initInteger(6));        // 6
     Table_setval(CONSTANT_TABLE_FOR_COMPILATION, LAMBDA_STRING, Object_initInteger(7));          // 7
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(8));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(8));         // 8
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, INTEGER_STRING, Object_initInteger(9));         // 9
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, FLOAT_STRING, Object_initInteger(10));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, RATIO_STRING, Object_initInteger(11));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, STRING_STRING, Object_initInteger(12));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, PAIR_STRING, Object_initInteger(13));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, VECTOR_STRING, Object_initInteger(14));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, TABLE_STRING, Object_initInteger(15));
     
-    CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 9; // set length
+    CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 16; // set length
     
     // init Constant Pool according to CONSTANT_TABLE_FOR_COMPILATION
     Constant_Pool[0] = QUOTE_STRING;
@@ -86,8 +115,15 @@ void Walley_init(){
     Constant_Pool[6] = SET_STRING;
     Constant_Pool[7] = LAMBDA_STRING;
     Constant_Pool[8] = GLOBAL_TRUE;
+    Constant_Pool[9] = INTEGER_STRING;
+    Constant_Pool[10] = FLOAT_STRING;
+    Constant_Pool[11] = RATIO_STRING;
+    Constant_Pool[12] = STRING_STRING;
+    Constant_Pool[13] = PAIR_STRING;
+    Constant_Pool[14] = VECTOR_STRING;
+    Constant_Pool[15] = TABLE_STRING;
     
-    Constant_Pool_Length = 9; // set length
+    Constant_Pool_Length = 16; // set length
     
     // init CONSTANT_TABLE_INSTRUCTIONS for compiler
     CONSTANT_TABLE_INSTRUCTIONS = Insts_init();
@@ -211,8 +247,8 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 41, &builtin_gensym);
     EF_set_builtin_lambda(frame, 42, &builtin_table_add_tag);
     EF_set_builtin_lambda(frame, 43, &builtin_table_tag);
-
-    frame->length = 44; // set length
+    EF_set_builtin_lambda(frame, 44, &builtin_typeof);
+    frame->length = 45; // set length
     return frame;
 }
 /*

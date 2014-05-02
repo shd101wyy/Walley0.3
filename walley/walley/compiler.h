@@ -492,7 +492,7 @@ void compiler(Instructions * insts,
         case DOUBLE:
             double_ = l->data.Double.v;
             int_ = *(long*)&double_; // get hex
-            Insts_push(insts, CONST_INTEGER);
+            Insts_push(insts, CONST_FLOAT);
             Insts_push(insts, (0xFFFF000000000000 & int_) >> 48);
             Insts_push(insts, (0x0000FFFF00000000 & int_) >> 32);
             Insts_push(insts, (0x00000000FFFF0000 & int_) >> 16);
@@ -614,7 +614,7 @@ void compiler(Instructions * insts,
                 for (j = frame->length - 1; j >= 0; j--) {
                     if (str_eq(var_name->data.String.v,
                                frame->var_names[j])) {
-                        printf("ERROR: variable: %s alreadt defined\n", var_name->data.String.v);
+                        printf("ERROR: variable: %s already defined\n", var_name->data.String.v);
                         return;
                     }
                 }

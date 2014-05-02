@@ -185,8 +185,9 @@ Object * parser(Lexer * le){
                         else
                             temp = Object_initInteger(strtol(l[i], &t, 10));
                     }
-                    else if(isDouble(l[i]))
+                    else if(isDouble(l[i])){
                         temp = Object_initDouble(strtod(l[i], &t));
+                    }
                     else
                         temp = Object_initString(l[i], strlen(l[i]));
                 }

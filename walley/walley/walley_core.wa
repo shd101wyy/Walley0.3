@@ -12,6 +12,7 @@
 	 (cons (car a)
 	       (append (cdr a)
 		       b)))))
+;; reverse the list
 (def reverse 
      (def reverse_iter 
      	  (lambda (a result)
@@ -21,6 +22,19 @@
                                   (cons (car a)
                                         result)))))
      (reverse_iter a ()))
+
+;; get the length of the list
+(def list-length
+  (lambda [n]
+          (def list-length-iter
+            (lambda [n r]
+                    (if (null? n)
+                      r
+                      (list-length-iter (cdr n)
+                                        (+ r 1)))))
+          (list-length-iter n 0)))
+
+(def error (lambda [s] (display "ERROR: ") (display s)))
 
 ;; list macro
 (defmacro list 
@@ -69,6 +83,7 @@
   [(a . b) `(/ ~a (* ~@b))])
 
 ;; str
+;; eg (str "Hello " "World") -> "Hello World"
 (defn str [. b]
   (defn str-iter [b]
     (if (null? b)
@@ -76,3 +91,27 @@
     (string-append (car b)
                    (str-iter (cdr b)))))
   (str-iter b))
+(def list? pair?)
+
+;; check data type
+;(defn int? [v] (eq? (typeof v) 'integer))
+(def integer? int?)
+;(defn float? [v] (eq? (typeof v) 'float))
+;(defn ratio? [v] (eq? (typeof v) 'ratio))
+;(defn null? [v] (eq? v ()))
+(defn vector? [v] (eq? (typeof v) 'vector))
+;(defn lambda? [v] (eq? (typeof v) 'lambda))
+(defn table? [v] (eq? (typeof v) 'table))
+
+;; get length of several data types
+(defn len [b] 
+  (if (null? b)
+    0
+    (if (string? b)
+      (string-length b)
+      (if (pair? b)
+        (list-length b)
+        (if (vector? b)
+          (vector-length b)
+          (error "Function len invalid data type"))))))
+

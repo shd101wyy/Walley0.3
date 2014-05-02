@@ -38,7 +38,13 @@ static Object * DEF_STRING;
 static Object * SET_STRING;
 static Object * LAMBDA_STRING;
 
-
+static Object * INTEGER_STRING;
+static Object * FLOAT_STRING;
+static Object * RATIO_STRING;
+static Object * STRING_STRING;
+static Object * PAIR_STRING;
+static Object * VECTOR_STRING;
+static Object * TABLE_STRING;
 
 static Object * SYS_ARGV;
 
