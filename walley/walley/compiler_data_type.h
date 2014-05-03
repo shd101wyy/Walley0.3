@@ -53,7 +53,7 @@ Instructions * Insts_init(){
 /*
     Instructions push
  */
-void Insts_push(Instructions * insts, short v){
+void Insts_push(Instructions * insts, unsigned short v){
     if(insts->length == insts->size){ // reach maximum
         insts->size*=2;
         insts->array = (unsigned short*)realloc(insts->array, sizeof(unsigned short)*insts->size);

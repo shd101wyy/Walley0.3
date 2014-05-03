@@ -491,12 +491,12 @@ void compiler(Instructions * insts,
             return;
         case DOUBLE:
             double_ = l->data.Double.v;
-            int_ = *(long*)&double_; // get hex
+            unsigned long * unsigned_int_ = (unsigned long*)&double_; // get hex
             Insts_push(insts, CONST_FLOAT);
-            Insts_push(insts, (0xFFFF000000000000 & int_) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000 & int_) >> 32);
-            Insts_push(insts, (0x00000000FFFF0000 & int_) >> 16);
-            Insts_push(insts, 0xFFFF & int_);
+            Insts_push(insts, (0xFFFF000000000000 & (*unsigned_int_)) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000 & (*unsigned_int_)) >> 32);
+            Insts_push(insts, (0x00000000FFFF0000 & (*unsigned_int_)) >> 16);
+            Insts_push(insts, 0xFFFF & (*unsigned_int_));
             return;
         case PAIR:
             if(car(l)->type == INTEGER && car(l)->data.Integer.v == 0){
