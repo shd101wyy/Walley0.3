@@ -230,6 +230,59 @@ void Walley_Run_File(char * file_name){
     return;
 }
 
+
+/*
+ suppose run .wa file
+ */
+Object * Walley_Run_File_for_VM(char * file_name,
+                                Instructions * insts,
+                                Variable_Table * vt,
+                                Environment * env,
+                                MacroTable * mt){
+    // read content from file
+    FILE* file = fopen(file_name,"r");
+    if(file == NULL)
+    {
+        printf("Failed to read file %s\n", file_name);
+        return GLOBAL_NULL; // fail to read
+    }
+    
+    fseek(file, 0, SEEK_END);
+    long int size = ftell(file);
+    rewind(file);
+    
+    char* content = calloc(size + 1, 1);
+    
+    fread(content,1,size,file);
+    
+    fclose(file); // 不知道要不要加上这个
+    
+    Lexer * p;
+    Object * o;
+    
+    int run_eval = true;
+    
+    //Environment * env = NULL;
+    //int run_eval = false;
+    
+    
+    p = lexer(content);
+    o = parser(p);
+    
+    // compile
+    Object * return_value = compiler_begin(insts,
+                           o,
+                           vt,
+                           NULL,
+                           NULL,
+                           run_eval,
+                           env,
+                           mt);
+    
+    free(content);
+    return return_value;
+}
+
 #endif
 
 

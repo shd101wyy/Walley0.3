@@ -463,12 +463,16 @@ Object *builtin_eq(Object ** params, int param_num, int start_index){
     16 ~ 21 will be changed in the future.
     because I am now using "typeof" function to determine the data type
  */
+/*
 // 16 string?
 Object *builtin_string_type(Object ** params, int param_num, int start_index){
     if(params[start_index]->type == STRING)
         return GLOBAL_TRUE;
     return GLOBAL_NULL;
 }
+ 
+ 16 ===> load int_index 1
+ */
 // 17 int?
 Object *builtin_int_type(Object ** params, int param_num, int start_index){
     if(params[start_index]->type == INTEGER)

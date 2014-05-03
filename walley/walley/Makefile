@@ -1,5 +1,7 @@
 all:
 	gcc main.c -o walley
+fast:
+	gcc main.c -O3 -o walley
 test:
 	gcc main.c -g -Wall -Werror -o walley
 parser:

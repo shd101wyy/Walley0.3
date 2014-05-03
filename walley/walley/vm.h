@@ -18,13 +18,20 @@
 #define free_current_frame_pointer(current_frame_pointer) ((current_frame_pointer)->use_count)--; \
     EF_free((current_frame_pointer));
 
+Object * Walley_Run_File_for_VM(char * file_name,
+                                Instructions * insts,
+                                Variable_Table * vt,
+                                Environment * env,
+                                MacroTable * mt);
 /*
  Walley Language Virtual Machine
  */
 Object *VM(unsigned short * instructions,
            unsigned long start_pc,
            unsigned long end_pc,
-           Environment * env){
+           Environment * env,
+           Variable_Table * vt,
+           MacroTable * mt){
     unsigned long pc;
     unsigned long i;
     unsigned short frame_index, value_index;
@@ -41,7 +48,7 @@ Object *VM(unsigned short * instructions,
     
     long integer_;
     // double double_;
-    
+    Environment * original_env = env; // save old env;
     Object * accumulator = GLOBAL_NULL;
     Environment_Frame * current_frame_pointer = NULL;
     Environment_Frame * temp_frame;
@@ -254,7 +261,7 @@ Object *VM(unsigned short * instructions,
                         
                         pc = pc + 1;
                         continue;
-                    case BUILTIN_LAMBDA: case VECTOR: case TABLE: // builtin lambda or vector or table
+                    case BUILTIN_LAMBDA: case VECTOR: case TABLE: case  INTEGER:// builtin lambda or vector or table
                         current_frame_pointer = BUILTIN_PRIMITIVE_PROCEDURE_STACK; // get top frame
                         
                         // save to frame list
@@ -497,6 +504,52 @@ Object *VM(unsigned short * instructions,
                             Object_free(v);
                         
                         continue;
+                        
+                    case INTEGER:
+                        switch (v->data.Integer.v) {
+                            case 1: // load
+                                pc = pc + 1;
+                                temp = current_frame_pointer->array[current_frame_pointer->length - param_num]; // get file name
+                                
+                                Instructions * temp_insts = Insts_init();
+                                accumulator = Walley_Run_File_for_VM(temp->data.String.v,
+                                    temp_insts,
+                                    vt,
+                                    original_env,
+                                    mt); // 可能这个mt就直接引用了
+                                free(temp_insts->array);
+                                free(temp_insts);
+                                
+                                accumulator->use_count++; //必须在pop
+                                // pop parameters
+                                for(i = 0; i < param_num; i++){
+                                    temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+                                    
+                                    temp->use_count--; // －1 因为在push的时候加1了
+                                    
+                                    Object_free(temp); // free object
+                                    
+                                    current_frame_pointer->array[current_frame_pointer->length - 1] = NULL; // clear
+                                    current_frame_pointer->length--; // decrease length
+                                }
+                                accumulator->use_count--;
+                                
+                                // free current_frame_pointer
+                                free_current_frame_pointer(current_frame_pointer);
+                                
+                                frames_list_length--; // pop frame list
+                                current_frame_pointer = frames_list[frames_list_length - 1];
+                                
+                                // free lambda
+                                Object_free(v);
+                                continue;
+                            default:
+                                printf("ERROR: Invalid Lambda\n");
+                                // TODO: Object_free(v)
+                                Object_free(accumulator);
+                                accumulator = GLOBAL_NULL;
+                                goto VM_END;
+                        }
                     default:
                         printf("ERROR: Invalid Lambda\n");
                         Object_free(accumulator);

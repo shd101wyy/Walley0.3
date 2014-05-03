@@ -170,7 +170,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "<");
     VT_push(vt, 0, "<=");
     VT_push(vt, 0, "eq?");
-    VT_push(vt, 0, "string?");
+    VT_push(vt, 0, "load");  // 16
     VT_push(vt, 0, "int?");
     VT_push(vt, 0, "float?");
     VT_push(vt, 0, "pair?");

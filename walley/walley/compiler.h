@@ -32,7 +32,9 @@ Object * compiler_begin(Instructions * insts,
 Object *VM(unsigned short * instructions,
            unsigned long start_pc,
            unsigned long end_pc,
-           Environment * env);
+           Environment * env,
+           Variable_Table * vt,
+           MacroTable * mt);
 
 Object * quote_list(Object * l){
     if(l->type == NULL_) return GLOBAL_NULL;
@@ -300,7 +302,7 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             // cannot run in compiler_begin,
             // because the default insts->start_pc is wrong
             // should use insts_length as start_pc;
-            expanded_value = VM(insts->array, insts_length, insts->length, new_env);
+            expanded_value = VM(insts->array, insts_length, insts->length, new_env, NULL, NULL);
             
            
 #if MACRO_DEBUG
@@ -1150,7 +1152,9 @@ Object * compiler_begin(Instructions * insts,
             acc = VM(insts->array,
                      insts->start_pc,
                      insts->length,
-                     env); // run vm
+                     env,
+                     vt,
+                     mt); // run vm
             insts->start_pc = insts->length; // update start pc
             
 #if COMPILER_DEBUG
