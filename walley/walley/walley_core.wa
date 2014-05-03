@@ -42,6 +42,24 @@
   [(a) `(cons ~a ())]
   [(a . b) `(cons ~a (list ~@b))])
 
+;; cond macro
+(defmacro cond 
+  [() ()]
+  [(#else body)
+   body]
+  [(#else body . rest)
+   (display "ERROR: cond invalid statements.\n")]
+  [(test body)
+  `(if ~test ~body ())]
+  [(test body . rest)
+   `(if ~test ~body (cond ~@rest))])
+
+;; test cond
+;(display (cond (= 0 1) (display "Hi1")
+;               (= 2 3) (display "Hi2")
+;               else    (display "else")
+;               1
+;               ))
 
 (defmacro defn
   [(var_name args . body)
@@ -57,6 +75,7 @@
 ;; logic > macro
 (defm > [a b] `(< ~b ~a))
 (defm >= [a b] `(<= ~b ~a))
+
 
 
 ;(display "TEST +\n")
@@ -102,6 +121,7 @@
 (defn vector? [v] (eq? (typeof v) 'vector))
 ;(defn lambda? [v] (eq? (typeof v) 'lambda))
 (defn table? [v] (eq? (typeof v) 'table))
+(defn string? [v] (eq? (typeof v) 'string))
 
 ;; get length of several data types
 (defn len [b] 

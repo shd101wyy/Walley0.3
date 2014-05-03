@@ -766,7 +766,7 @@ void compiler(Instructions * insts,
                                vt,
                                parent_func_name,
                                function_for_compilation,
-                               vt->length == 1 ? true : false,
+                               false,
                                env,
                                mt);
                 return;
