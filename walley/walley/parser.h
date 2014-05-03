@@ -37,8 +37,8 @@ int isInteger(char * s){
     if (s == NULL || *s == '\0' || isspace(*s))
         return 0;
     char * p;
-    if (strlen(s) > 3 && s[0] == '0' && s[1] == 'x') {
-        strtol(s, &p, 16); // hex
+    if (strlen(s) >= 3 && s[0] == '0' && s[1] == 'x') {
+        strtol( &(*(s+2)), &p, 16); // hex
     }
     else
         strtol(s, &p, 10); // decimal
