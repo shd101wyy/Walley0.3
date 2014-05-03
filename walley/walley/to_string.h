@@ -334,4 +334,43 @@ char * to_string(Object * v){
     return return_s;
 }
 
+/*
+ * format string
+ * eg ""Hello World"" -> Hello World
+ * don't forget to free the created string
+ */
+char * format_string(char * input_str){
+    char * s = (char*)malloc(sizeof(char)*(strlen(input_str)+1));
+    int j = 0;
+    int i;
+    // format string
+    for (i = 1; i < strlen(input_str)-1; i++) {
+        if(input_str[i] == '\\'){
+            switch (input_str[i+1]) {
+                case 'a':
+                    s[j] = '\a';
+                    break;
+                case 't':
+                    s[j] = '\t';
+                    break;
+                case 'n':
+                    s[j] = '\n';
+                    break;
+                case '\\':
+                    s[j] = '\\';
+                    break;
+                default:
+                    printf("ERROR: Invalid String Slash\n");
+                    break;
+            }
+            i++;
+        }
+        else
+            s[j] = input_str[i];
+        j++;
+    }
+    s[j] = 0; // end of string
+    return s;
+}
+
 #endif

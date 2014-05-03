@@ -1,5 +1,8 @@
 all:
 	gcc main.c -o walley
+install:
+	cp walley /usr/local/bin
+	rm -rf *.o walley a.out
 fast:
 	gcc main.c -O3 -o walley
 test:

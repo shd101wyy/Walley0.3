@@ -163,8 +163,10 @@ Object *VM(unsigned short * instructions,
                 
                 Object_free(accumulator);
                 
-                // 这里应该检查 accumulator, 看看是否要free掉
                 accumulator = env->frames[frame_index]->array[value_index];
+                if (!accumulator) {
+                    accumulator = GLOBAL_NULL;
+                }
                 pc = pc + 2;
                 continue;
             case CONST:
@@ -507,6 +509,7 @@ Object *VM(unsigned short * instructions,
                         
                     case INTEGER:
                         switch (v->data.Integer.v) {
+                                /*
                             case 1: // load
                                 pc = pc + 1;
                                 temp = current_frame_pointer->array[current_frame_pointer->length - param_num]; // get file name
@@ -542,7 +545,7 @@ Object *VM(unsigned short * instructions,
                                 
                                 // free lambda
                                 Object_free(v);
-                                continue;
+                                continue;*/
                             default:
                                 printf("ERROR: Invalid Lambda\n");
                                 // TODO: Object_free(v)
@@ -590,11 +593,11 @@ VM_END:
     // free BUILTIN_PRIMITIVE_PROCEDURE_STACK
     accumulator->use_count+=1;
     
+    
     BUILTIN_PRIMITIVE_PROCEDURE_STACK->use_count--;
     EF_free(BUILTIN_PRIMITIVE_PROCEDURE_STACK);
     
     accumulator->use_count-=1;
-    
 
     return accumulator;
 }

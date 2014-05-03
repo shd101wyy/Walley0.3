@@ -396,37 +396,10 @@ void compiler(Instructions * insts,
          */
         case STRING:
             if (l->data.String.v[0] == '"') { // string
-                char * s = malloc(sizeof(char)*(strlen(l->data.String.v)+1));
-                j = 0;
-                // format string
-                for (i = 1; i < l->data.String.length-1; i++) {
-                    if(l->data.String.v[i] == '\\'){
-                        switch (l->data.String.v[i+1]) {
-                            case 'a':
-                                s[j] = '\a';
-                                break;
-                            case 't':
-                                s[j] = '\t';
-                                break;
-                            case 'n':
-                                s[j] = '\n';
-                                break;
-                            case '\\':
-                                s[j] = '\\';
-                                break;
-                            default:
-                                printf("ERROR: Invalid String Slash\n");
-                                break;
-                        }
-                        i++;
-                    }
-                    else
-                        s[j] = l->data.String.v[i];
-                    j++;
-                }
-                s[j] = 0; // end of string
+                char * s = format_string(l->data.String.v);
                 // init key save to 'v'
-                v = Object_initString(s, j/*j is length*/);
+                length = strlen(s);
+                v = Object_initString(s, length);
                 var_value = Table_getval(CONSTANT_TABLE_FOR_COMPILATION,
                                         v);
                 // check s in CONSTANT_TABLE_FOR_COMPILATION
@@ -449,10 +422,7 @@ void compiler(Instructions * insts,
                     // printf("%s doesn't exist %ld\n", s, CONSTANT_TABLE_FOR_COMPILATION_LENGTH);
                     CONSTANT_TABLE_FOR_COMPILATION_LENGTH++;
                 }
-               
                 
-                // so length of string is j
-                length = j;
                 Insts_push(CONSTANT_TABLE_INSTRUCTIONS, CONST_STRING);
                 Insts_push(CONSTANT_TABLE_INSTRUCTIONS, length);
                 find_end = false;
@@ -665,6 +635,50 @@ void compiler(Instructions * insts,
                     Insts_push(insts, SET << 12 | (0x0FFF & vt_find[0])); // frame_index
                     
                     Insts_push(insts, vt_find[1]); // value index
+                    return;
+                }
+            }
+            else if (str_eq(tag, "load")){
+                if (vt->length != 1) {
+                    printf("ERROR: load invalid place");
+                    return;
+                }
+                else{
+                    char * file_name = format_string(cadr(l)->data.String.v);
+                    // read content from file
+                    FILE* file = fopen(file_name,"r");
+                    if(file == NULL)
+                    {
+                        printf("ERROR: Failed to load %s\n", file_name);
+                        return; // fail to read
+                    }
+                    
+                    fseek(file, 0, SEEK_END);
+                    long int size = ftell(file);
+                    rewind(file);
+                    
+                    char* content = calloc(size + 1, 1);
+                    
+                    fread(content,1,size,file);
+                    
+                    fclose(file); // 不知道要不要加上这个
+                    
+                    Lexer * p;
+                    Object * o;
+                    p = lexer(content);
+                    o = parser(p);
+
+                    compiler_begin(insts,
+                                   o,
+                                   vt,
+                                   NULL,
+                                   NULL,
+                                   0,
+                                   env,
+                                   mt);
+                    
+                    free(file_name);
+                    free(content);
                     return;
                 }
             }
