@@ -54,6 +54,7 @@ Object * Object_initInteger(/*long v*/ long v);
 void Object_free(Object * o);
 /* data types */
 typedef enum {
+    NULL_,
 	INTEGER,
 	DOUBLE,
 	RATIO,
@@ -62,7 +63,6 @@ typedef enum {
 	USER_DEFINED_LAMBDA,
 	BUILTIN_LAMBDA,
 	VECTOR,
-    NULL_,
 	TABLE
 } DataType;
 struct  Table_Pair{ // used for table

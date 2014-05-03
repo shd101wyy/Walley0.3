@@ -20,6 +20,9 @@ void Object_free(Object * o){
     if(o->use_count == 0){
         // free
         switch (o->type){
+            case NULL_:
+                return; // cannot free null;
+                // null will be stored in string_table(constant_table) index0;
             case INTEGER: case DOUBLE: case RATIO:
                 free(o);
                 return;
@@ -81,9 +84,6 @@ void Object_free(Object * o){
                 free(o->data.Table.vec); // free table vector
                 free(o);
                 return;
-            case NULL_:
-                return; // cannot free null;
-                // null will be stored in string_table(constant_table) index0;
             default:
                 printf("ERROR: Object_free invalid data type\n");
                 return;

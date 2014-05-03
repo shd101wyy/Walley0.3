@@ -86,44 +86,54 @@ void Walley_init(){
     
     CONSTANT_TABLE_FOR_COMPILATION = Object_initTable(1024); // init constant table
     // add those constants to table
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, QUOTE_STRING, Object_initInteger(0));         // 0
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, UNQUOTE_STRING, Object_initInteger(1));       // 1
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, UNQUOTE_SPLICE_STRING, Object_initInteger(2));// 2
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, QUASIQUOTE_STRING, Object_initInteger(3));    // 3
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, CONS_STRING, Object_initInteger(4));          // 4
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, DEF_STRING, Object_initInteger(5));           // 5
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, SET_STRING, Object_initInteger(6));        // 6
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, LAMBDA_STRING, Object_initInteger(7));          // 7
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(8));         // 8
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, INTEGER_STRING, Object_initInteger(9));         // 9
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, FLOAT_STRING, Object_initInteger(10));
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, RATIO_STRING, Object_initInteger(11));
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, STRING_STRING, Object_initInteger(12));
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, PAIR_STRING, Object_initInteger(13));
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, VECTOR_STRING, Object_initInteger(14));
-    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, TABLE_STRING, Object_initInteger(15));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, QUOTE_STRING, Object_initInteger(250));         // 0
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, UNQUOTE_STRING, Object_initInteger(251));       // 1
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, UNQUOTE_SPLICE_STRING, Object_initInteger(252));// 2
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, QUASIQUOTE_STRING, Object_initInteger(253));    // 3
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, CONS_STRING, Object_initInteger(254));          // 4
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, DEF_STRING, Object_initInteger(255));           // 5
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, SET_STRING, Object_initInteger(256));        // 6
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, LAMBDA_STRING, Object_initInteger(257));          // 7
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, GLOBAL_TRUE, Object_initInteger(258));         // 8
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, INTEGER_STRING, Object_initInteger(259));         // 9
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, FLOAT_STRING, Object_initInteger(260));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, RATIO_STRING, Object_initInteger(261));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, STRING_STRING, Object_initInteger(262));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, PAIR_STRING, Object_initInteger(263));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, VECTOR_STRING, Object_initInteger(264));
+    Table_setval(CONSTANT_TABLE_FOR_COMPILATION, TABLE_STRING, Object_initInteger(265));
     
-    CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 16; // set length
+    CONSTANT_TABLE_FOR_COMPILATION_LENGTH = 266; // set length
+    
+    // create constant integer pool
+    // 0 ~ 249
+    int i;
+    for(i = 0; i < 250; i++){
+        Object * t = Object_initInteger(i);
+        t->use_count = 1;
+        Constant_Pool[i] = t;
+    }
+    
     
     // init Constant Pool according to CONSTANT_TABLE_FOR_COMPILATION
-    Constant_Pool[0] = QUOTE_STRING;
-    Constant_Pool[1] = UNQUOTE_STRING;
-    Constant_Pool[2] = UNQUOTE_SPLICE_STRING;
-    Constant_Pool[3] = QUASIQUOTE_STRING;
-    Constant_Pool[4] = CONS_STRING;
-    Constant_Pool[5] = DEF_STRING;
-    Constant_Pool[6] = SET_STRING;
-    Constant_Pool[7] = LAMBDA_STRING;
-    Constant_Pool[8] = GLOBAL_TRUE;
-    Constant_Pool[9] = INTEGER_STRING;
-    Constant_Pool[10] = FLOAT_STRING;
-    Constant_Pool[11] = RATIO_STRING;
-    Constant_Pool[12] = STRING_STRING;
-    Constant_Pool[13] = PAIR_STRING;
-    Constant_Pool[14] = VECTOR_STRING;
-    Constant_Pool[15] = TABLE_STRING;
+    Constant_Pool[250] = QUOTE_STRING;
+    Constant_Pool[251] = UNQUOTE_STRING;
+    Constant_Pool[252] = UNQUOTE_SPLICE_STRING;
+    Constant_Pool[253] = QUASIQUOTE_STRING;
+    Constant_Pool[254] = CONS_STRING;
+    Constant_Pool[255] = DEF_STRING;
+    Constant_Pool[256] = SET_STRING;
+    Constant_Pool[257] = LAMBDA_STRING;
+    Constant_Pool[258] = GLOBAL_TRUE;
+    Constant_Pool[259] = INTEGER_STRING;
+    Constant_Pool[260] = FLOAT_STRING;
+    Constant_Pool[261] = RATIO_STRING;
+    Constant_Pool[262] = STRING_STRING;
+    Constant_Pool[263] = PAIR_STRING;
+    Constant_Pool[264] = VECTOR_STRING;
+    Constant_Pool[265] = TABLE_STRING;
     
-    Constant_Pool_Length = 16; // set length
+    Constant_Pool_Length = 266; // set length
     
     // init CONSTANT_TABLE_INSTRUCTIONS for compiler
     CONSTANT_TABLE_INSTRUCTIONS = Insts_init();

@@ -103,21 +103,11 @@ char * list_to_string(Object * l){
     while (p != GLOBAL_NULL) {
         v = car(p);
         switch (v->type) {
-            case INTEGER: case DOUBLE: case RATIO:
-                s = number_to_string(v);
-                strcat(buffer, s);
-                free(s);
-                break;
             case NULL_:
                 strcat(buffer, "()");
                 break;
-            case VECTOR:
-                s = vector_to_string(v);
-                strcat(buffer, s);
-                free(s);
-                break;
-            case TABLE:
-                s = table_to_string(v);
+            case INTEGER: case DOUBLE: case RATIO:
+                s = number_to_string(v);
                 strcat(buffer, s);
                 free(s);
                 break;
@@ -131,11 +121,21 @@ char * list_to_string(Object * l){
                 strcat(buffer, s);
                 free(s);
                 break;
+            case USER_DEFINED_LAMBDA:
+                strcat(buffer, "< user-defined-lambda >");
+                break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
                 break;
-            case USER_DEFINED_LAMBDA:
-                strcat(buffer, "< user-defined-lambda >");
+            case VECTOR:
+                s = vector_to_string(v);
+                strcat(buffer, s);
+                free(s);
+                break;
+            case TABLE:
+                s = table_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             default:
                 printf("ERROR: stdout");
@@ -170,21 +170,11 @@ char * vector_to_string(Object * l){
     for (i = 0; i < length; i++) {
         v = l->data.Vector.v[i];
         switch (v->type) {
-            case INTEGER: case DOUBLE: case RATIO:
-                s = number_to_string(v);
-                strcat(buffer, s);
-                free(s);
-                break;
             case NULL_:
                 strcat(buffer, "()");
                 break;
-            case VECTOR:
-                s = vector_to_string(v);
-                strcat(buffer, s);
-                free(s);
-                break;
-            case TABLE:
-                s = table_to_string(v);
+            case INTEGER: case DOUBLE: case RATIO:
+                s = number_to_string(v);
                 strcat(buffer, s);
                 free(s);
                 break;
@@ -198,11 +188,21 @@ char * vector_to_string(Object * l){
                 strcat(buffer, s);
                 free(s);
                 break;
+            case USER_DEFINED_LAMBDA:
+                strcat(buffer, "< user-defined-lambda >");
+                break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
                 break;
-            case USER_DEFINED_LAMBDA:
-                strcat(buffer, "< user-defined-lambda >");
+            case VECTOR:
+                s = vector_to_string(v);
+                strcat(buffer, s);
+                free(s);
+                break;
+            case TABLE:
+                s = table_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             default:
                 printf("ERROR: stdout");
@@ -238,21 +238,11 @@ char * table_to_string(Object * l){
         strcat(buffer, clean_string(car(keys)));
         strcat(buffer, " ");
         switch (v->type) {
-            case INTEGER: case DOUBLE: case RATIO:
-                s = number_to_string(v);
-                strcat(buffer, s);
-                free(s);
-                break;
             case NULL_:
                 strcat(buffer, "()");
                 break;
-            case VECTOR:
-                s = vector_to_string(v);
-                strcat(buffer, s);
-                free(s);
-                break;
-            case TABLE:
-                s = table_to_string(v);
+            case INTEGER: case DOUBLE: case RATIO:
+                s = number_to_string(v);
                 strcat(buffer, s);
                 free(s);
                 break;
@@ -266,11 +256,21 @@ char * table_to_string(Object * l){
                 strcat(buffer, s);
                 free(s);
                 break;
+            case USER_DEFINED_LAMBDA:
+                strcat(buffer, "< user-defined-lambda >");
+                break;
             case BUILTIN_LAMBDA:
                 strcat(buffer, "< builtin-lambda >");
                 break;
-            case USER_DEFINED_LAMBDA:
-                strcat(buffer, "< user-defined-lambda >");
+            case VECTOR:
+                s = vector_to_string(v);
+                strcat(buffer, s);
+                free(s);
+                break;
+            case TABLE:
+                s = table_to_string(v);
+                strcat(buffer, s);
+                free(s);
                 break;
             default:
                 printf("ERROR: stdout");
@@ -293,21 +293,11 @@ char * to_string(Object * v){
     strcpy(buffer, "");
     char * s;
     switch (v->type) {
-        case INTEGER: case DOUBLE: case RATIO:
-            s = number_to_string(v);
-            strcat(buffer, s);
-            free(s);
-            break;
         case NULL_:
             strcat(buffer, "()");
             break;
-        case VECTOR:
-            s = vector_to_string(v);
-            strcat(buffer, (s));
-            free(s);
-            break;
-        case TABLE:
-            s = table_to_string(v);
+        case INTEGER: case DOUBLE: case RATIO:
+            s = number_to_string(v);
             strcat(buffer, s);
             free(s);
             break;
@@ -319,11 +309,21 @@ char * to_string(Object * v){
             strcat(buffer, (s));
             free(s);
             break;
+        case USER_DEFINED_LAMBDA:
+            strcat(buffer, "< user-defined-lambda >");
+            break;
         case BUILTIN_LAMBDA:
             strcat(buffer, "< builtin-lambda >");
             break;
-        case USER_DEFINED_LAMBDA:
-            strcat(buffer, "< user-defined-lambda >");
+        case VECTOR:
+            s = vector_to_string(v);
+            strcat(buffer, (s));
+            free(s);
+            break;
+        case TABLE:
+            s = table_to_string(v);
+            strcat(buffer, s);
+            free(s);
             break;
         default:
             printf("ERROR: stdout");

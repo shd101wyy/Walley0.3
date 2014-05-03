@@ -12,7 +12,7 @@
 ;  ]
 ;  )
 
-;(def f (lambda [n] (if (= n 0) 1 (begin (display "Hi\n") (f (- n 1))))))
-;(f 1000000)
-(display "Hello World")
-(def x 12)
+(def f (lambda [n] (if (= n 0) 1 (begin (display "Hi\n") (f (- n 1))))))
+(f 1000000)
+;(display "Hello World")
+;(def x 12)

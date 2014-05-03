@@ -391,6 +391,31 @@ void compiler(Instructions * insts,
         case NULL_:
             Insts_push(insts, CONST_NULL); // push null;
             return;
+        case INTEGER: // integer
+            int_ = l->data.Integer.v;
+            
+            // if int_ is within [0 250), then load from constant pool
+            if (int_ >= 0 && int_ < 250) {
+                // load from constant pool
+                Insts_push(insts, CONST_LOAD);
+                Insts_push(insts, int_);
+                return;
+            }
+            Insts_push(insts, CONST_INTEGER);
+            Insts_push(insts, (0xFFFF000000000000 & int_) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000 & int_) >> 32);
+            Insts_push(insts, (0x00000000FFFF0000 & int_) >> 16);
+            Insts_push(insts, 0xFFFF & int_);
+            return;
+        case DOUBLE:
+            double_ = l->data.Double.v;
+            unsigned long * unsigned_int_ = (unsigned long*)&double_; // get hex
+            Insts_push(insts, CONST_FLOAT);
+            Insts_push(insts, (0xFFFF000000000000 & (*unsigned_int_)) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000 & (*unsigned_int_)) >> 32);
+            Insts_push(insts, (0x00000000FFFF0000 & (*unsigned_int_)) >> 16);
+            Insts_push(insts, 0xFFFF & (*unsigned_int_));
+            return;
         /*
             关于 string, 存在于 CONSTANT_TABLE_INSTRUCTIONS 而不是 insts
          */
@@ -453,23 +478,7 @@ void compiler(Instructions * insts,
                 Insts_push(insts, vt_find[1]); // value index
                 return;
             }
-        case INTEGER: // integer
-            int_ = l->data.Integer.v;
-            Insts_push(insts, CONST_INTEGER);
-            Insts_push(insts, (0xFFFF000000000000 & int_) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000 & int_) >> 32);
-            Insts_push(insts, (0x00000000FFFF0000 & int_) >> 16);
-            Insts_push(insts, 0xFFFF & int_);
-            return;
-        case DOUBLE:
-            double_ = l->data.Double.v;
-            unsigned long * unsigned_int_ = (unsigned long*)&double_; // get hex
-            Insts_push(insts, CONST_FLOAT);
-            Insts_push(insts, (0xFFFF000000000000 & (*unsigned_int_)) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000 & (*unsigned_int_)) >> 32);
-            Insts_push(insts, (0x00000000FFFF0000 & (*unsigned_int_)) >> 16);
-            Insts_push(insts, 0xFFFF & (*unsigned_int_));
-            return;
+
         case PAIR:
             if(car(l)->type == INTEGER && car(l)->data.Integer.v == 0){
                 // set
