@@ -473,11 +473,23 @@ Object *builtin_string_type(Object ** params, int param_num, int start_index){
  
  16 ===> load int_index 1
  */
+/*
 // 17 int?
 Object *builtin_int_type(Object ** params, int param_num, int start_index){
     if(params[start_index]->type == INTEGER)
         return GLOBAL_TRUE;
     return GLOBAL_NULL;
+}
+ 17 ===> exit  
+ eg: (exit 0)  print 0 then exit the program
+ */
+Object * builtin_exit(Object ** params, int param_num, int start_index){
+    if (param_num == 0) {
+        printf("0\n");
+        exit(0);
+    }
+    printf("%s\n", to_string(params[start_index]));
+    exit((int)params[start_index]->data.Integer.v);
 }
 // 18 float?
 Object *builtin_float_type(Object ** params, int param_num, int start_index){

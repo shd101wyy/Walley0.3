@@ -48,7 +48,7 @@ Object *VM(unsigned short * instructions,
     
     long integer_;
     // double double_;
-    Environment * original_env = env; // save old env;
+    // Environment * original_env = env; // save old env;
     Object * accumulator = GLOBAL_NULL;
     Environment_Frame * current_frame_pointer = NULL;
     Environment_Frame * temp_frame;

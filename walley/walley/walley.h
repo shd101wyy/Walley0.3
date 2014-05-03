@@ -114,17 +114,22 @@ void Walley_Repl(){
     Lexer * p;
     Object * o;
     
-    Instructions * insts = Insts_init();
-    Variable_Table * vt = VT_init();
+    //Instructions * insts = Insts_init();
+    //Variable_Table * vt = VT_init();
+    //Environment * env = createEnvironment();
+    //MacroTable * mt = MT_init();
+
+    Instructions * insts = GLOBAL_INSTRUCTIONS;
+    Variable_Table * vt = GLOBAL_VARIABLE_TABLE;
+    Environment * env = GLOBAL_ENVIRONMENT;
+    MacroTable * mt = GLOBAL_MACRO_TABLE;
     
-    Environment * env = createEnvironment();
     int run_eval = true;
     
     //Environment * env = NULL;
     //int run_eval = false;
     
     Object * v;
-    MacroTable * mt = MT_init();
     
 
     char buffer[512];
@@ -201,17 +206,24 @@ void Walley_Run_File(char * file_name){
     Lexer * p;
     Object * o;
     
+/*
     Instructions * insts = Insts_init();
     Variable_Table * vt = VT_init();
-    
     Environment * env = createEnvironment();
+    MacroTable * mt = MT_init();
+*/
+    
+    Instructions * insts = GLOBAL_INSTRUCTIONS;
+    Variable_Table * vt = GLOBAL_VARIABLE_TABLE;
+    Environment * env = GLOBAL_ENVIRONMENT;
+    MacroTable * mt = GLOBAL_MACRO_TABLE;
+
     int run_eval = true;
     
     //Environment * env = NULL;
     //int run_eval = false;
     
     //Object * v;
-    MacroTable * mt = MT_init();
     
     p = lexer(content);
     o = parser(p);
@@ -234,6 +246,7 @@ void Walley_Run_File(char * file_name){
 /*
  suppose run .wa file
  */
+/*
 Object * Walley_Run_File_for_VM(char * file_name,
                                 Instructions * insts,
                                 Variable_Table * vt,
@@ -282,7 +295,7 @@ Object * Walley_Run_File_for_VM(char * file_name,
     free(content);
     return return_value;
 }
-
+*/
 #endif
 
 

@@ -113,7 +113,7 @@
 (def list? pair?)
 
 ;; check data type
-;(defn int? [v] (eq? (typeof v) 'integer))
+(defn int? [v] (eq? (typeof v) 'integer))
 (def integer? int?)
 ;(defn float? [v] (eq? (typeof v) 'float))
 ;(defn ratio? [v] (eq? (typeof v) 'ratio))

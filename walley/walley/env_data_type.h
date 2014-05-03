@@ -24,6 +24,12 @@ static unsigned long CONSTANT_TABLE_FOR_COMPILATION_LENGTH;
 static Instructions * CONSTANT_TABLE_INSTRUCTIONS;
 static unsigned long CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX; // 保存上次的运行PC
 
+static Instructions * GLOBAL_INSTRUCTIONS;
+static Variable_Table * GLOBAL_VARIABLE_TABLE;
+static Environment * GLOBAL_ENVIRONMENT;
+static MacroTable * GLOBAL_MACRO_TABLE;
+
+Environment *createEnvironment(); // init env
 
 /*
  Init Walley Languge
@@ -138,6 +144,45 @@ void Walley_init(){
     // init CONSTANT_TABLE_INSTRUCTIONS for compiler
     CONSTANT_TABLE_INSTRUCTIONS = Insts_init();
     CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX = 0;
+    
+    // init global insts, vt, env, mt
+    GLOBAL_INSTRUCTIONS = Insts_init();
+    GLOBAL_VARIABLE_TABLE = VT_init();
+    GLOBAL_ENVIRONMENT = createEnvironment();
+    GLOBAL_MACRO_TABLE = MT_init();
+}
+
+// end walley program
+void Walley_Finalize(){
+    Object_free(CONSTANT_TABLE_FOR_COMPILATION);
+    int i;
+    for (i = 0; i < Constant_Pool_Length; i++) {
+        Constant_Pool[i]->use_count--;
+        Object_free(Constant_Pool[i]);
+    }
+    
+    free(CONSTANT_TABLE_INSTRUCTIONS->array);
+    free(CONSTANT_TABLE_INSTRUCTIONS);
+    
+    free(GLOBAL_INSTRUCTIONS->array);
+    free(GLOBAL_INSTRUCTIONS);
+    
+    VT_free(GLOBAL_VARIABLE_TABLE);
+    
+    Env_free(GLOBAL_ENVIRONMENT);
+    
+    for (i = 0; i < GLOBAL_MACRO_TABLE->length; i++) {
+        int j;
+        MacroTableFrame * mtf = GLOBAL_MACRO_TABLE->frames[i];
+        for (j = 0; j < mtf->length; j++) {
+            Macro_free(mtf->array[j]);
+        }
+        free(mtf->array);
+        free(mtf);
+    }
+    // free(GLOBAL_MACRO_TABLE->frames);
+    free(GLOBAL_MACRO_TABLE);
+    
 }
 
 /*
@@ -186,7 +231,7 @@ struct Environment{
 void Env_free(Environment * env){
     int i;
     for (i = 0; i < env->length; i++) {
-        // env->frames[i]->use_count--;
+        env->frames[i]->use_count--;
         EF_free(env->frames[i]);
     }
     free(env->frames);
@@ -228,7 +273,7 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 14, &builtin_num_le);
     EF_set_builtin_lambda(frame, 15, &builtin_eq);
     frame->array[16] = Object_initInteger(1); // load
-    EF_set_builtin_lambda(frame, 17, &builtin_int_type);
+    EF_set_builtin_lambda(frame, 17, &builtin_exit);
     EF_set_builtin_lambda(frame, 18, &builtin_float_type);
     EF_set_builtin_lambda(frame, 19, &builtin_pair_type);
     EF_set_builtin_lambda(frame, 20, &builtin_null_type);

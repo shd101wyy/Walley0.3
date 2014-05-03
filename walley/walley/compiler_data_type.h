@@ -171,7 +171,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "<=");
     VT_push(vt, 0, "eq?");
     VT_push(vt, 0, "load");  // 16
-    VT_push(vt, 0, "int?");
+    VT_push(vt, 0, "exit");  // 17
     VT_push(vt, 0, "float?");
     VT_push(vt, 0, "pair?");
     
@@ -260,11 +260,11 @@ void VT_free(Variable_Table * vt){
     unsigned int length = vt->length;
     unsigned i = 0;
     for (i = 0; i < length; i++) {
-        vt->frames[i]->use_count--;
-        if (vt->frames[i]->use_count == 0) { // 只有在没人使用的时候free
+        //vt->frames[i]->use_count--;
+        //if (vt->frames[i]->use_count == 0) { // 只有在没人使用的时候free
             VTF_free(vt->frames[i]);
             vt->frames[i] = NULL;
-        }
+        //}
     }
     free(vt->frames);
     //free(vt);
