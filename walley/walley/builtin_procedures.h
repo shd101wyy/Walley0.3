@@ -75,9 +75,8 @@ Object * add_2(Object * p1, Object * p2){
     }
 }
 Object *builtin_add(Object ** params, int param_num, int start_index){
-    Object * p1 = params[start_index];
-    Object * p2 = params[start_index+1];
-    Object * return_val = p1;
+    Object * return_val = params[start_index];
+    Object *p1, * p2;
     int i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
@@ -134,9 +133,8 @@ Object * sub_2(Object * p1, Object * p2){
 }
 // 4 -
 Object *builtin_sub(Object ** params, int param_num, int start_index){
-    Object * p1 = params[start_index];
-    Object * p2 = params[start_index+1];
-    Object * return_val = p1;
+    Object * return_val = params[start_index];
+    Object *p1, * p2;
     int i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
@@ -193,9 +191,8 @@ Object * mul_2(Object * p1, Object * p2){
 }
 // 5 *
 Object *builtin_mul(Object ** params, int param_num, int start_index){
-    Object * p1 = params[start_index];
-    Object * p2 = params[start_index+1];
-    Object * return_val = p1;
+    Object * return_val = params[start_index];
+    Object *p1, * p2;
     int i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
@@ -253,9 +250,8 @@ Object * div_2(Object * p1, Object * p2){
 }
 // 6 /
 Object *builtin_div(Object ** params, int param_num, int start_index){
-    Object * p1 = params[start_index];
-    Object * p2 = params[start_index+1];
-    Object * return_val = p1;
+    Object * return_val = params[start_index];
+    Object *p1, * p2;
     int i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
@@ -391,9 +387,10 @@ int num_equal_2(Object * p1, Object * p2){
 // 12 =
 Object *builtin_num_equal(Object ** params, int param_num, int start_index){
     int i;
+    Object *p1, *p2;
     for (i = 0; i < param_num - 1; i++) {
-        Object * p1 = params[start_index + i];
-        Object * p2 = params[start_index + i + 1];
+        p1 = params[start_index + i];
+        p2 = params[start_index + i + 1];
         if (!num_equal_2(p1, p2)) {
             return GLOBAL_NULL;
         }
@@ -453,9 +450,10 @@ int lt_2(Object * p1, Object * p2){
 }
 Object *builtin_num_lt(Object ** params, int param_num, int start_index){
     int i;
+    Object *p1, *p2;
     for (i = 0; i < param_num - 1; i++) {
-        Object * p1 = params[start_index + i];
-        Object * p2 = params[start_index + i + 1];
+        p1 = params[start_index + i];
+        p2 = params[start_index + i + 1];
         if (!lt_2(p1, p2)) {
             return GLOBAL_NULL;
         }
@@ -517,9 +515,10 @@ int le_2(Object * p1, Object * p2){
 // 14 <=
 Object *builtin_num_le(Object ** params, int param_num, int start_index){
     int i;
+    Object *p1, *p2;
     for (i = 0; i < param_num - 1; i++) {
-        Object * p1 = params[start_index + i];
-        Object * p2 = params[start_index + i + 1];
+        p1 = params[start_index + i];
+        p2 = params[start_index + i + 1];
         if (!le_2(p1, p2)) {
             return GLOBAL_NULL;
         }
@@ -559,13 +558,7 @@ Object *builtin_string_type(Object ** params, int param_num, int start_index){
  16 ===> load int_index 1
  */
 /*
-// 17 int?
-Object *builtin_int_type(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == INTEGER)
-        return GLOBAL_TRUE;
-    return GLOBAL_NULL;
-}
- 17 ===> exit  
+ 17 exit
  eg: (exit 0)  print 0 then exit the program
  */
 Object * builtin_exit(Object ** params, int param_num, int start_index){
@@ -577,13 +570,7 @@ Object * builtin_exit(Object ** params, int param_num, int start_index){
     exit((int)params[start_index]->data.Integer.v);
 }
 /*
-// 18 float?
-Object *builtin_float_type(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == DOUBLE)
-        return GLOBAL_TRUE;
-    return GLOBAL_NULL;
-}
-   18 ===> >
+   18 >
  */
 Object *builtin_gt(Object ** params, int param_num, int start_index){
     int i;
@@ -595,13 +582,7 @@ Object *builtin_gt(Object ** params, int param_num, int start_index){
     return GLOBAL_TRUE;
 }
 /*
-// 19 pair?
-Object *builtin_pair_type(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == PAIR)
-        return GLOBAL_TRUE;
-    return GLOBAL_NULL;
-}
-   19 ===> >=
+   19 >=
  */
 Object *builtin_ge(Object ** params, int param_num, int start_index){
     int i;

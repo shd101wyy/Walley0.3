@@ -10,6 +10,11 @@
 #define walley_walley_h
 #include "vm.h"
 
+Object * Walley_Run_File_for_VM(char * file_name,
+                                Instructions * insts,
+                                Variable_Table * vt,
+                                Environment * env,
+                                MacroTable * mt);
 // debug
 #if WALLEY_DEBUG
 void Walley_Debug(/*Lexer * l, // lexer
@@ -124,6 +129,13 @@ void Walley_Repl(){
     Environment * env = GLOBAL_ENVIRONMENT;
     MacroTable * mt = GLOBAL_MACRO_TABLE;
     
+    // run walley_core.wa
+    Walley_Run_File_for_VM("walley_core.wa",
+                           insts,
+                           vt,
+                           env,
+                           mt);
+    
     int run_eval = true;
     
     //Environment * env = NULL;
@@ -217,6 +229,13 @@ void Walley_Run_File(char * file_name){
     Variable_Table * vt = GLOBAL_VARIABLE_TABLE;
     Environment * env = GLOBAL_ENVIRONMENT;
     MacroTable * mt = GLOBAL_MACRO_TABLE;
+    
+    // run walley_core.wa
+    Walley_Run_File_for_VM("walley_core.wa",
+                           insts,
+                           vt,
+                           env,
+                           mt);
 
     int run_eval = true;
     
@@ -246,7 +265,7 @@ void Walley_Run_File(char * file_name){
 /*
  suppose run .wa file
  */
-/*
+
 Object * Walley_Run_File_for_VM(char * file_name,
                                 Instructions * insts,
                                 Variable_Table * vt,
@@ -295,7 +314,6 @@ Object * Walley_Run_File_for_VM(char * file_name,
     free(content);
     return return_value;
 }
-*/
 #endif
 
 

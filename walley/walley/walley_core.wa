@@ -50,10 +50,24 @@
   [(#else body . rest)
    (display "ERROR: cond invalid statements.\n")]
   [(test body)
-  `(if ~test ~body ())]
+  `(if ~test ~body '())]
   [(test body . rest)
    `(if ~test ~body (cond ~@rest))])
 
+;; and
+(defmacro and 
+  [() 'true]
+  [(a) a]
+  [(a . b) `(if ~a (and ~@b) ())]
+  )	 
+
+;; or
+(defmacro or
+  [() ()]
+  [(a) a]
+  [(a . b) `(if ~a ~a (or ~@b))]
+  )
+	  
 ;; test cond
 ;(display (cond (= 0 1) (display "Hi1")
 ;               (= 2 3) (display "Hi2")
@@ -71,35 +85,6 @@
 	  [(macro-name args pattern)
 	   `(defmacro ~macro-name (~args ~pattern))])
 
-
-;; logic > macro
-(defm > [a b] `(< ~b ~a))
-(defm >= [a b] `(<= ~b ~a))
-
-
-
-;(display "TEST +\n")
-;; + - * / lambda extension
-;; where ! means doesn't replace to lambda
-;; so (!+ ~@b) means still use macro
-(defmacro +
-  [() 0]
-  [(a) a] 
-  [(a b) `(+ ~a ~b)]
-  [(a . b) `(+ ~a (!+ ~@b))])
-
-(defmacro -
-  [(a) `(- 0 ~a)]
-  [(a . b) `(- ~a (+ ~@b))])
-
-(defmacro * 
-  [() 1]
-  [(a) a]
-  [(a . b) `(* ~a (!* ~@b))])
-
-(defmacro / 
-  [(a) `(/ 1 a)]
-  [(a . b) `(/ ~a (* ~@b))])
 
 ;; str
 ;; eg (str "Hello " "World") -> "Hello World"
@@ -135,4 +120,3 @@
         (if (vector? b)
           (vector-length b)
           (error "Function len invalid data type"))))))
-

@@ -119,14 +119,17 @@ int macro_match(Object * a, Object * b, char **var_names, Object **var_values, i
     else{
         if (car(a)->type == STRING && car(a)->data.String.v[0] == '#') {
             // constant
-            if (str_eq(string_slice(car(a)->data.String.v, 1, (int)strlen(car(a)->data.String.v)), car(b)->data.String.v)) {
+            if(car(b)->type != STRING) return 0; // doesn't match
+            if (strcmp( &(*((char*)car(a)->data.String.v + 1)), car(b)->data.String.v) == 0) {
                 return macro_match(cdr(a),
                                    cdr(b),
                                    var_names,
                                    var_values,
                                    count);
             }
-            else return 0;
+            else{
+                return 0;
+            }
         }
         if (car(a)->type == STRING &&
             str_eq(car(a)->data.String.v, ".")) {
@@ -313,6 +316,7 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
             parser_debug(expanded_value);
             //exit(0);
 #endif
+            // printf("%s\n", to_string(expanded_value));
             // restore start-pc and length
             insts->start_pc = start_pc;
             insts->length = insts_length;
