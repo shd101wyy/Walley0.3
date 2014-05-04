@@ -170,7 +170,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "<");
     VT_push(vt, 0, "<=");
     VT_push(vt, 0, "eq?");
-    VT_push(vt, 0, "load");  // 16
+    VT_push(vt, 0, "eval");  // 16
     VT_push(vt, 0, "exit");  // 17
     VT_push(vt, 0, ">");// 18
     VT_push(vt, 0, ">="); // 19

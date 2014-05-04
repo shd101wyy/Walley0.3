@@ -18,6 +18,10 @@
 #define free_current_frame_pointer(current_frame_pointer) ((current_frame_pointer)->use_count)--; \
     EF_free((current_frame_pointer));
 
+#define vm_error_jump Object_free(accumulator); \
+accumulator = GLOBAL_NULL; \
+goto VM_END; \
+
 Object * Walley_Run_File_for_VM(char * file_name,
                                 Instructions * insts,
                                 Variable_Table * vt,
@@ -48,7 +52,7 @@ Object *VM(unsigned short * instructions,
     
     long integer_;
     // double double_;
-    // Environment * original_env = env; // save old env;
+    Environment * original_env = env; // save old env;
     Object * accumulator = GLOBAL_NULL;
     Environment_Frame * current_frame_pointer = NULL;
     Environment_Frame * temp_frame;
@@ -509,17 +513,24 @@ Object *VM(unsigned short * instructions,
                         
                     case INTEGER:
                         switch (v->data.Integer.v) {
-                                /*
-                            case 1: // load
+                                
+                            case 1: // eval
                                 pc = pc + 1;
                                 temp = current_frame_pointer->array[current_frame_pointer->length - param_num]; // get file name
                                 
+                                if (vt == NULL) {
+                                    printf("ERROR: eval function is only run time supported");
+                                    vm_error_jump
+                                }
                                 Instructions * temp_insts = Insts_init();
-                                accumulator = Walley_Run_File_for_VM(temp->data.String.v,
-                                    temp_insts,
-                                    vt,
-                                    original_env,
-                                    mt); // 可能这个mt就直接引用了
+                                accumulator = compiler_begin(temp_insts,
+                                                             parser(lexer(temp->data.String.v)),
+                                                             vt,
+                                                             NULL,
+                                                             NULL,
+                                                             1, original_env,
+                                                             mt);
+                                
                                 free(temp_insts->array);
                                 free(temp_insts);
                                 
@@ -545,7 +556,7 @@ Object *VM(unsigned short * instructions,
                                 
                                 // free lambda
                                 Object_free(v);
-                                continue;*/
+                                continue;
                             default:
                                 printf("ERROR: Invalid Lambda\n");
                                 // TODO: Object_free(v)
