@@ -413,10 +413,10 @@ void compiler(Instructions * insts,
             return;
         case DOUBLE:
             double_ = l->data.Double.v;
-            unsigned long * unsigned_int_ = (unsigned long*)&double_; // get hex
+            unsigned long long * unsigned_int_ = (unsigned long long*)&double_; // get hex
             Insts_push(insts, CONST_FLOAT);
-            Insts_push(insts, (0xFFFF000000000000ULL & (unsigned long)(*unsigned_int_)) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000ULL & (unsigned long)(*unsigned_int_)) >> 32);
+            Insts_push(insts, (0xFFFF000000000000ULL & (unsigned long long)(*unsigned_int_)) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000ULL & (unsigned long long)(*unsigned_int_)) >> 32);
             Insts_push(insts, (0x00000000FFFF0000 & (*unsigned_int_)) >> 16);
             Insts_push(insts, 0xFFFF & (*unsigned_int_));
             return;
