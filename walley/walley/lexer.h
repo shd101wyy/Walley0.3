@@ -10,11 +10,11 @@
 typedef unsigned int uint32_t;
 typedef signed int int32_t;
 // lexer struct
-typedef struct Lexer{
+struct Lexer{
     char ** string_array;
     int array_length;
     int array_size;
-}Lexer;
+};
 
 // init lexer
 Lexer * Lexer_init(){

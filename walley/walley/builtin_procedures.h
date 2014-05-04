@@ -593,11 +593,11 @@ Object *builtin_ge(Object ** params, int param_num, int start_index){
     }
     return GLOBAL_TRUE;
 }
-// 20 null?
-Object *builtin_null_type(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == NULL_)
-        return GLOBAL_TRUE;
-    return GLOBAL_NULL;
+// 20 parse
+// (parse "(def x 12)") => ((def x 12))
+Object *builtin_parse(Object ** params, int param_num, int start_index){
+    Lexer * l = lexer(params[start_index]->data.String.v);
+    return parser(l);
 }
 // 21 lambda?
 Object *builtin_lambda_type(Object ** params, int param_num, int start_index){

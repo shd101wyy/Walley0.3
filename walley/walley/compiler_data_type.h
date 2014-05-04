@@ -175,7 +175,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, ">");// 18
     VT_push(vt, 0, ">="); // 19
     
-    VT_push(vt, 0, "null?");
+    VT_push(vt, 0, "parse"); // 20
     VT_push(vt, 0, "lambda?");
     VT_push(vt, 0, "strcmp");
     VT_push(vt, 0, "string-slice");

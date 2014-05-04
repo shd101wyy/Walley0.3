@@ -9,9 +9,6 @@
 /* Begin PBXBuildFile section */
 		F6C86B61190E07240019820A /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B60190E07240019820A /* main.c */; };
 		F6C86B63190E07240019820A /* walley.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = F6C86B62190E07240019820A /* walley.1 */; };
-		F6C86B6A190E07390019820A /* data_type.h in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B69190E07390019820A /* data_type.h */; };
-		F6C86B6E190E07830019820A /* parser.h in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B6D190E07830019820A /* parser.h */; };
-		F6C86B70190E07C00019820A /* lexer.h in Sources */ = {isa = PBXBuildFile; fileRef = F6C86B6F190E07C00019820A /* lexer.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -152,10 +149,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F6C86B70190E07C00019820A /* lexer.h in Sources */,
 				F6C86B61190E07240019820A /* main.c in Sources */,
-				F6C86B6E190E07830019820A /* parser.h in Sources */,
-				F6C86B6A190E07390019820A /* data_type.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

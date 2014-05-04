@@ -27,6 +27,13 @@ Environment_Frame * EF_init_with_size(int size);
 
 void Object_free(Object * o);
 
+// lexer
+typedef struct Lexer Lexer;
+Lexer* lexer(char * input_string);
+
+// parser
+Object * parser(Lexer * le);
+
 static Object * GLOBAL_NULL;
 static Object * GLOBAL_TRUE;
 static Object * QUOTE_STRING;

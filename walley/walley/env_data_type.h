@@ -276,7 +276,7 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 17, &builtin_exit);
     EF_set_builtin_lambda(frame, 18, &builtin_gt);
     EF_set_builtin_lambda(frame, 19, &builtin_ge);
-    EF_set_builtin_lambda(frame, 20, &builtin_null_type);
+    EF_set_builtin_lambda(frame, 20, &builtin_parse);
     EF_set_builtin_lambda(frame, 21, &builtin_lambda_type);
     EF_set_builtin_lambda(frame, 22, &builtin_strcmp);
     EF_set_builtin_lambda(frame, 23, &builtin_string_slice);

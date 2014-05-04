@@ -2,6 +2,23 @@
 ;; walley language 
 ;; created by Yiyi Wang 
 ;; Copyright (c) Yiyi Wang. All rights reserved.
+(def walley-core-author 'Yiyi-Wang)
+(def walley-core-version 0.0012)
+
+
+
+;; check data type
+(def int? (lambda [v] (eq? (typeof v) 'integer)))
+(def integer? int?)
+(def float? (lambda [v] (eq? (typeof v) 'float)))
+(def pair? (lambda [v] (eq? (typeof v) 'pair)))
+(def list? pair?)
+;(defn ratio? [v] (eq? (typeof v) 'ratio))
+(def null? (lambda [v] (eq? v ())))
+(def vector? (lambda [v] (eq? (typeof v) 'vector)))
+;(defn lambda? [v] (eq? (typeof v) 'lambda))
+(def table? (lambda [v] (eq? (typeof v) 'table)))
+(def string? (lambda [v] (eq? (typeof v) 'string)))
 
 ;; append and reverse functions.
 ;; which will be used for macro expansion
@@ -35,6 +52,16 @@
           (list-length-iter n 0)))
 
 (def error (lambda [s] (display "ERROR: ") (display s)))
+
+;; defn macro
+;; like clojure
+;; (defn func-name args . body)
+(defmacro defn
+  [(func_name args . body)
+  `(def ~func_name (lambda ~args ~@body))
+  ]
+  )
+
 
 ;; list macro
 (defmacro list 
@@ -75,12 +102,6 @@
 ;               1
 ;               ))
 
-(defmacro defn
-  [(var_name args . body)
-  `(def ~var_name (lambda ~args ~@body))
-  ]
-  )
-
 (defmacro defm 
 	  [(macro-name args pattern)
 	   `(defmacro ~macro-name (~args ~pattern))])
@@ -96,18 +117,6 @@
                    (str-iter (cdr b)))))
   (str-iter b))
 
-;; check data type
-(defn int? [v] (eq? (typeof v) 'integer))
-(def integer? int?)
-(defn float? [v] (eq? (typeof v) 'float))
-(defn pair? [v] (eq? (typeof v) 'pair))
-(def list? pair?)
-;(defn ratio? [v] (eq? (typeof v) 'ratio))
-;(defn null? [v] (eq? v ()))
-(defn vector? [v] (eq? (typeof v) 'vector))
-;(defn lambda? [v] (eq? (typeof v) 'lambda))
-(defn table? [v] (eq? (typeof v) 'table))
-(defn string? [v] (eq? (typeof v) 'string))
 
 ;; get length of several data types
 (defn len [b] 
