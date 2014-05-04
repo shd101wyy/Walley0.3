@@ -523,13 +523,16 @@ Object *VM(unsigned short * instructions,
                                     vm_error_jump
                                 }
                                 Instructions * temp_insts = Insts_init();
+                                temp->use_count++;
                                 accumulator = compiler_begin(temp_insts,
-                                                             parser(lexer(temp->data.String.v)),
+                                                             temp->type == STRING?
+                                                             parser(lexer(temp->data.String.v)) : temp,
                                                              vt,
                                                              NULL,
                                                              NULL,
                                                              1, original_env,
                                                              mt);
+                                temp->use_count--;
                                 
                                 free(temp_insts->array);
                                 free(temp_insts);
