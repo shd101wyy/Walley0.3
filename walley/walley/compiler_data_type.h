@@ -172,8 +172,8 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "eq?");
     VT_push(vt, 0, "load");  // 16
     VT_push(vt, 0, "exit");  // 17
-    VT_push(vt, 0, "float?");
-    VT_push(vt, 0, "pair?");
+    VT_push(vt, 0, ">");// 18
+    VT_push(vt, 0, ">="); // 19
     
     VT_push(vt, 0, "null?");
     VT_push(vt, 0, "lambda?");

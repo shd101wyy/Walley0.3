@@ -110,12 +110,13 @@
     (string-append (car b)
                    (str-iter (cdr b)))))
   (str-iter b))
-(def list? pair?)
 
 ;; check data type
 (defn int? [v] (eq? (typeof v) 'integer))
 (def integer? int?)
-;(defn float? [v] (eq? (typeof v) 'float))
+(defn float? [v] (eq? (typeof v) 'float))
+(defn pair? [v] (eq? (typeof v) 'pair))
+(def list? pair?)
 ;(defn ratio? [v] (eq? (typeof v) 'ratio))
 ;(defn null? [v] (eq? v ()))
 (defn vector? [v] (eq? (typeof v) 'vector))

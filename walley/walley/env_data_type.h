@@ -274,8 +274,8 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 15, &builtin_eq);
     frame->array[16] = Object_initInteger(1); // load
     EF_set_builtin_lambda(frame, 17, &builtin_exit);
-    EF_set_builtin_lambda(frame, 18, &builtin_float_type);
-    EF_set_builtin_lambda(frame, 19, &builtin_pair_type);
+    EF_set_builtin_lambda(frame, 18, &builtin_gt);
+    EF_set_builtin_lambda(frame, 19, &builtin_ge);
     EF_set_builtin_lambda(frame, 20, &builtin_null_type);
     EF_set_builtin_lambda(frame, 21, &builtin_lambda_type);
     EF_set_builtin_lambda(frame, 22, &builtin_strcmp);
