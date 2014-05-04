@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
     // ######################################################
     
     //number_debug(Object_initRatio(-6, 15));
-    //Walley_Run_File("/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/test.wa");
+    // Walley_Run_File("/Users/wangyiyi/百度云同步盘/Github/Walley0.3/walley/walley/tutorial.wa");
     //return 0;
     if (argc == 1) {
         printf("\nWalley Language 0.3.8456\n");
