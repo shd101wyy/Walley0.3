@@ -4,7 +4,7 @@
 ;; Copyright (c) Yiyi Wang. All rights reserved.
 (def walley-core-author 'Yiyi-Wang)
 (def walley-core-version "0.0012")
-(def walley-language-version "0.3.8455")
+(def walley-language-version "0.3.8456")
 
 
 ;; check data type

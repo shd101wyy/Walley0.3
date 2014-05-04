@@ -47,8 +47,10 @@ Object * add_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return Object_initDouble(p1->data.Double.v + p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v + p2->data.Double.v);
                 case RATIO:
                     return Object_initDouble(p1->data.Double.v + p2->data.Ratio.numer/p2->data.Ratio.denom);
                 default:
@@ -104,8 +106,10 @@ Object * sub_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return Object_initDouble(p1->data.Double.v - p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v - p2->data.Double.v);
                 case RATIO:
                     return Object_initDouble(p1->data.Double.v - p2->data.Ratio.numer/p2->data.Ratio.denom);
                 default:
@@ -162,8 +166,10 @@ Object * mul_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return Object_initDouble(p1->data.Double.v * p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v * p2->data.Double.v);
                 case RATIO:
                     return Object_initDouble(p1->data.Double.v * p2->data.Ratio.numer/p2->data.Ratio.denom);
                 default:
@@ -221,8 +227,10 @@ Object * div_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return Object_initDouble(p1->data.Double.v / p2->data.Integer.v);
+                case DOUBLE:
+                    return Object_initDouble(p1->data.Double.v / p2->data.Double.v);
                 case RATIO:
                     return Object_initDouble(p1->data.Double.v / p2->data.Ratio.numer/p2->data.Ratio.denom);
                 default:
