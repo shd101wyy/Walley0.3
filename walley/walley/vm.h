@@ -179,8 +179,8 @@ Object *VM(unsigned short * instructions,
                         // free accumulator is necessary
                         Object_free(accumulator);
                         
-                        accumulator = Object_initInteger((long)(((long)instructions[pc + 1] << 48) |
-                                                                ((long)instructions[pc + 2] << 32) |
+                        accumulator = Object_initInteger((long)(((unsigned long long)instructions[pc + 1] << 48) |
+                                                                ((unsigned long long)instructions[pc + 2] << 32) |
                                                                 (instructions[pc + 3] << 16) |
                                                                 (instructions[pc + 4])));
                         pc = pc + 5;
@@ -189,8 +189,8 @@ Object *VM(unsigned short * instructions,
                         // free accumulator is necessary
                         Object_free(accumulator);
                     
-                        unsigned long integer__ = (unsigned long)(((unsigned long)instructions[pc + 1] << 48) |
-                                                                ((unsigned long)instructions[pc + 2] << 32) |
+                        unsigned long integer__ = (unsigned long)(((unsigned long long)instructions[pc + 1] << 48) |
+                                                                ((unsigned long long)instructions[pc + 2] << 32) |
                                                                 ((unsigned long)instructions[pc + 3] << 16) |
                                                                 ((unsigned long)instructions[pc + 4]));
                        

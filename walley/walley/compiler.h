@@ -406,8 +406,8 @@ void compiler(Instructions * insts,
                 return;
             }
             Insts_push(insts, CONST_INTEGER);
-            Insts_push(insts, (0xFFFF000000000000 & (unsigned long)int_) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000 & (unsigned long)int_) >> 32);
+            Insts_push(insts, (0xFFFF000000000000ULL & (unsigned long)int_) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000ULL & (unsigned long)int_) >> 32);
             Insts_push(insts, (0x00000000FFFF0000 & int_) >> 16);
             Insts_push(insts, 0xFFFF & int_);
             return;
@@ -415,8 +415,8 @@ void compiler(Instructions * insts,
             double_ = l->data.Double.v;
             unsigned long * unsigned_int_ = (unsigned long*)&double_; // get hex
             Insts_push(insts, CONST_FLOAT);
-            Insts_push(insts, (0xFFFF000000000000 & (unsigned long)(*unsigned_int_)) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000 & (unsigned long)(*unsigned_int_)) >> 32);
+            Insts_push(insts, (0xFFFF000000000000ULL & (unsigned long)(*unsigned_int_)) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000ULL & (unsigned long)(*unsigned_int_)) >> 32);
             Insts_push(insts, (0x00000000FFFF0000 & (*unsigned_int_)) >> 16);
             Insts_push(insts, 0xFFFF & (*unsigned_int_));
             return;
