@@ -3,8 +3,8 @@
 ;; created by Yiyi Wang 
 ;; Copyright (c) Yiyi Wang. All rights reserved.
 (def walley-core-author 'Yiyi-Wang)
-(def walley-core-version 0.0012)
-
+(def walley-core-version "0.0012")
+(def walley-language-version "0.3.8455")
 
 
 ;; check data type
@@ -16,7 +16,7 @@
 ;(defn ratio? [v] (eq? (typeof v) 'ratio))
 (def null? (lambda [v] (eq? v ())))
 (def vector? (lambda [v] (eq? (typeof v) 'vector)))
-;(defn lambda? [v] (eq? (typeof v) 'lambda))
+(def lambda? (lambda [v] (eq? (typeof v) 'lambda)))
 (def table? (lambda [v] (eq? (typeof v) 'table)))
 (def string? (lambda [v] (eq? (typeof v) 'string)))
 
@@ -129,3 +129,16 @@
         (if (vector? b)
           (vector-length b)
           (error "Function len invalid data type"))))))
+
+
+;; string=?
+;; string>?
+;; string<?
+;; string>=?
+;; string<=?
+
+(defn string=? [a b] (= (strcmp a b) 0))
+(defn string>? [a b] (> (strcmp a b) 0))
+(defn string<? [a b] (< (strcmp a b) 0))
+(defn string>=? [a b] (>= (strcmp a b) 0))
+(defn string<=? [a b] (<= (strcmp a b) 0))

@@ -601,11 +601,10 @@ Object *builtin_parse(Object ** params, int param_num, int start_index){
     Lexer * l = lexer(params[start_index]->data.String.v);
     return parser(l);
 }
-// 21 lambda?
-Object *builtin_lambda_type(Object ** params, int param_num, int start_index){
-    if(params[start_index]->type == USER_DEFINED_LAMBDA || params[start_index]->type == BUILTIN_LAMBDA)
-        return GLOBAL_TRUE;
-    return GLOBAL_NULL;
+// 21 random
+Object *builtin_random(Object ** params, int param_num, int start_index){
+    double r = rand();
+    return Object_initDouble(r/RAND_MAX);
 }
 // 22 strcmp  compare string
 Object *builtin_strcmp(Object ** params, int param_num, int start_index){

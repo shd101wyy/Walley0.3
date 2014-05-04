@@ -359,6 +359,9 @@ char * format_string(char * input_str){
                 case '\\':
                     s[j] = '\\';
                     break;
+                case '"':
+                    s[j] = '"';
+                    break;
                 default:
                     printf("ERROR: Invalid String Slash\n");
                     break;
