@@ -341,7 +341,7 @@ int num_equal_2(Object * p1, Object * p2){
                 case INTEGER:
                     return (p1->data.Integer.v == p2->data.Integer.v) ? 1 : 0;
                 case DOUBLE:
-                    return (p1->data.Integer.v == p2->data.Integer.v) ? 1 : 0;
+                    return (p1->data.Integer.v == p2->data.Double.v) ? 1 : 0;
                 case RATIO:
                     return (p1->data.Integer.v == p2->data.Ratio.numer/p2->data.Ratio.denom) ? 1 : 0;
                 default:
@@ -352,12 +352,12 @@ int num_equal_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return (p1->data.Double.v == p2->data.Integer.v) ?1 : 0;
-                    
+                case DOUBLE:
+                    return (p1->data.Double.v == p2->data.Double.v) ? 1 : 0;
                 case RATIO:
                     return (p1->data.Double.v == p2->data.Ratio.numer/p2->data.Ratio.denom) ? 1 : 0;
-                    
                 default:
                     printf("ERROR: = invalid data type\n");
                     printf("     :%s\n", to_string(p2));
@@ -405,7 +405,7 @@ int lt_2(Object * p1, Object * p2){
                 case INTEGER:
                     return (p1->data.Integer.v < p2->data.Integer.v) ? 1 : 0;
                 case DOUBLE:
-                    return (p1->data.Integer.v < p2->data.Integer.v) ? 1 : 0;
+                    return (p1->data.Integer.v < p2->data.Double.v) ? 1 : 0;
                 case RATIO:
                     return (p1->data.Integer.v < p2->data.Ratio.numer/p2->data.Ratio.denom) ? 1 : 0;
                 default:
@@ -416,9 +416,10 @@ int lt_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return (p1->data.Double.v < p2->data.Integer.v) ?1 : 0;
-                    
+                case DOUBLE:
+                    return (p1->data.Double.v < p2->data.Double.v) ? 1 : 0;
                 case RATIO:
                     return (p1->data.Double.v < p2->data.Ratio.numer/p2->data.Ratio.denom) ? 1 : 0;
                     
@@ -468,7 +469,7 @@ int le_2(Object * p1, Object * p2){
                 case INTEGER:
                     return (p1->data.Integer.v <= p2->data.Integer.v) ? 1 : 0;
                 case DOUBLE:
-                    return (p1->data.Integer.v <= p2->data.Integer.v) ? 1 : 0;
+                    return (p1->data.Integer.v <= p2->data.Double.v) ? 1 : 0;
                 case RATIO:
                     return (p1->data.Integer.v <= p2->data.Ratio.numer/p2->data.Ratio.denom) ? 1 : 0;
                 default:
@@ -479,9 +480,10 @@ int le_2(Object * p1, Object * p2){
             break;
         case DOUBLE:
             switch (p2->type) {
-                case INTEGER: case DOUBLE:
+                case INTEGER:
                     return (p1->data.Double.v <= p2->data.Integer.v) ?1 : 0;
-                    
+                case DOUBLE:
+                    return (p1->data.Double.v <= p2->data.Double.v) ? 1 : 0;
                 case RATIO:
                     return (p1->data.Double.v <= p2->data.Ratio.numer/p2->data.Ratio.denom) ? 1 : 0;
                     

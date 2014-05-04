@@ -42,7 +42,7 @@ Todo List:
 8. CALL 	   0x7  
 9. JMP 	   0x8  
 10. TEST 	   0x9  
-11. PUSH  0xA  保存到最top的frame上
+11. SET_TOP  0xA  保存到最top的frame上
 =================================================  
 ### first 4 bits instructions
 ```
@@ -157,6 +157,12 @@ TEST 1001 000000000000 ;; test value in accumulator if pass run next, otherwise 
 		00000000000000000 jmp steps
 
 ----------------------------------------------------------------
+SET_TOP 1010 0000000000000  1
+		---- index -------  2
+
+----------------------------------------------------------------
+
+
 self in lambda
 
 (lambda [n] (if (= n 0) 1 (* n (self (- n 1))))) ;; factorial

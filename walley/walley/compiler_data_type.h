@@ -28,7 +28,7 @@
 #define CALL 0x7
 #define JMP 0x8
 #define TEST 0x9
-#define PUSH 0xA
+#define SET_TOP 0xA
 
 /*
     construct Instructions data type

@@ -3,17 +3,23 @@
 ;; version 0.0012
 ;; created by Yiyi Wang
 ;; Copyright (c) Yiyi Wang. All right reserved
+
+(defn tutorial-test [prompt, required-exp]
+  (display prompt)
+  (def o (input "> "))
+  (if (eq? (eval o) required-exp)
+    'true
+    (tutorial-test prompt required-exp)))
 (defn tutorial-start []
   (def o ())
   (display "\n\n\n\n\n\nWelcome to the world of Walley Language\n")
   (display "Walley Language is a lisp dialect\n")
   (display "It is very easy to use\n")
   (display "And here is no specific syntax\n")
-  (display "Now, try type number 12 in terminal\n")
-  (set! o (input "> "))
-  (display "You typed: ");
-  (display o)
-  (display (typeof o))
+  (tutorial-test "Now try to type number 12 after >\n" 12)
+  (display "Yes, this is hwo to define a integer\n")
+  (tutorial-test "Now try to type number 12.3 after >\n" 12.3)
+  
   )
 
 (tutorial-start) ;; start tutorial

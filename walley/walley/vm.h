@@ -558,7 +558,8 @@ Object *VM(unsigned short * instructions,
                                 current_frame_pointer = frames_list[frames_list_length - 1];
                                 
                                 // free lambda
-                                Object_free(v);
+                                // this cannot be freed because it is a builtin-function
+                                // Object_free(v);
                                 continue;
                             default:
                                 printf("ERROR: Invalid Lambda\n");
@@ -586,20 +587,17 @@ Object *VM(unsigned short * instructions,
                 pc = pc + 2;
                 continue;
             // 不知道到底用不用是有这个opcode
-            case PUSH: // push to top frame
-                // printf("Push Index %d\n", env->frames[env->length-1]->length);
+            case SET_TOP: // set to top frame according to index
                 // set value and increase length
-                env->frames[env->length-1]->array[env->frames[env->length-1]->length] = accumulator;
+                env->frames[env->length-1]->array[instructions[pc+1]] = accumulator;
                 env->frames[env->length-1]->length++;
 
                 accumulator->use_count++; // increase use_count
-                pc++;
+                pc+=2;
                 continue;
             default:
                 printf("ERROR: Invalid opcode %d\n", opcode);
-                Object_free(accumulator);
-                accumulator = GLOBAL_NULL;
-                goto VM_END;
+                vm_error_jump
         }
     }
     

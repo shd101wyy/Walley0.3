@@ -620,7 +620,10 @@ void compiler(Instructions * insts,
                          env,
                          mt);
                 // add instruction
-                Insts_push(insts, PUSH << 12);
+                //Insts_push(insts, (SET << 12) | (vt->length - 1));
+                //Insts_push(insts, vt->frames[vt->length - 1]->length - 1);
+                Insts_push(insts, SET_TOP << 12);
+                Insts_push(insts, vt->frames[vt->length - 1]->length - 1);
                 return;
             }
             else if(str_eq(tag, "set!")){
