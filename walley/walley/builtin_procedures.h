@@ -725,7 +725,7 @@ Object * builtin_int_to_string(Object ** params, uint32_t param_num, uint32_t st
     char * o;
     switch(param_num){
         case 1:
-            sprintf(b, "%lld", (int64_t)params[start_index]->data.Integer.v);
+            sprintf(b, "%lld", (long long int)params[start_index]->data.Integer.v);
             o = malloc(sizeof(char) * (strlen(b) + 1));
             strcpy(o, b);
             return Object_initString(o, strlen(o));

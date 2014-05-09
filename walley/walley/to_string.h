@@ -21,13 +21,13 @@ char * number_to_string(Object * x){
 
     switch (x->type) {
         case INTEGER:
-            sprintf(buffer, "%lld", x->data.Integer.v);
+            sprintf(buffer, "%lld", (long long int)x->data.Integer.v);
             break;
         case DOUBLE:
             sprintf(buffer, "%lf", x->data.Double.v);
             break;
         case RATIO:
-            sprintf(buffer, "%lld/%lld", x->data.Ratio.numer, x->data.Ratio.denom);
+            sprintf(buffer, "%lld/%lld", (long long int)x->data.Ratio.numer, (long long int)x->data.Ratio.denom);
             break;
         default:
             return "()";
