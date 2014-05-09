@@ -222,6 +222,7 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "math-floor");  // 60
     VT_push(vt, 0, "string-find");  // 61
     VT_push(vt, 0, "string-replace");  // 62
+    VT_push(vt, 0, "apply");   // 63
     return vt;
 }
 

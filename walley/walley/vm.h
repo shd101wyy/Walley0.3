@@ -306,9 +306,8 @@ Object *VM(uint16_t * instructions,
                 switch (v->type){
                     case BUILTIN_LAMBDA: // builtin lambda
                         func_ptr = v->data.Builtin_Lambda.func_ptr;
-                        pc = pc + 1;
                         accumulator = (*func_ptr)(current_frame_pointer->array, param_num, current_frame_pointer->length - param_num); // call function
-                        
+                    eval_builtin_lambda:
                         accumulator->use_count++; //必须在pop parameters之前运行这个 eg (car '((x))) 得到了 (x)， 但是如果 accumulator->use_count不加加的话 (x)会被free掉，
                         // 在 pop 完 parameters之后在 decrease accumulator->use_count
                         // pop parameters
@@ -323,6 +322,8 @@ Object *VM(uint16_t * instructions,
                             current_frame_pointer->length--; // decrease length
                         }
                         accumulator->use_count--;
+                        
+                        pc = pc + 1;
                         
                         // free current_frame_pointer
                         free_current_frame_pointer(current_frame_pointer);
@@ -453,6 +454,8 @@ Object *VM(uint16_t * instructions,
                             goto VM_END;
                         }
                     case USER_DEFINED_LAMBDA: // user defined function
+                    eval_user_defined_lambda:
+                        // printf("HERE");
                         required_param_num = v->data.User_Defined_Lambda.param_num;
                         required_variadic_place = v->data.User_Defined_Lambda.variadic_place;
                         start_pc = v->data.User_Defined_Lambda.start_pc;
@@ -506,17 +509,15 @@ Object *VM(uint16_t * instructions,
                         current_frame_pointer = frames_list[frames_list_length - 1];
                         
                         // free lambda
-                        if(accumulator != v) //这里是处理 ((lambda [] 'x))的 bug
-                            Object_free(v);
-                        
+                        //if(accumulator != v) //这里是处理 ((lambda [] 'x))的 bug
+                        //    Object_free(v);
                         continue;
                         
                     case INTEGER:
                         switch (v->data.Integer.v) {
-                                
                             case 1: // eval
                                 pc = pc + 1;
-                                temp = current_frame_pointer->array[current_frame_pointer->length - param_num]; // get file name
+                                temp = current_frame_pointer->array[current_frame_pointer->length - param_num]; // get first parameter
                                 
                                 if (vt == NULL) {
                                     printf("ERROR: eval function is only run time supported");
@@ -561,6 +562,57 @@ Object *VM(uint16_t * instructions,
                                 // this cannot be freed because it is a builtin-function
                                 // Object_free(v);
                                 continue;
+                            case 2: // apply
+                                // pc = pc + 1; //不同 +1 因为后面goto后会改变pc
+                                v = current_frame_pointer->array[current_frame_pointer->length - param_num]; // get func
+                                temp = current_frame_pointer->array[current_frame_pointer->length - param_num + 1];
+                                    // get params
+                                switch (v->type) {
+                                    case BUILTIN_LAMBDA: // builtin lambda
+                                                         // push parameters to stack
+                                        param_num = 0; // include apply and temp
+                                        while (temp != GLOBAL_NULL) {
+                                            current_frame_pointer->array[current_frame_pointer->length] = car(temp);
+                                            car(temp)->use_count++;
+                                            current_frame_pointer->length++;
+                                            temp = cdr(temp);
+                                            param_num++;
+                                        }
+                                        accumulator = v->data.Builtin_Lambda.func_ptr(current_frame_pointer->array,
+                                                    param_num,
+                                                    current_frame_pointer->length - param_num);
+                                        param_num+=2; // include apply and temp
+                                        goto eval_builtin_lambda;
+                                        
+                                    case USER_DEFINED_LAMBDA: // user defined lambda
+                                        temp_frame = EF_init_with_size(64); // create temp frame for user defined lambda
+                                        
+                                        while (temp != GLOBAL_NULL) {
+                                            temp_frame->array[temp_frame->length] = car(temp);
+                                            car(temp)->use_count++;
+                                            temp = cdr(temp);
+                                            temp_frame->length++;
+                                        }
+                                        temp_frame->use_count++;
+                                        
+                                        // pop parameters
+                                        for(i = 0; i < param_num; i++){
+                                            temp = current_frame_pointer->array[current_frame_pointer->length - 1];
+                                            temp->use_count--; // －1 因为在push的时候加1了
+                                            Object_free(temp);
+                                            
+                                            current_frame_pointer->length--; // decrease length
+                                        }
+                                        // free current_frame_pointer
+                                        free_current_frame_pointer(current_frame_pointer);
+                                        
+                                        current_frame_pointer = temp_frame;
+                                        goto eval_user_defined_lambda;
+                                    default:
+                                        printf("ERROR: Invalid lambda\n");
+                                        vm_error_jump
+                                }
+                                
                             default:
                                 printf("ERROR: Invalid Lambda\n");
                                 // TODO: Object_free(v)

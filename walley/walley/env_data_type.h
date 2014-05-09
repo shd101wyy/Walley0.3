@@ -273,6 +273,7 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 14, &builtin_num_le);
     EF_set_builtin_lambda(frame, 15, &builtin_eq);
     frame->array[16] = Object_initInteger(1); // eval
+    frame->array[16]->use_count++;
     EF_set_builtin_lambda(frame, 17, &builtin_exit);
     EF_set_builtin_lambda(frame, 18, &builtin_gt);
     EF_set_builtin_lambda(frame, 19, &builtin_ge);
@@ -321,8 +322,10 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 60, &builtin_floor);
     EF_set_builtin_lambda(frame, 61, &builtin_string_find);
     EF_set_builtin_lambda(frame, 62, &builtin_string_replace);
-
-    frame->length = 45; // set length
+    frame->array[63] = Object_initInteger(2); // apply
+    frame->array[63]->use_count++;
+    
+    frame->length = 64; // set length
     return frame;
 }
 /*
