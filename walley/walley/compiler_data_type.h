@@ -201,7 +201,25 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "gensym");
     VT_push(vt, 0, "table-add-tag");
     VT_push(vt, 0, "table-tag");
-    VT_push(vt, 0, "typeof");
+    VT_push(vt, 0, "typeof");  // 44
+    VT_push(vt, 0, "math-cos");  // 45
+    VT_push(vt, 0, "math-sin");
+    VT_push(vt, 0, "math-tan");
+    VT_push(vt, 0, "math-acos");
+    VT_push(vt, 0, "math-asin");
+    
+    VT_push(vt, 0, "math-atan");  // 50
+    VT_push(vt, 0, "math-cosh");  // 51
+    VT_push(vt, 0, "math-sinh");  // 52
+    VT_push(vt, 0, "math-tanh");  // 53
+    VT_push(vt, 0, "math-log");  // 54
+    VT_push(vt, 0, "math-exp");  // 55
+    VT_push(vt, 0, "math-log10");  // 56
+    VT_push(vt, 0, "math-pow");  // 57
+    VT_push(vt, 0, "math-sqrt");  // 58
+    VT_push(vt, 0, "math-ceil");  // 59
+
+    VT_push(vt, 0, "math-floor");  // 60
 
     return vt;
 }

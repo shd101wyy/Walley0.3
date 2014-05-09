@@ -1,7 +1,7 @@
 #ifndef builtin_procedures_h
 #define builtin_procedures_h
 #include "to_string.h"
-
+#include <math.h>
 
 static int GEN_SYM_COUNT = 0;
 /*
@@ -861,6 +861,284 @@ Object * builtin_typeof(Object ** params, int param_num, int start_index){
         case TABLE:
             return TABLE_STRING;
         default:
+            return GLOBAL_NULL;
+    }
+}
+
+
+// 45 math-cos
+Object * builtin_cos(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(cos(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(cos(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(cos((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-cos invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 46 math-sin
+Object * builtin_sin(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(sin(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(sin(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(sin((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-sin invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 47 math-tan
+Object * builtin_tan(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(tan(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(tan(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(tan((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-tan invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 48 math-acos
+Object * builtin_acos(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(acos(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(acos(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(acos((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-acos invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 49 math-asin
+Object * builtin_asin(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(asin(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(asin(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(asin((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-asin invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 50 math-atan
+Object * builtin_atan(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(atan(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(atan(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(atan((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-atan invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 51 math-cosh
+Object * builtin_cosh(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(cosh(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(cosh(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(cosh((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-cosh invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 52 math-sinh
+Object * builtin_sinh(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(sinh(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(sinh(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(sinh((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-sinh invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 53 math-tanh
+Object * builtin_tanh(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(tanh(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(tanh(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(tanh((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-tanh invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+
+// 54 math-log
+Object * builtin_log(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(log(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(log(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(log((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-log invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 55 math-exp
+Object * builtin_exp(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(exp(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(exp(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(exp((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-exp invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 56 math-log10
+Object * builtin_log10(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(log10(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(log10(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(log10((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-log10 invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 57 math-pow
+Object * builtin_pow(Object ** params, int param_num, int start_index){
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index + 1];
+    switch (p1->type) {
+        case INTEGER:
+            switch (p2->type) {
+                case INTEGER:
+                    return Object_initInteger(pow(p1->data.Integer.v, p2->data.Integer.v));
+                case DOUBLE:
+                    return Object_initDouble(pow(p1->data.Integer.v, p2->data.Double.v));
+                case RATIO:
+                    return Object_initDouble(pow(p1->data.Integer.v, p2->data.Ratio.numer / (double)p2->data.Ratio.denom));
+                default:
+                    printf("ERROR: Function math-pow invalid param type");
+                    return GLOBAL_NULL;
+            }
+        case DOUBLE:
+            switch (p2->type) {
+                case INTEGER:
+                    return Object_initDouble(pow(p1->data.Double.v, p2->data.Integer.v));
+                case DOUBLE:
+                    return Object_initDouble(pow(p1->data.Double.v, p2->data.Double.v));
+                case RATIO:
+                    return Object_initDouble(pow(p1->data.Double.v, p2->data.Ratio.numer / (double)p2->data.Ratio.denom));
+                default:
+                    printf("ERROR: Function math-pow invalid param type");
+                    return GLOBAL_NULL;
+            }
+        case RATIO:
+            switch (p2->type) {
+                case INTEGER:
+                    return Object_initRatio(pow(p1->data.Ratio.numer, p2->data.Integer.v),
+                                            pow(p1->data.Ratio.denom, p2->data.Integer.v));
+                    break;
+                case DOUBLE:
+                    return Object_initDouble(pow((double)p1->data.Ratio.numer / p1->data.Ratio.denom, p2->data.Double.v));
+                case RATIO:
+                    return Object_initDouble(pow((double)p1->data.Ratio.numer / p1->data.Ratio.denom,
+                                                 (double)p2->data.Ratio.numer / p2->data.Ratio.denom));
+                default:
+                    printf("ERROR: Function math-pow invalid param type");
+                    return GLOBAL_NULL;
+            }
+
+        default:
+            printf("ERROR: Function math-pow invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 58 math-sqrt
+Object * builtin_sqrt(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(sqrt(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(sqrt(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(sqrt((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-sqrt invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 59 math-ceil
+Object * builtin_ceil(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(ceil(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(ceil(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(ceil((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-ceil invalid param type");
+            return GLOBAL_NULL;
+    }
+}
+// 60 math-floor
+Object * builtin_floor(Object ** params, int param_num, int start_index){
+    Object * p = params[start_index];
+    switch (p->type) {
+        case INTEGER:
+            return Object_initDouble(floor(p->data.Integer.v));
+        case DOUBLE:
+            return Object_initDouble(floor(p->data.Double.v));
+        case RATIO:
+            return Object_initDouble(floor((double)p->data.Ratio.numer / p->data.Ratio.denom));
+        default:
+            printf("ERROR: Function math-floor invalid param type");
             return GLOBAL_NULL;
     }
 }

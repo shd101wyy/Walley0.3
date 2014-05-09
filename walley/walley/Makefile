@@ -1,16 +1,10 @@
 all:
-	gcc main.c -o walley
+	gcc main.c -o walley -lm
 install:
 	cp walley /usr/local/bin
 	cp walley_core.wa /usr/local/bin
 	rm -rf *.o walley a.out
 fast:
-	gcc main.c -O3 -o walley
-test:
-	gcc main.c -g -Wall -Werror -o walley
-parser:
-	gcc parser.h -g -Wall -Werror -o walley
-lexer:
-	gcc lexer.h -g -Wall -Werror -o walley
+	gcc main.c -O3 -o walley -lm
 clean:
 	rm -rf *.o walley a.out

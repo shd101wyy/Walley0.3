@@ -295,6 +295,111 @@ defn abs [a]
 
 
 
+def x 3 + 4
+
+def add function (a b) a + b end
+
+def swap function (a b)
+    let temp a do
+        set! a b
+        set! b a
+    end
+end
+
+def swap function(a b)
+    let 
+
+
+def a 12
+def b 13
+swap[a b]
+
+def max function ( . l)
+    def max-iter function (l m) 
+        if null?[l]
+            m
+        elif car[l] > m
+            max-iter[cdr[l],
+                     car[l]]
+        else
+            max-iter[cdr[l]
+                    m]
+    max-iter[l car[l]]
+    end
+
+(定义 x 12)
+(定义 y 20)
+(+ x y)
+(定义 add (函数 (a b) 
+               (+ a b)))
+(定义 z (add x y)) 
+(定义 max (函数 (. l)
+    (定义 max-iter (函数 (l m)
+                    (如果 (null? l)
+                        m
+                    (如果 (> (car l) 
+                             m)
+                        (max-iter (cdr l)
+                                  (car l))
+                        (max-iter (cdr l)
+                                  m)))))
+    (max-iter l (car l)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -303,6 +303,23 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 42, &builtin_table_add_tag);
     EF_set_builtin_lambda(frame, 43, &builtin_table_tag);
     EF_set_builtin_lambda(frame, 44, &builtin_typeof);
+    EF_set_builtin_lambda(frame, 45, &builtin_cos);
+    EF_set_builtin_lambda(frame, 46, &builtin_sin);
+    EF_set_builtin_lambda(frame, 47, &builtin_tan);
+    EF_set_builtin_lambda(frame, 48, &builtin_acos);
+    EF_set_builtin_lambda(frame, 49, &builtin_asin);
+    EF_set_builtin_lambda(frame, 50, &builtin_atan);
+    EF_set_builtin_lambda(frame, 51, &builtin_cosh);
+    EF_set_builtin_lambda(frame, 52, &builtin_sinh);
+    EF_set_builtin_lambda(frame, 53, &builtin_tanh);
+    EF_set_builtin_lambda(frame, 54, &builtin_log);
+    EF_set_builtin_lambda(frame, 55, &builtin_exp);
+    EF_set_builtin_lambda(frame, 56, &builtin_log10);
+    EF_set_builtin_lambda(frame, 57, &builtin_pow);
+    EF_set_builtin_lambda(frame, 58, &builtin_sqrt);
+    EF_set_builtin_lambda(frame, 59, &builtin_ceil);
+    EF_set_builtin_lambda(frame, 60, &builtin_floor);
+
     frame->length = 45; // set length
     return frame;
 }
