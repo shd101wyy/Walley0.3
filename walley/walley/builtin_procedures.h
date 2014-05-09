@@ -3,12 +3,12 @@
 #include "to_string.h"
 #include <math.h>
 
-static int GEN_SYM_COUNT = 0;
+static uint32_t GEN_SYM_COUNT = 0;
 /*
  builtin lambdas
  */
 // 0 cons
-Object *builtin_cons(Object ** params, int param_num, int start_index){
+Object *builtin_cons(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * o = allocateObject();
     Object * car = params[start_index];
     Object * cdr = params[start_index+1];
@@ -21,11 +21,11 @@ Object *builtin_cons(Object ** params, int param_num, int start_index){
     return o;
 }
 // 1 car
-Object *builtin_car(Object ** params, int param_num, int start_index){
+Object *builtin_car(Object ** params, uint32_t param_num, uint32_t start_index){
     return car(params[start_index]);
 }
 // 2 cdr
-Object *builtin_cdr(Object ** params, int param_num, int start_index){
+Object *builtin_cdr(Object ** params, uint32_t param_num, uint32_t start_index){
     return cdr(params[start_index]);
 }
 // 3 +
@@ -76,10 +76,10 @@ Object * add_2(Object * p1, Object * p2){
             return GLOBAL_NULL;
     }
 }
-Object *builtin_add(Object ** params, int param_num, int start_index){
+Object *builtin_add(Object ** params, uint32_t param_num, uint32_t  start_index){
     Object * return_val = params[start_index];
     Object *p1, * p2;
-    int i;
+    int32_t i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
         p1 = return_val;
@@ -136,10 +136,10 @@ Object * sub_2(Object * p1, Object * p2){
     }
 }
 // 4 -
-Object *builtin_sub(Object ** params, int param_num, int start_index){
+Object *builtin_sub(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * return_val = params[start_index];
     Object *p1, * p2;
-    int i;
+    int32_t i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
         p1 = return_val;
@@ -196,10 +196,10 @@ Object * mul_2(Object * p1, Object * p2){
     }
 }
 // 5 *
-Object *builtin_mul(Object ** params, int param_num, int start_index){
+Object *builtin_mul(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * return_val = params[start_index];
     Object *p1, * p2;
-    int i;
+    uint32_t i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
         p1 = return_val;
@@ -257,10 +257,10 @@ Object * div_2(Object * p1, Object * p2){
     }
 }
 // 6 /
-Object *builtin_div(Object ** params, int param_num, int start_index){
+Object *builtin_div(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * return_val = params[start_index];
     Object *p1, * p2;
-    int i;
+    int32_t i;
     for (i = 1; i < param_num; i++) {
         p2 = params[i + start_index];
         p1 = return_val;
@@ -272,9 +272,9 @@ Object *builtin_div(Object ** params, int param_num, int start_index){
 
 }
 // 7 vector!
-Object *builtin_vector(Object ** params, int param_num, int start_index){
-    int size = (param_num / 16 + 1) * 16; // determine the size
-    int i = 0;
+Object *builtin_vector(Object ** params, uint32_t param_num, uint32_t start_index){
+    int32_t size = (param_num / 16 + 1) * 16; // determine the size
+    int32_t i = 0;
     Object * v = Object_initVector(1, size);
     Object *temp;
     for(; i < param_num; i++){
@@ -287,8 +287,8 @@ Object *builtin_vector(Object ** params, int param_num, int start_index){
     return v;
 }
 // 8 vector
-Object *builtin_vector_with_unchangable_length(Object ** params, int param_num, int start_index){
-    int i = 0;
+Object *builtin_vector_with_unchangable_length(Object ** params, uint32_t param_num, uint32_t start_index){
+    uint32_t i = 0;
     Object * v = Object_initVector(0, param_num);
     Object * temp;
     for(; i < param_num; i++){
@@ -300,16 +300,16 @@ Object *builtin_vector_with_unchangable_length(Object ** params, int param_num, 
     return v;
 }
 // 9 vector-length
-Object *builtin_vector_length(Object ** params, int param_num, int start_index){
+Object *builtin_vector_length(Object ** params, uint32_t param_num, uint32_t start_index){
     return Object_initInteger(vector_Length(params[start_index]));
 }
 // 10 vector-push!
-Object *builtin_vector_push(Object ** params, int param_num, int start_index){
-    long i = 0;
+Object *builtin_vector_push(Object ** params, uint32_t param_num, uint32_t start_index){
+    int64_t i = 0;
     Object * vec = params[start_index];
     Object * temp;
-    unsigned long length = vector_Length(vec);
-    unsigned long size = vector_Size(vec);
+    uint64_t length = vector_Length(vec);
+    uint64_t size = vector_Size(vec);
     for(i = 1; i < param_num; i++){
         if(length == size){
             if(vec->data.Vector.resizable){
@@ -330,9 +330,9 @@ Object *builtin_vector_push(Object ** params, int param_num, int start_index){
     return params[start_index];
 }
 // 11 vector-pop!
-Object *builtin_vector_pop(Object ** params, int param_num, int start_index){
+Object *builtin_vector_pop(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * vec = params[start_index];
-    unsigned long length = vector_Length(vec);
+    uint64_t length = vector_Length(vec);
     
     Object *return_out = vector_Get(vec, length - 1); // get pop value
     return_out->use_count--;                          // decrement use count
@@ -342,7 +342,7 @@ Object *builtin_vector_pop(Object ** params, int param_num, int start_index){
     vec->data.Vector.length = length; // reset length
     return return_out;
 }
-int num_equal_2(Object * p1, Object * p2){
+int32_t num_equal_2(Object * p1, Object * p2){
     switch (p1->type) {
         case INTEGER:
             switch (p2->type) {
@@ -393,8 +393,8 @@ int num_equal_2(Object * p1, Object * p2){
     }
 }
 // 12 =
-Object *builtin_num_equal(Object ** params, int param_num, int start_index){
-    int i;
+Object *builtin_num_equal(Object ** params, uint32_t param_num, uint32_t start_index){
+    uint32_t i;
     Object *p1, *p2;
     for (i = 0; i < param_num - 1; i++) {
         p1 = params[start_index + i];
@@ -406,7 +406,7 @@ Object *builtin_num_equal(Object ** params, int param_num, int start_index){
     return GLOBAL_TRUE;
 }
 // 13 <
-int lt_2(Object * p1, Object * p2){
+int32_t lt_2(Object * p1, Object * p2){
     switch (p1->type) {
         case INTEGER:
             switch (p2->type) {
@@ -457,8 +457,8 @@ int lt_2(Object * p1, Object * p2){
             return 0;
     }
 }
-Object *builtin_num_lt(Object ** params, int param_num, int start_index){
-    int i;
+Object *builtin_num_lt(Object ** params, uint32_t param_num, uint32_t start_index){
+    uint32_t i;
     Object *p1, *p2;
     for (i = 0; i < param_num - 1; i++) {
         p1 = params[start_index + i];
@@ -470,7 +470,7 @@ Object *builtin_num_lt(Object ** params, int param_num, int start_index){
     return GLOBAL_TRUE;
 }
 
-int le_2(Object * p1, Object * p2){
+int32_t le_2(Object * p1, Object * p2){
     switch (p1->type) {
         case INTEGER:
             switch (p2->type) {
@@ -523,8 +523,8 @@ int le_2(Object * p1, Object * p2){
 
 }
 // 14 <=
-Object *builtin_num_le(Object ** params, int param_num, int start_index){
-    int i;
+Object *builtin_num_le(Object ** params, uint32_t param_num, uint32_t start_index){
+    uint32_t i;
     Object *p1, *p2;
     for (i = 0; i < param_num - 1; i++) {
         p1 = params[start_index + i];
@@ -535,15 +535,15 @@ Object *builtin_num_le(Object ** params, int param_num, int start_index){
     }
     return GLOBAL_TRUE;
 }
-int eq_2(Object * p1, Object * p2){
+int32_t eq_2(Object * p1, Object * p2){
     if(( p1->type == INTEGER || p1->type == DOUBLE || p1->type == RATIO) && (p2->type == INTEGER || p2->type == DOUBLE || p2->type == RATIO)){
         return num_equal_2(p1, p2);
     }
     return (p1 == p2) ? 1 : 0;
 }
 // 15 eq?
-Object *builtin_eq(Object ** params, int param_num, int start_index){
-    int i;
+Object *builtin_eq(Object ** params, uint32_t param_num, uint32_t start_index){
+    uint32_t i;
     for (i = 0; i < param_num - 1; i++) {
         Object * p1 = params[start_index + i];
         Object * p2 = params[start_index + i + 1];
@@ -571,7 +571,7 @@ Object *builtin_string_type(Object ** params, int param_num, int start_index){
  17 exit
  eg: (exit 0)  print 0 then exit the program
  */
-Object * builtin_exit(Object ** params, int param_num, int start_index){
+Object * builtin_exit(Object ** params, uint32_t param_num, uint32_t start_index){
     if (param_num == 0) {
         printf("0\n");
         exit(0);
@@ -582,8 +582,8 @@ Object * builtin_exit(Object ** params, int param_num, int start_index){
 /*
    18 >
  */
-Object *builtin_gt(Object ** params, int param_num, int start_index){
-    int i;
+Object *builtin_gt(Object ** params, uint32_t param_num, uint32_t start_index){
+    int32_t i;
     for (i = param_num - 2; i >= 0; i--) {
         if (le_2(params[start_index + i], params[start_index + i + 1])) {
             return GLOBAL_NULL;
@@ -594,8 +594,8 @@ Object *builtin_gt(Object ** params, int param_num, int start_index){
 /*
    19 >=
  */
-Object *builtin_ge(Object ** params, int param_num, int start_index){
-    int i;
+Object *builtin_ge(Object ** params, uint32_t param_num, uint32_t start_index){
+    int32_t i;
     for (i = param_num - 2; i >= 0; i--) {
         if (lt_2(params[start_index + i], params[start_index + i + 1])) {
             return GLOBAL_NULL;
@@ -605,28 +605,28 @@ Object *builtin_ge(Object ** params, int param_num, int start_index){
 }
 // 20 parse
 // (parse "(def x 12)") => ((def x 12))
-Object *builtin_parse(Object ** params, int param_num, int start_index){
+Object *builtin_parse(Object ** params, uint32_t param_num, uint32_t start_index){
     Lexer * l = lexer(params[start_index]->data.String.v);
     return parser(l);
 }
 // 21 random
-Object *builtin_random(Object ** params, int param_num, int start_index){
+Object *builtin_random(Object ** params, uint32_t param_num, uint32_t start_index){
     double r = rand();
     return Object_initDouble(r/RAND_MAX);
 }
 // 22 strcmp  compare string
-Object *builtin_strcmp(Object ** params, int param_num, int start_index){
-    int i = strcmp(params[start_index]->data.String.v, params[start_index+1]->data.String.v);
+Object *builtin_strcmp(Object ** params, uint32_t param_num, uint32_t start_index){
+    int32_t i = strcmp(params[start_index]->data.String.v, params[start_index+1]->data.String.v);
     return Object_initInteger(i);
 }
 // 23 string-slice
-Object *builtin_string_slice(Object ** params, int param_num, int start_index){
+Object *builtin_string_slice(Object ** params, uint32_t param_num, uint32_t start_index){
     char * s = params[start_index]->data.String.v;
-    long start = params[start_index+1]->data.Integer.v;
-    long end = params[start_index+2]->data.Integer.v;
-    long length = end - start;
+    int64_t start = params[start_index+1]->data.Integer.v;
+    int64_t end = params[start_index+2]->data.Integer.v;
+    int64_t length = end - start;
     char * out = (char*)malloc(sizeof(char) * (length + 1));
-    int i = 0;
+    uint32_t i = 0;
     for(; i < length; i++){
         out[i] = s[i + start];
     }
@@ -634,14 +634,14 @@ Object *builtin_string_slice(Object ** params, int param_num, int start_index){
     return Object_initString(out, length);
 }
 // 24 string-length
-Object *builtin_string_length(Object ** params, int param_num, int start_index){
+Object *builtin_string_length(Object ** params, uint32_t param_num, uint32_t start_index){
     return Object_initInteger(string_Length(params[start_index]));
 }
 // 25 string-append
-Object *builtin_string_append(Object ** params, int param_num, int start_index){
+Object *builtin_string_append(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * s1 = params[start_index];
     Object * s2 = params[start_index+1];
-    unsigned long sum_length = string_Length(s1) + string_Length(s2) + 1;
+    uint64_t sum_length = string_Length(s1) + string_Length(s2) + 1;
     char *out_ = (char*)malloc(sizeof(char)*(sum_length));
     strcpy(out_, s1->data.String.v);
     strcat(out_, s2->data.String.v);
@@ -652,24 +652,24 @@ Object *builtin_string_append(Object ** params, int param_num, int start_index){
 }
 // 26 table
 // (table 'a 12 'b 16)
-Object *builtin_make_table(Object ** params, int param_num, int start_index){
+Object *builtin_make_table(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * table = Object_initTable( param_num == 0? 16 : (int)param_num/0.6);
-    unsigned int i = 0;
+    uint32_t i = 0;
     for(; i < param_num; i = i + 2){
         Table_setval(table, params[i + start_index], params[i + start_index + 1]);
     }
     return table;
 }
 // 27 table-keys
-Object *builtin_table_keys(Object ** params, int param_num, int start_index){
+Object *builtin_table_keys(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * table = params[start_index];
     return table_getKeys(table);
 }
 // 28 table-delete
-Object *builtin_table_delete(Object ** params, int param_num, int start_index){
+Object *builtin_table_delete(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * table = params[start_index];
     Object * key = params[start_index+1];
-    unsigned long hash_value = hash(key->data.String.v, table->data.Table.size);
+    uint64_t hash_value = hash(key->data.String.v, table->data.Table.size);
     Table_Pair * table_pairs = table->data.Table.vec[hash_value]; // get pairs
     while(table_pairs!=NULL){
         if( table_pairs->key == key || strcmp(key->data.String.v, table_pairs->key->data.String.v) == 0){
@@ -686,7 +686,7 @@ Object *builtin_table_delete(Object ** params, int param_num, int start_index){
 // 29 file-read
 // (file-read "test.toy")
 // return string
-Object * builtin_file_read(Object ** params, int param_num, int start_index){
+Object * builtin_file_read(Object ** params, uint32_t param_num, uint32_t start_index){
     char * file_name = params[start_index]->data.String.v;
     FILE* file = fopen(file_name,"r");
     if(file == NULL)
@@ -695,7 +695,7 @@ Object * builtin_file_read(Object ** params, int param_num, int start_index){
     }
     
     fseek(file, 0, SEEK_END);
-    long int size = ftell(file);
+    uint64_t size = ftell(file);
     rewind(file);
     
     char* content = calloc(size + 1, 1);
@@ -708,7 +708,7 @@ Object * builtin_file_read(Object ** params, int param_num, int start_index){
 // 30 file-write
 // (file-write "test.toy", "Hello World")
 // return null
-Object * builtin_file_write(Object ** params, int param_num, int start_index){
+Object * builtin_file_write(Object ** params, uint32_t param_num, uint32_t start_index){
     char * file_name = params[start_index]->data.String.v;
     FILE* file = fopen(file_name,"w");
     fputs(params[start_index+1]->data.String.v, file);
@@ -719,13 +719,13 @@ Object * builtin_file_write(Object ** params, int param_num, int start_index){
 // 32 int->string
 // (int->string 12) => "12"
 // (int->string 12 "%x") => "0x3"
-Object * builtin_int_to_string(Object ** params, int param_num, int start_index){
+Object * builtin_int_to_string(Object ** params, uint32_t param_num, uint32_t start_index){
     char *d; // format
     char b[100];
     char * o;
     switch(param_num){
         case 1:
-            sprintf(b, "%ld", (long)params[start_index]->data.Integer.v);
+            sprintf(b, "%lld", (int64_t)params[start_index]->data.Integer.v);
             o = malloc(sizeof(char) * (strlen(b) + 1));
             strcpy(o, b);
             return Object_initString(o, strlen(o));
@@ -742,7 +742,7 @@ Object * builtin_int_to_string(Object ** params, int param_num, int start_index)
 }
 
 // 33 floag->string
-Object * builtin_float_to_string(Object ** params, int param_num, int start_index){
+Object * builtin_float_to_string(Object ** params, uint32_t param_num, uint32_t start_index){
     char *d; // format
     char b[100];
     char * o;
@@ -765,7 +765,7 @@ Object * builtin_float_to_string(Object ** params, int param_num, int start_inde
 }
 // 34 input
 // (def x (input)) return string
-Object * builtin_input(Object ** params, int param_num, int start_index){
+Object * builtin_input(Object ** params, uint32_t param_num, uint32_t start_index){
     if(param_num == 1){
         printf("%s", params[start_index]->data.String.v);
     }
@@ -775,27 +775,27 @@ Object * builtin_input(Object ** params, int param_num, int start_index){
                              );
 }
 // 35 display  原先是 display-string
-Object * builtin_display_string(Object ** params, int param_num, int start_index){
+Object * builtin_display_string(Object ** params, uint32_t param_num, uint32_t start_index){
     char * s = to_string(params[start_index]);
     printf("%s", s);
     free(s);
     return GLOBAL_NULL;
 }
 // 36 string->int
-Object * builtin_string_to_int(Object ** params, int param_num, int start_index){
+Object * builtin_string_to_int(Object ** params, uint32_t param_num, uint32_t start_index){
     // 以后用atol
     return Object_initInteger(atoi(params[start_index]->data.String.v));
 }
 // 37 string->float
-Object * builtin_string_to_float(Object ** params, int param_num, int start_index){
+Object * builtin_string_to_float(Object ** params, uint32_t param_num, uint32_t start_index){
     return Object_initInteger(atof(params[start_index]->data.String.v));
 }
 // 38 ratio?
-Object * builtin_ratio_type(Object ** params, int param_num, int start_index){
+Object * builtin_ratio_type(Object ** params, uint32_t param_num, uint32_t start_index){
     return params[start_index]->type == RATIO ? GLOBAL_TRUE : GLOBAL_NULL;
 }
 // 39 numer
-Object * builtin_numer(Object ** params, int param_num, int start_index){
+Object * builtin_numer(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER: case DOUBLE:
@@ -808,7 +808,7 @@ Object * builtin_numer(Object ** params, int param_num, int start_index){
     }
 }
 // 40 denom
-Object * builtin_denom(Object ** params, int param_num, int start_index){
+Object * builtin_denom(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER: case DOUBLE:
@@ -822,7 +822,7 @@ Object * builtin_denom(Object ** params, int param_num, int start_index){
 }
 
 // 41 gensym
-Object * builtin_gensym(Object ** params, int param_num, int start_index){
+Object * builtin_gensym(Object ** params, uint32_t param_num, uint32_t start_index){
     char buffer[48];
     sprintf(buffer, "__toy__%d", GEN_SYM_COUNT);
     GEN_SYM_COUNT+=6; // I like 6
@@ -830,19 +830,19 @@ Object * builtin_gensym(Object ** params, int param_num, int start_index){
 }
 
 // 42 table-add-tag
-Object * builtin_table_add_tag(Object ** params, int param_num, int start_index){
+Object * builtin_table_add_tag(Object ** params, uint32_t param_num, uint32_t start_index){
     params[start_index]->data.Table.tag = params[start_index+1];
     params[start_index + 1]->use_count += 1;
     return GLOBAL_NULL;
 }
 
 // 43 table-tag
-Object * builtin_table_tag(Object ** params, int param_num, int start_index){
+Object * builtin_table_tag(Object ** params, uint32_t param_num, uint32_t start_index){
     return params[start_index]->data.Table.tag;
 }
 
 // 44 typeof
-Object * builtin_typeof(Object ** params, int param_num, int start_index){
+Object * builtin_typeof(Object ** params, uint32_t param_num, uint32_t start_index){
     switch (params[start_index]->type) {
         case INTEGER:
             return INTEGER_STRING;
@@ -867,7 +867,7 @@ Object * builtin_typeof(Object ** params, int param_num, int start_index){
 
 
 // 45 math-cos
-Object * builtin_cos(Object ** params, int param_num, int start_index){
+Object * builtin_cos(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -882,7 +882,7 @@ Object * builtin_cos(Object ** params, int param_num, int start_index){
     }
 }
 // 46 math-sin
-Object * builtin_sin(Object ** params, int param_num, int start_index){
+Object * builtin_sin(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -897,7 +897,7 @@ Object * builtin_sin(Object ** params, int param_num, int start_index){
     }
 }
 // 47 math-tan
-Object * builtin_tan(Object ** params, int param_num, int start_index){
+Object * builtin_tan(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -912,7 +912,7 @@ Object * builtin_tan(Object ** params, int param_num, int start_index){
     }
 }
 // 48 math-acos
-Object * builtin_acos(Object ** params, int param_num, int start_index){
+Object * builtin_acos(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -927,7 +927,7 @@ Object * builtin_acos(Object ** params, int param_num, int start_index){
     }
 }
 // 49 math-asin
-Object * builtin_asin(Object ** params, int param_num, int start_index){
+Object * builtin_asin(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -942,7 +942,7 @@ Object * builtin_asin(Object ** params, int param_num, int start_index){
     }
 }
 // 50 math-atan
-Object * builtin_atan(Object ** params, int param_num, int start_index){
+Object * builtin_atan(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -957,7 +957,7 @@ Object * builtin_atan(Object ** params, int param_num, int start_index){
     }
 }
 // 51 math-cosh
-Object * builtin_cosh(Object ** params, int param_num, int start_index){
+Object * builtin_cosh(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -972,7 +972,7 @@ Object * builtin_cosh(Object ** params, int param_num, int start_index){
     }
 }
 // 52 math-sinh
-Object * builtin_sinh(Object ** params, int param_num, int start_index){
+Object * builtin_sinh(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -987,7 +987,7 @@ Object * builtin_sinh(Object ** params, int param_num, int start_index){
     }
 }
 // 53 math-tanh
-Object * builtin_tanh(Object ** params, int param_num, int start_index){
+Object * builtin_tanh(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1003,7 +1003,7 @@ Object * builtin_tanh(Object ** params, int param_num, int start_index){
 }
 
 // 54 math-log
-Object * builtin_log(Object ** params, int param_num, int start_index){
+Object * builtin_log(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1018,7 +1018,7 @@ Object * builtin_log(Object ** params, int param_num, int start_index){
     }
 }
 // 55 math-exp
-Object * builtin_exp(Object ** params, int param_num, int start_index){
+Object * builtin_exp(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1033,7 +1033,7 @@ Object * builtin_exp(Object ** params, int param_num, int start_index){
     }
 }
 // 56 math-log10
-Object * builtin_log10(Object ** params, int param_num, int start_index){
+Object * builtin_log10(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1048,7 +1048,7 @@ Object * builtin_log10(Object ** params, int param_num, int start_index){
     }
 }
 // 57 math-pow
-Object * builtin_pow(Object ** params, int param_num, int start_index){
+Object * builtin_pow(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p1 = params[start_index];
     Object * p2 = params[start_index + 1];
     switch (p1->type) {
@@ -1098,7 +1098,7 @@ Object * builtin_pow(Object ** params, int param_num, int start_index){
     }
 }
 // 58 math-sqrt
-Object * builtin_sqrt(Object ** params, int param_num, int start_index){
+Object * builtin_sqrt(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1113,7 +1113,7 @@ Object * builtin_sqrt(Object ** params, int param_num, int start_index){
     }
 }
 // 59 math-ceil
-Object * builtin_ceil(Object ** params, int param_num, int start_index){
+Object * builtin_ceil(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1128,7 +1128,7 @@ Object * builtin_ceil(Object ** params, int param_num, int start_index){
     }
 }
 // 60 math-floor
-Object * builtin_floor(Object ** params, int param_num, int start_index){
+Object * builtin_floor(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * p = params[start_index];
     switch (p->type) {
         case INTEGER:
@@ -1147,7 +1147,7 @@ Object * builtin_floor(Object ** params, int param_num, int start_index){
 // (string-find "Hello" "H")
 // (string-find "Hello" "l" 3) return find index
 // if not found, return (), I prefer return -1..
-Object * builtin_string_find(Object ** params, int param_num, int start_index){
+Object * builtin_string_find(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * s = params[start_index];
     Object * find_s = params[start_index + 1];
     char * p;
@@ -1171,7 +1171,7 @@ Object * builtin_string_find(Object ** params, int param_num, int start_index){
 // 62 string-replace
 // (string-find "Hello" "H" "a")
 // (string-find "Hello" "l" "a" 3)
-Object * builtin_string_replace(Object ** params, int param_num, int start_index){
+Object * builtin_string_replace(Object ** params, uint32_t param_num, uint32_t start_index){
     Object * s = params[start_index];
     Object * find_s = params[start_index + 1];
     Object * replace_s = params[start_index + 2];

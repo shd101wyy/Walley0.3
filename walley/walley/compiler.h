@@ -10,11 +10,11 @@
 #define walley_compiler_h
 #include "env_data_type.h"
 
-// static int CONSTANT_TABLE_LENGTH = 0;
+// static int32_t CONSTANT_TABLE_LENGTH = 0;
 void compiler(Instructions * insts,
               Object * l,
               Variable_Table * vt,
-              int tail_call_flag,
+              int32_t tail_call_flag,
               char * parent_func_name,
               Lambda_for_Compilation * function_for_compilation,
               Environment * env,
@@ -25,13 +25,13 @@ Object * compiler_begin(Instructions * insts,
                         Variable_Table * vt,
                         char * parent_func_name,
                         Lambda_for_Compilation * function_for_compilation,
-                        int eval_flag,
+                        int32_t eval_flag,
                         Environment * env,
                         MacroTable * mt);
 
-Object *VM(unsigned short * instructions,
-           unsigned long start_pc,
-           unsigned long end_pc,
+Object *VM(uint16_t * instructions,
+           uint64_t start_pc,
+           uint64_t end_pc,
            Environment * env,
            Variable_Table * vt,
            MacroTable * mt);
@@ -90,7 +90,7 @@ Object * quasiquote_list(Object * l){
    (defmacro test [(x) x] [(#hi x) y] [(x y) x])
 
  */
-int macro_match(Object * a, Object * b, char **var_names, Object **var_values, int count){
+int32_t macro_match(Object * a, Object * b, char **var_names, Object **var_values, int32_t count){
 #if MACRO_DEBUG
     printf("\nMacro Match\n");
     printf("a:  \n");
@@ -106,7 +106,7 @@ int macro_match(Object * a, Object * b, char **var_names, Object **var_values, i
         return 0; // doesn't match
     }
     else if(car(a)->type == PAIR && car(b)->type == PAIR){
-        int match = macro_match(car(a), car(b), var_names, var_values, count);
+        int32_t match = macro_match(car(a), car(b), var_names, var_values, count);
         if (!match) return 0; // doesn't match
         return macro_match(cdr(a),
                            cdr(b),
@@ -151,7 +151,7 @@ int macro_match(Object * a, Object * b, char **var_names, Object **var_values, i
 
 Object * macro_expansion_replacement(Object * expanded_value,
                                 Variable_Table * vt,
-                                 int is_head){
+                                 int32_t is_head){
     if (expanded_value == GLOBAL_NULL) {
         return GLOBAL_NULL;
     }
@@ -177,7 +177,7 @@ Object * macro_expansion_replacement(Object * expanded_value,
                 return cons(Object_initString(buffer, strlen(buffer)),
                             macro_expansion_replacement(cdr(expanded_value), vt, false));
             }
-            int find[2];
+            int32_t find[2];
             VT_find(vt, v->data.String.v, find);
             if (find[0] != -1) { // find
                 return cons(cons(Object_initInteger(0),
@@ -224,9 +224,9 @@ Object * macro_expand_for_compilation(Macro * macro, Object * exps, MacroTable *
     // macro 最多有 64 个 parameters
     char * var_names[64];
     Object * var_values[64];
-    int match;
-    int i;
-    unsigned long start_pc, insts_length;
+    int32_t match;
+    int32_t i;
+    uint64_t start_pc, insts_length;
     while (clauses != GLOBAL_NULL) {
         match = macro_match(car(car(clauses)),
                             exps,
@@ -366,7 +366,7 @@ Object * list_append(Object * a, Object * b){
 void compiler(Instructions * insts,
               Object * l,
               Variable_Table * vt,
-              int tail_call_flag,
+              int32_t tail_call_flag,
               char * parent_func_name,
               Lambda_for_Compilation * function_for_compilation,
               Environment * env,
@@ -376,20 +376,20 @@ void compiler(Instructions * insts,
         parser_debug(l);
         printf("##\n");
     }*/
-    int i, j;
-    unsigned long index1, index2, index3, jump_steps, start_pc;
+    int32_t i, j;
+    uint64_t index1, index2, index3, jump_steps, start_pc;
     char * string;
-    unsigned long length;
-    int find_end;
-    int vt_find[2];
-    long int_;
+    uint64_t length;
+    int32_t find_end;
+    int32_t vt_find[2];
+    int64_t int_;
     double double_;
     char * tag;
     Object * v;
     Object * var_name, * var_value;
     Object * test, * conseq, * alter;
     Object * temp;
-    int var_existed/*, var_index*/;
+    int32_t var_existed/*, var_index*/;
     Variable_Table_Frame * frame;
     switch (l->type) {
         case NULL_:
@@ -406,17 +406,17 @@ void compiler(Instructions * insts,
                 return;
             }
             Insts_push(insts, CONST_INTEGER);
-            Insts_push(insts, (0xFFFF000000000000ULL & (unsigned long)int_) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000ULL & (unsigned long)int_) >> 32);
+            Insts_push(insts, (0xFFFF000000000000ULL & (uint64_t)int_) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000ULL & (uint64_t)int_) >> 32);
             Insts_push(insts, (0x00000000FFFF0000 & int_) >> 16);
             Insts_push(insts, 0xFFFF & int_);
             return;
         case DOUBLE:
             double_ = l->data.Double.v;
-            unsigned long long * unsigned_int_ = (unsigned long long*)&double_; // get hex
+            uint64_t * unsigned_int_ = (uint64_t *)&double_; // get hex
             Insts_push(insts, CONST_FLOAT);
-            Insts_push(insts, (0xFFFF000000000000ULL & (unsigned long long)(*unsigned_int_)) >> 48);
-            Insts_push(insts, (0x0000FFFF00000000ULL & (unsigned long long)(*unsigned_int_)) >> 32);
+            Insts_push(insts, (0xFFFF000000000000ULL & (uint64_t)(*unsigned_int_)) >> 48);
+            Insts_push(insts, (0x0000FFFF00000000ULL & (uint64_t)(*unsigned_int_)) >> 32);
             Insts_push(insts, (0x00000000FFFF0000 & (*unsigned_int_)) >> 16);
             Insts_push(insts, 0xFFFF & (*unsigned_int_));
             return;
@@ -670,7 +670,7 @@ void compiler(Instructions * insts,
                     }
                     
                     fseek(file, 0, SEEK_END);
-                    long int size = ftell(file);
+                    int64_t size = ftell(file);
                     rewind(file);
                     
                     char* content = calloc(size + 1, 1);
@@ -783,7 +783,7 @@ void compiler(Instructions * insts,
                 //Object * body; => cddr(l)
                 char * var_names[64];
                 Object * def_array[64];
-                int is_def;
+                int32_t is_def;
                 length = 0; // counter for var_names
                 j = 0; // counter for def_array
                 Object * assignments = GLOBAL_NULL;
@@ -830,8 +830,8 @@ void compiler(Instructions * insts,
             }
             else if (str_eq(tag, "lambda")){
                 Object * params = cadr(l); // get parameters
-                int variadic_place = -1; // variadic place
-                int counter = 0; // count of parameter num
+                int32_t variadic_place = -1; // variadic place
+                int32_t counter = 0; // count of parameter num
                 Variable_Table * vt_ = VT_copy(vt); // new variable table
                 MacroTable * mt_ = MT_copy(mt); // new macro table
                 VT_add_new_empty_frame(vt_); // we add a new frame
@@ -993,13 +993,13 @@ void compiler(Instructions * insts,
                 // 咱不支持 macro
                 if(tail_call_flag){
                     // so no new frame
-                    int start_index = vt->frames[vt->length - 1]->length;
-                    int track_index = start_index;
+                    int32_t start_index = vt->frames[vt->length - 1]->length;
+                    int32_t track_index = start_index;
                     // compile parameters
-                    int param_num = 0; // param num
+                    int32_t param_num = 0; // param num
                     Object * p = cdr(l);
                     Object * params[64]; // 最多存 64 个 params
-                    int count_params = 0; // count param num
+                    int32_t count_params = 0; // count param num
                     while (p != GLOBAL_NULL) {
                         params[param_num] = car(p);
                         param_num++;
@@ -1105,7 +1105,7 @@ void compiler(Instructions * insts,
                              mt); // compile lambda, save to accumulator
                     Insts_push(insts, NEWFRAME << 12); // create new frame
                     // compile paremeters
-                    int param_num = 0;
+                    int32_t param_num = 0;
                     Object * p = cdr(l);
                     Object * params[64]; // 最多存 64 个 params
                     while (p != GLOBAL_NULL) {
@@ -1143,7 +1143,7 @@ Object * compiler_begin(Instructions * insts,
                     Variable_Table * vt,
                     char * parent_func_name,
                     Lambda_for_Compilation * function_for_compilation,
-                    int eval_flag,
+                    int32_t eval_flag,
                     Environment * env,
                     MacroTable * mt){
     Object * acc = GLOBAL_NULL;

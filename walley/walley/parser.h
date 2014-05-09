@@ -14,7 +14,7 @@ Object * parser_get_tag(char * s){
     else if (strcmp(s, "~@") == 0) return UNQUOTE_SPLICE_STRING;
     else return QUASIQUOTE_STRING;
 }
-Object * formatQuickAccess(char**keys, int n, int count, Object * output){
+Object * formatQuickAccess(char**keys, int32_t n, int32_t count, Object * output){
     if(count == n) return output;
     return formatQuickAccess(keys,
                              n,
@@ -25,7 +25,7 @@ Object * formatQuickAccess(char**keys, int n, int count, Object * output){
                                                GLOBAL_NULL)));
     
 }
-int isDouble (char * s)
+int32_t isDouble (char * s)
 {
     if (s == NULL || *s == '\0' || isspace(*s))
         return 0;
@@ -33,7 +33,7 @@ int isDouble (char * s)
     strtod (s, &p);
     return *p == '\0';
 }
-int isInteger(char * s){
+int32_t isInteger(char * s){
     if (s == NULL || *s == '\0' || isspace(*s))
         return 0;
     char * p;
@@ -130,7 +130,7 @@ Object * parser(Lexer * le){
         else{
             temp = NULL;
             // check Math:add like (Math 'add)
-            if(l[i][0] == '"' || l[i][0] == ':' || l[i][(int)strlen(l[i])-1] == ':'){
+            if(l[i][0] == '"' || l[i][0] == ':' || l[i][(uint32_t)strlen(l[i])-1] == ':'){
                 if (l[i][0] == ':') { // :a  =>  "a"
                     t = malloc(sizeof(char) * strlen(l[i])+2); // " " 0
                     t[0] = '"';
@@ -158,7 +158,7 @@ Object * parser(Lexer * le){
                 // split string
                 n = 0; // splitted_length
                 start = 0;
-                for(j = 0; j < (int)strlen(l[i]); j++){
+                for(j = 0; j < (uint32_t)strlen(l[i]); j++){
                     if(l[i][j] == ':'){
                         /*char */ t = (char*)malloc(sizeof(char)*(j - start + 1));
                         for(k = start; k < j; k++){

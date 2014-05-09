@@ -21,13 +21,13 @@ char * number_to_string(Object * x){
 
     switch (x->type) {
         case INTEGER:
-            sprintf(buffer, "%ld", x->data.Integer.v);
+            sprintf(buffer, "%lld", x->data.Integer.v);
             break;
         case DOUBLE:
             sprintf(buffer, "%lf", x->data.Double.v);
             break;
         case RATIO:
-            sprintf(buffer, "%ld/%ld", x->data.Ratio.numer, x->data.Ratio.denom);
+            sprintf(buffer, "%lld/%lld", x->data.Ratio.numer, x->data.Ratio.denom);
             break;
         default:
             return "()";
@@ -46,10 +46,10 @@ char * clean_string(Object * s){
     char buffer[TO_STRING_BUFFER_SIZE];
     strcpy(buffer, "");
 
-    unsigned long i = 0;
-    unsigned long length = s->data.String.length;
+    uint64_t i = 0;
+    uint64_t length = s->data.String.length;
     char c;
-    int has_space = 0;
+    int32_t has_space = 0;
     char temp_buffer[1]; // single char buffer
     for (i = 0; i < length; i++) {
         c = s->data.String.v[i];
@@ -159,8 +159,8 @@ char * vector_to_string(Object * l){
     /*
      这里可能得free .
      */
-    unsigned long length = l->data.Vector.length;
-    unsigned long i;
+    uint64_t length = l->data.Vector.length;
+    uint64_t i;
     char * s;
     if (l->data.Vector.resizable) {
         strcat(buffer, "#[");
@@ -341,8 +341,8 @@ char * to_string(Object * v){
  */
 char * format_string(char * input_str){
     char * s = (char*)malloc(sizeof(char)*(strlen(input_str)+1));
-    int j = 0;
-    int i;
+    int32_t j = 0;
+    int32_t i;
     // format string
     for (i = 1; i < strlen(input_str)-1; i++) {
         if(input_str[i] == '\\'){

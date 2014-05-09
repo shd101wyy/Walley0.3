@@ -29,7 +29,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "900"
             endingLineNumber = "900"
-            landmarkName = "compiler(Instructions * insts, Object * l, Variable_Table * vt, int tail_call_flag, char * parent_func_name, Lambda_for_Compilation * function_for_compilation, Environment * env, MacroTable * mt)"
+            landmarkName = "compiler(Instructions * insts, Object * l, Variable_Table * vt, int32_t tail_call_flag, char * parent_func_name, Lambda_for_Compilation * function_for_compilation, Environment * env, MacroTable * mt)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

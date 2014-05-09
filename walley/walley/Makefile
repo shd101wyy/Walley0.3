@@ -6,5 +6,7 @@ install:
 	rm -rf *.o walley a.out
 fast:
 	gcc main.c -O3 -o walley -lm
+test:
+	gcc main.c -g -Wall -Werror -o walley -lm
 clean:
 	rm -rf *.o walley a.out

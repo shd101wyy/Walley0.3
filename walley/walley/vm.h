@@ -30,34 +30,34 @@ Object * Walley_Run_File_for_VM(char * file_name,
 /*
  Walley Language Virtual Machine
  */
-Object *VM(unsigned short * instructions,
-           unsigned long start_pc,
-           unsigned long end_pc,
+Object *VM(uint16_t * instructions,
+           uint64_t start_pc,
+           uint64_t end_pc,
            Environment * env,
            Variable_Table * vt,
            MacroTable * mt){
-    unsigned long pc;
-    unsigned long i;
-    unsigned short frame_index, value_index;
-    short inst;
-    short opcode;
+    uint64_t pc;
+    uint64_t i;
+    uint16_t frame_index, value_index;
+    int16_t inst;
+    int16_t opcode;
     char param_num, variadic_place;
-    unsigned long jump_steps;
-    int required_param_num, required_variadic_place;
+    uint64_t jump_steps;
+    int32_t required_param_num, required_variadic_place;
     
-    unsigned long string_length;
+    uint64_t string_length;
     char * created_string;
-    int s;
+    int32_t s;
     char s1, s2;
     
-    long integer_;
+    int64_t integer_;
     // double double_;
     Environment * original_env = env; // save old env;
     Object * accumulator = GLOBAL_NULL;
     Environment_Frame * current_frame_pointer = NULL;
     Environment_Frame * temp_frame;
     Environment * new_env;
-    Object * (*func_ptr)(Object**, int, int); // function pointer
+    Object * (*func_ptr)(Object**, uint32_t, uint32_t); // function pointer
     Object * v;
     Object * temp; // temp use
     Object * temp2;
@@ -66,14 +66,14 @@ Object *VM(unsigned short * instructions,
     BUILTIN_PRIMITIVE_PROCEDURE_STACK->use_count = 1; // cannot free it
     
     Environment * continuation_env[MAX_STACK_SIZE];      // used to save env
-    short continuation_env_length = 0;                   // save length of that array
-    unsigned long continuation_return_pc[MAX_STACK_SIZE]; // used to save return pc
-    short continuation_return_pc_length = 0;             // save length of that array
+    int16_t continuation_env_length = 0;                   // save length of that array
+    uint64_t continuation_return_pc[MAX_STACK_SIZE]; // used to save return pc
+    int16_t continuation_return_pc_length = 0;             // save length of that array
     Environment_Frame * frames_list[MAX_STACK_SIZE]; // save frame
     frames_list[0] = NULL;
-    short frames_list_length = 1;
+    int16_t frames_list_length = 1;
     Object * functions_list[MAX_STACK_SIZE]; // save function
-    short functions_list_length = 0;
+    int16_t functions_list_length = 0;
     
     pc = CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX;
     // run CONSTANT_TABLE_INSTRUCTIONS first to load constant
@@ -83,7 +83,7 @@ Object *VM(unsigned short * instructions,
         // 目前只支持string
         switch (inst) {
             case CONST_STRING: // push string to constant table
-                string_length = (long)CONSTANT_TABLE_INSTRUCTIONS->array[pc + 1]; // string length maximum 2 bytes
+                string_length = (int64_t)CONSTANT_TABLE_INSTRUCTIONS->array[pc + 1]; // string length maximum 2 bytes
                 created_string = (char*)malloc(sizeof(char) * (string_length + 1));
                 pc = pc + 2;
                 i = 0;
@@ -179,8 +179,8 @@ Object *VM(unsigned short * instructions,
                         // free accumulator is necessary
                         Object_free(accumulator);
                         
-                        accumulator = Object_initInteger((long)(((unsigned long long)instructions[pc + 1] << 48) |
-                                                                ((unsigned long long)instructions[pc + 2] << 32) |
+                        accumulator = Object_initInteger((int64_t)(((uint64_t)instructions[pc + 1] << 48) |
+                                                                ((uint64_t)instructions[pc + 2] << 32) |
                                                                 (instructions[pc + 3] << 16) |
                                                                 (instructions[pc + 4])));
                         pc = pc + 5;
@@ -189,10 +189,10 @@ Object *VM(unsigned short * instructions,
                         // free accumulator is necessary
                         Object_free(accumulator);
                     
-                        unsigned long long integer__ = (unsigned long long)(((unsigned long long)instructions[pc + 1] << 48) |
-                                                                ((unsigned long long)instructions[pc + 2] << 32) |
-                                                                ((unsigned long long)instructions[pc + 3] << 16) |
-                                                                ((unsigned long long)instructions[pc + 4]));
+                        uint64_t integer__ = (uint64_t)(((uint64_t)instructions[pc + 1] << 48) |
+                                                                ((uint64_t)instructions[pc + 2] << 32) |
+                                                                ((uint64_t)instructions[pc + 3] << 16) |
+                                                                ((uint64_t)instructions[pc + 4]));
                        
                         accumulator = Object_initDouble(*((double*)(&integer__)));
                         pc = pc + 5;
@@ -468,7 +468,7 @@ Object *VM(unsigned short * instructions,
                         }
                         if(required_variadic_place != -1){
                             v = GLOBAL_NULL;
-                            int m; // I used to use i, but it somehow will cause problem... showed 64 bit integer 18...
+                            int32_t m; // I used to use i, but it somehow will cause problem... showed 64 bit integer 18...
                             for(m = current_frame_pointer->length - 1; m >= required_variadic_place; m=m-1){
                                 current_frame_pointer->array[m]->use_count--; // 因为 cons的时候会再增加
                                 v = cons(current_frame_pointer->array[m], v);
@@ -581,7 +581,7 @@ Object *VM(unsigned short * instructions,
                 
             case TEST:
                 if (accumulator->type == NULL_){
-                    pc = pc + (unsigned short)instructions[pc + 1];
+                    pc = pc + (uint16_t)instructions[pc + 1];
                     continue;
                 }
                 pc = pc + 2;

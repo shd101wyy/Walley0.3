@@ -34,10 +34,10 @@
     construct Instructions data type
  */
 typedef struct Instructions{
-    unsigned short * array;
-    unsigned long length;
-    unsigned long size;
-    unsigned long start_pc;
+    uint16_t * array;
+    uint64_t length;
+    uint64_t size;
+    uint64_t start_pc;
 }Instructions;
 /*
     init insts
@@ -46,17 +46,17 @@ Instructions * Insts_init(){
     Instructions * insts = (Instructions*)malloc(sizeof(Instructions));
     insts->length = 0;
     insts->size = 1024;
-    insts->array = (unsigned short*)malloc(sizeof(unsigned short)*(insts->size));
+    insts->array = (uint16_t*)malloc(sizeof(uint16_t)*(insts->size));
     insts->start_pc = 0;
     return insts;
 }
 /*
     Instructions push
  */
-void Insts_push(Instructions * insts, unsigned short v){
+void Insts_push(Instructions * insts, uint16_t v){
     if(insts->length == insts->size){ // reach maximum
         insts->size*=2;
-        insts->array = (unsigned short*)realloc(insts->array, sizeof(unsigned short)*insts->size);
+        insts->array = (uint16_t*)realloc(insts->array, sizeof(uint16_t)*insts->size);
     }
     insts->array[insts->length] = v;
     insts->length++;
@@ -65,8 +65,8 @@ void Insts_push(Instructions * insts, unsigned short v){
     print insts
  */
 void printInstructions(Instructions * insts){
-    unsigned long length = insts->length;
-    unsigned long i;
+    uint64_t length = insts->length;
+    uint64_t i;
     for (i = 0; i < length; i++) {
         printf("%04x ", insts->array[i]);
     }
@@ -80,14 +80,14 @@ void printInstructions(Instructions * insts){
 */
 typedef struct Variable_Table_Frame{
     char ** var_names;
-    unsigned int length;
-    unsigned int use_count;
+    uint32_t length;
+    uint32_t use_count;
 } Variable_Table_Frame;
 
 /*
     init vtf
  */
-Variable_Table_Frame * VTF_init(unsigned int size){
+Variable_Table_Frame * VTF_init(uint32_t size){
     Variable_Table_Frame * vtf = malloc(sizeof(Variable_Table_Frame));
     vtf->var_names = (char**)malloc(sizeof(char*)*size);
     vtf->length = 0;
@@ -114,8 +114,8 @@ void VTF_push(Variable_Table_Frame * vtf, char * value){
     free variabel table frame
  */
 void VTF_free(Variable_Table_Frame * vtf){
-    unsigned int length = vtf->length;
-    unsigned int i ;
+    uint32_t length = vtf->length;
+    uint32_t i ;
     for (i = 0; i < length; i++) {
         free(vtf->var_names[i]);
     }
@@ -134,7 +134,7 @@ void VTF_free(Variable_Table_Frame * vtf){
 /* Variable Table Data Structure */
 typedef struct Variable_Table{
     Variable_Table_Frame * frames[VARIABLE_TABLE_MAX_SIZE];
-    unsigned int length;
+    uint32_t length;
     // unsigned int use_count;
 } Variable_Table;
 
@@ -232,8 +232,8 @@ void Variable_Table_push_frame(Variable_Table * vt, Variable_Table_Frame * vtf){
     vt->length++;
 }
 
-void VT_find(Variable_Table * vt, char * var_name, int output[2]){
-    int i, j;
+void VT_find(Variable_Table * vt, char * var_name, int32_t output[2]){
+    int32_t i, j;
     Variable_Table_Frame * frame;
     for (i = vt->length - 1; i >= 0; i--) {
         frame = vt->frames[i];
@@ -261,8 +261,8 @@ void VT_add_new_empty_frame(Variable_Table * vt){
  */
 Variable_Table * VT_copy(Variable_Table * vt){
     Variable_Table * return_vt;
-    unsigned int length = vt->length;
-    unsigned int i;
+    uint32_t length = vt->length;
+    uint32_t i;
     return_vt = malloc(sizeof(Variable_Table));
     return_vt->length = length;
     for (i = 0; i < length; i++) {
@@ -276,8 +276,8 @@ Variable_Table * VT_copy(Variable_Table * vt){
     free Variable Table
  */
 void VT_free(Variable_Table * vt){
-    unsigned int length = vt->length;
-    unsigned i = 0;
+    uint32_t length = vt->length;
+    uint32_t i = 0;
     for (i = 0; i < length; i++) {
         //vt->frames[i]->use_count--;
         //if (vt->frames[i]->use_count == 0) { // 只有在没人使用的时候free
@@ -295,11 +295,11 @@ void VT_free(Variable_Table * vt){
  this saved lambda is for tail call optimization and compilation
  */
 typedef struct Lambda_for_Compilation{
-    unsigned int param_num;
-    unsigned int variadic_place;
-    unsigned long start_pc;
+    uint32_t param_num;
+    uint32_t variadic_place;
+    uint64_t start_pc;
     Variable_Table * vt;
-    int is_tail_call : 1;
+    int32_t is_tail_call : 1;
 }Lambda_for_Compilation;
 
 void LFC_free(Lambda_for_Compilation * func){
@@ -365,8 +365,8 @@ void Macro_free(Macro * macro){
     
     // only need to free top frame
     Variable_Table_Frame * top_frame = macro->vt->frames[macro->vt->length - 1];
-    int length = top_frame->length;
-    int i = 0;
+    int32_t length = top_frame->length;
+    int32_t i = 0;
     for (i = 0; i < length; i++) {
         free(top_frame->var_names[i]);
     }
@@ -381,11 +381,11 @@ void Macro_free(Macro * macro){
  */
 typedef struct MacroTableFrame{
     Macro ** array;
-    unsigned int size;
-    unsigned int length;
+    uint32_t size;
+    uint32_t length;
 }MacroTableFrame;
 
-MacroTableFrame * MTF_init(int size){
+MacroTableFrame * MTF_init(int32_t size){
     MacroTableFrame * o = malloc(sizeof(MacroTableFrame));
     o->size = size;
     o->length = 0;
@@ -397,7 +397,7 @@ MacroTableFrame * MTF_init(int size){
  */
 typedef struct MacroTable {
     MacroTableFrame * frames[VARIABLE_TABLE_MAX_SIZE];
-    unsigned int length;
+    uint32_t length;
 }MacroTable;
 
 MacroTable * MT_init(){
@@ -406,10 +406,10 @@ MacroTable * MT_init(){
     o->frames[0] = MTF_init(64);
     return o;
 }
-void MT_find(MacroTable * mt, char * macro_name, int output[2]){
-    unsigned int length = mt->length;
-    unsigned int frame_length;
-    unsigned int i, j;
+void MT_find(MacroTable * mt, char * macro_name, int32_t output[2]){
+    uint32_t length = mt->length;
+    uint32_t frame_length;
+    uint32_t i, j;
     for (i = 0; i < length; i++) {
         MacroTableFrame * frame = mt->frames[i];
         frame_length = frame->length;
@@ -438,8 +438,8 @@ void MT_add_new_empty_frame(MacroTable * mt){
  */
 MacroTable * MT_copy(MacroTable * mt){
     MacroTable * return_mt;
-    unsigned int length = mt->length;
-    unsigned int i;
+    uint32_t length = mt->length;
+    uint32_t i;
     return_mt = malloc(sizeof(MacroTable));
     return_mt->length = length;
     for (i = 0; i < length; i++) {

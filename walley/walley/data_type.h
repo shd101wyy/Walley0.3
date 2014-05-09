@@ -57,7 +57,6 @@ static Object * SYS_ARGV;
 
 //static int * INSTRUCTIONS;
 //static int INSTRUCTIONS_LENGTH;
-Object * Object_initInteger(/*long v*/ long v);
 void Object_free(Object * o);
 /* data types */
 typedef enum {
@@ -82,48 +81,47 @@ struct  Table_Pair{ // used for table
  */
 struct Object {
     DataType type;
-    int use_count;
+    uint32_t use_count;
     union {
         struct {
-            // long v;
-            long v; // 将来会只用long
+            int64_t v; // 将来会只用long
         } Integer;
         struct {
             double v;
         } Double;
         struct{
-            long denom;
-            long numer;
+            int64_t denom;
+            int64_t numer;
          } Ratio;
         struct {
-            unsigned long size;
-            unsigned long length;
+            uint64_t size;
+            uint64_t length;
             Table_Pair **vec; // array to save Table_Pairs
             Object * tag;
         } Table;
         struct {
             char * v;
-            unsigned long length;
+            uint64_t length;
         } String;
         struct {
             Object * car;
             Object * cdr;
         } Pair;
         struct {
-            char param_num;
-            char variadic_place;
-            unsigned long start_pc;
+            uint8_t param_num;
+            int8_t variadic_place;
+            uint64_t start_pc;
             Environment * env;
-            unsigned char frame_size;
+            uint8_t frame_size;
         } User_Defined_Lambda;
         struct {
             Object ** v;   // array of pointers
-            unsigned long size;      // size of allocated vector
-            unsigned long length;    // length
-            char resizable;  // is this vector resizable
+            uint64_t size;      // size of allocated vector
+            uint64_t length;    // length
+            uint8_t resizable : 1;  // is this vector resizable
         } Vector;
         struct {          // builtin lambda
-            Object* (*func_ptr)(Object**, int, int); // function pointer
+            Object* (*func_ptr)(Object**, uint32_t, uint32_t); // function pointer
         } Builtin_Lambda;
     } data;
 };
@@ -163,7 +161,7 @@ Object * allocateObject(){
 /*
  initialize integer
  */
-Object * Object_initInteger(/*long v*/ long v){
+Object * Object_initInteger(int64_t v){
     Object * o = allocateObject();
     o->type = INTEGER;
     o->data.Integer.v = v;
@@ -181,7 +179,7 @@ Object * Object_initDouble(double v){
 /*
  initialize string
  */
-Object * Object_initString(char * v, unsigned long string_length){
+Object * Object_initString(char * v, uint64_t string_length){
     Object * o = allocateObject();
     o->type = STRING;
     o->data.String.v = malloc(sizeof(char)*(string_length + 1));
@@ -227,7 +225,7 @@ Object * Object_initNull(){
 /*
  initialize user defined lambda
  */
-Object * Object_initUserDefinedLambda(char param_num, char variadic_place, unsigned long start_pc, Environment * env, unsigned char frame_length){
+Object * Object_initUserDefinedLambda(uint8_t param_num, int8_t variadic_place, uint64_t start_pc, Environment * env, uint8_t frame_length){
     Object * o = allocateObject();
     o->type = USER_DEFINED_LAMBDA;
     o->data.User_Defined_Lambda.param_num = param_num;
@@ -237,7 +235,7 @@ Object * Object_initUserDefinedLambda(char param_num, char variadic_place, unsig
     o->data.User_Defined_Lambda.frame_size = frame_length;
     return o;
 }
-Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object **, int, int)){
+Object * Object_initBuiltinLambda(Object* (*func_ptr)(Object **, uint32_t, uint32_t)){
     Object * o = allocateObject();
     o->type = BUILTIN_LAMBDA;
     o->data.Builtin_Lambda.func_ptr = func_ptr;
@@ -265,7 +263,7 @@ Object * cons(Object * car, Object * cdr){
  * quick hash function
  * djb2
  */
-Object * Object_initTable(unsigned int size){
+Object * Object_initTable(uint64_t size){
     Object * o = allocateObject();
     o->type = TABLE;
     o->data.Table.length = 0;
@@ -275,8 +273,8 @@ Object * Object_initTable(unsigned int size){
     o->use_count = 0;
     return o;
 }
-unsigned long hash(char * str, unsigned long size){
-    unsigned long hash = 0;
+uint64_t hash(char * str, uint64_t size){
+    uint64_t hash = 0;
     while (*(str)){
         hash = ((hash << 5) + hash) + *(str); // hash * 33 + c
         str++;
@@ -291,12 +289,12 @@ unsigned long hash(char * str, unsigned long size){
  */
 void rehash(Object * t){
     // make space to save keys
-    unsigned long i = 0;
-    unsigned long j = 0;
-    unsigned long original_size = t->data.Table.size;
+    uint64_t i = 0;
+    uint64_t j = 0;
+    uint64_t original_size = t->data.Table.size;
     Object * key;
     Object * value;
-    unsigned long hash_value;
+    uint64_t hash_value;
     Table_Pair * p;
     Table_Pair * temp;
     Object * keys[original_size];
@@ -347,7 +345,7 @@ void rehash(Object * t){
  getval
  */
 Object * Table_getval(Object * t, Object * key){
-    unsigned long hash_value = hash(key->data.String.v, t->data.Table.size); // get hash value
+    uint64_t hash_value = hash(key->data.String.v, t->data.Table.size); // get hash value
     Table_Pair * table_pairs = t->data.Table.vec[hash_value]; // get pairs
     while(table_pairs!=NULL){
         if( table_pairs->key == key || strcmp(key->data.String.v, table_pairs->key->data.String.v) == 0){
@@ -364,7 +362,7 @@ Object * Table_getval(Object * t, Object * key){
 void Table_setval(Object *t, Object * key, Object * value){
     if(t->data.Table.length / (double)t->data.Table.size >= 0.7) // rehash
         rehash(t);
-    unsigned long hash_value = hash(key->data.String.v, t->data.Table.size);
+    uint64_t hash_value = hash(key->data.String.v, t->data.Table.size);
     Table_Pair * table_pairs = t->data.Table.vec[hash_value];
     Table_Pair * new_table_pair;
     Table_Pair * temp_table_pair;
@@ -409,7 +407,7 @@ void Table_setval(Object *t, Object * key, Object * value){
  */
 Object * table_getKeys(Object * t){
     Object * keys = GLOBAL_NULL;
-    unsigned int i = 0;
+    uint32_t i = 0;
     Table_Pair * p;
     for(i = 0; i < t->data.Table.size; i++){
         p = t->data.Table.vec[i]; // get table pair

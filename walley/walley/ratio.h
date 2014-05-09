@@ -13,8 +13,8 @@
 #define numer(v) (v)->data.Ratio.numer
 #define denom(v) (v)->data.Ratio.denom
 
-long gcd(long a, long b){
-    long temp;
+int64_t gcd(int64_t a, int64_t b){
+    int64_t temp;
     while(b!=0)
     {
         temp = a;
@@ -26,8 +26,8 @@ long gcd(long a, long b){
 /*
     create ratio data type
  */
-Object * Object_initRatio(long numer, long denom){
-    long g;
+Object * Object_initRatio(int64_t numer, int64_t denom){
+    int64_t g;
     Object * o;
     if (denom == 1) {
     it_is_integer:
@@ -63,16 +63,16 @@ Object *  mul_rat(Object* x, Object* y){
 Object *  div_rat(Object* x, Object* y){
     return Object_initRatio(numer(x)*denom(y),denom(x)*numer(y));
 }*/
-Object * add_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+Object * add_rat(int64_t numer_x, int64_t denom_x, int64_t numer_y, int64_t denom_y){
     return Object_initRatio( numer_x*denom_y+numer_y*denom_x , denom_x*denom_y);
 }
-Object * sub_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+Object * sub_rat(int64_t numer_x, int64_t denom_x, int64_t numer_y, int64_t denom_y){
     return Object_initRatio( numer_x*denom_y-numer_y*denom_x , denom_x*denom_y);
 }
-Object *  mul_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+Object *  mul_rat(int64_t numer_x, int64_t denom_x, int64_t numer_y, int64_t denom_y){
     return Object_initRatio(numer_x*numer_y, denom_x*denom_y);
 }
-Object *  div_rat(long numer_x, long denom_x, long numer_y, long denom_y){
+Object *  div_rat(int64_t numer_x, int64_t denom_x, int64_t numer_y, int64_t denom_y){
     return Object_initRatio(numer_x*denom_y,denom_x*numer_y);
 }
 

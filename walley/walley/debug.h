@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <time.h>
+#include <stdint.h>
 
 #define RATIO_DEBUG 0   // ratio number debug
 #define LEXER_DEBUG 0   // lexer debug

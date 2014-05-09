@@ -81,15 +81,15 @@ Object * v // vm output
  0: fail
  1: success
  */
-int read_ints (const char* file_name, unsigned short ** instructions, int * len){
+int32_t read_ints (const char* file_name, uint16_t ** instructions, int32_t * len){
     FILE* file = fopen (file_name, "r");
     if(!file){
         printf("Failed to read file\n");
         return 0;
     }
-    int num = 0;
-    unsigned int i = 0;
-    unsigned int length = 0;
+    int32_t num = 0;
+    uint32_t i = 0;
+    uint32_t length = 0;
     while (fscanf(file, "%x ", &num) > 0)
     {
         switch (i){
@@ -99,7 +99,7 @@ int read_ints (const char* file_name, unsigned short ** instructions, int * len)
             case 1:
                 length = length | num;
                 *len = length; // get length
-                (*instructions) = (unsigned short*)malloc(sizeof(unsigned short) * length); // init instructions
+                (*instructions) = (uint16_t*)malloc(sizeof(uint16_t) * length); // init instructions
                 break;
             default:
                 (*instructions)[i - 2] = num;
@@ -136,7 +136,7 @@ void Walley_Repl(){
                            env,
                            mt);
     
-    int run_eval = true;
+    int32_t run_eval = true;
     
     //Environment * env = NULL;
     //int run_eval = false;
@@ -203,7 +203,7 @@ void Walley_Run_File(char * file_name){
     }
     
     fseek(file, 0, SEEK_END);
-    long int size = ftell(file);
+    int64_t size = ftell(file);
     rewind(file);
     
     char* content = calloc(size + 1, 1);
@@ -237,7 +237,7 @@ void Walley_Run_File(char * file_name){
                            env,
                            mt);
 
-    int run_eval = true;
+    int32_t run_eval = true;
     
     //Environment * env = NULL;
     //int run_eval = false;
@@ -280,7 +280,7 @@ Object * Walley_Run_File_for_VM(char * file_name,
     }
     
     fseek(file, 0, SEEK_END);
-    long int size = ftell(file);
+    int64_t size = ftell(file);
     rewind(file);
     
     char* content = calloc(size + 1, 1);
@@ -292,7 +292,7 @@ Object * Walley_Run_File_for_VM(char * file_name,
     Lexer * p;
     Object * o;
     
-    int run_eval = true;
+    int32_t run_eval = true;
     
     //Environment * env = NULL;
     //int run_eval = false;

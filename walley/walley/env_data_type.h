@@ -15,14 +15,14 @@
 static Object * GLOBAL_FRAME[GLOBAL_FRAME_SIZE];
 
 static Object * Constant_Pool[1024]; // used to save symbols and strings
-static unsigned int Constant_Pool_Length;
+static uint32_t Constant_Pool_Length;
 
 static Object* CONSTANT_TABLE_FOR_COMPILATION;
-static unsigned long CONSTANT_TABLE_FOR_COMPILATION_LENGTH;
+static uint64_t   CONSTANT_TABLE_FOR_COMPILATION_LENGTH;
 
 // instructions used to save contant...
 static Instructions * CONSTANT_TABLE_INSTRUCTIONS;
-static unsigned long CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX; // 保存上次的运行PC
+static uint64_t   CONSTANT_TABLE_INSTRUCTIONS_TRACK_INDEX; // 保存上次的运行PC
 
 static Instructions * GLOBAL_INSTRUCTIONS;
 static Variable_Table * GLOBAL_VARIABLE_TABLE;
@@ -113,7 +113,7 @@ void Walley_init(){
     
     // create constant integer pool
     // 0 ~ 249
-    int i;
+    int32_t i;
     for(i = 0; i < 250; i++){
         Object * t = Object_initInteger(i);
         t->use_count = 1;
@@ -155,7 +155,7 @@ void Walley_init(){
 // end walley program
 void Walley_Finalize(){
     Object_free(CONSTANT_TABLE_FOR_COMPILATION);
-    int i;
+    int32_t i;
     for (i = 0; i < Constant_Pool_Length; i++) {
         Constant_Pool[i]->use_count--;
         Object_free(Constant_Pool[i]);
@@ -172,7 +172,7 @@ void Walley_Finalize(){
     Env_free(GLOBAL_ENVIRONMENT);
     
     for (i = 0; i < GLOBAL_MACRO_TABLE->length; i++) {
-        int j;
+        int32_t j;
         MacroTableFrame * mtf = GLOBAL_MACRO_TABLE->frames[i];
         for (j = 0; j < mtf->length; j++) {
             Macro_free(mtf->array[j]);
@@ -190,8 +190,8 @@ void Walley_Finalize(){
  */
 struct Environment_Frame {
     Object ** array;
-    int length;
-    int use_count;
+    int32_t length;
+    int32_t use_count;
 };
 
 /*
@@ -199,7 +199,7 @@ struct Environment_Frame {
  */
 void EF_free(Environment_Frame * ef){
     if (ef->use_count == 0) {
-        int i;
+        int32_t i;
         for (i = 0; i < ef->length; i++) {
             ef->array[i]->use_count--;
             Object_free(ef->array[i]);
@@ -212,7 +212,7 @@ void EF_free(Environment_Frame * ef){
 /*
  create frame with size
  */
-Environment_Frame * EF_init_with_size(int size){
+Environment_Frame * EF_init_with_size(int32_t size){
     Environment_Frame * frame = malloc(sizeof(Environment_Frame));
     frame->length = 0;
     frame->array = malloc(sizeof(Object*)*size);
@@ -225,11 +225,11 @@ Environment_Frame * EF_init_with_size(int size){
  */
 struct Environment{
     Environment_Frame ** frames;
-    int length;  // max length MAX_STACK_SIZE
+    int32_t length;  // max length MAX_STACK_SIZE
 };
 
 void Env_free(Environment * env){
-    int i;
+    int32_t i;
     for (i = 0; i < env->length; i++) {
         env->frames[i]->use_count--;
         EF_free(env->frames[i]);
@@ -238,7 +238,7 @@ void Env_free(Environment * env){
     free(env);
     return;
 }
-Environment * Env_init_with_size(int size){
+Environment * Env_init_with_size(int32_t size){
     Environment * env = malloc(sizeof(Environment));
     env->frames = (Environment_Frame**)malloc(sizeof(Environment_Frame*) * size);
     env->length = 0;
@@ -343,7 +343,7 @@ Environment *copyEnvironment(Environment * old_env){
     Environment * new_env = malloc(sizeof(Environment));
     new_env->length = old_env->length;
     new_env->frames = malloc(sizeof(Environment_Frame*) * new_env->length);
-    int i;
+    int32_t i;
     for (i = 0; i < new_env->length; i++) {
         new_env->frames[i] = old_env->frames[i]; // copy frame pointer
         new_env->frames[i]->use_count++; // increase use count
@@ -358,7 +358,7 @@ Environment *copyEnvironmentAndPushFrame(Environment * old_env, Environment_Fram
     Environment * new_env = malloc(sizeof(Environment));
     new_env->length = old_env->length;
     new_env->frames = malloc(sizeof(Environment_Frame*) * (new_env->length + 1));
-    int i;
+    int32_t i;
     for (i = 0; i < old_env->length; i++) {
         new_env->frames[i] = old_env->frames[i]; // copy frame pointer
         new_env->frames[i]->use_count++; // increase use count
