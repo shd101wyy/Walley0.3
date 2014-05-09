@@ -81,6 +81,9 @@ void parser_free(Object * p){
     Object_free(p);
 }
 Object * parser(Lexer * le){
+    if (le == NULL) { // lexer failure
+        return GLOBAL_NULL;
+    }
     char ** l = le->string_array;
     uint32_t length = le->array_length;
     Object * current_list_pointer = GLOBAL_NULL;

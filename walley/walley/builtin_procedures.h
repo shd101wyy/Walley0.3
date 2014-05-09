@@ -769,8 +769,8 @@ Object * builtin_input(Object ** params, int param_num, int start_index){
     if(param_num == 1){
         printf("%s", params[start_index]->data.String.v);
     }
-    char * buffer = (char*)malloc(sizeof(char) * 512);
-    fgets(buffer, 512, stdin);
+    char buffer[1024];
+    fgets(buffer, 1024, stdin);
     return Object_initString(buffer, strlen(buffer) - 1  // 我测试了下貌似得减1要不然length错了
                              );
 }

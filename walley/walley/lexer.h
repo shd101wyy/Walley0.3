@@ -110,20 +110,26 @@ Lexer* lexer(char * input_string){
     uint32_t count;
     uint32_t a;
     uint32_t end;
+    
+    uint32_t paren_count = 0; // 确保 () match
+    
     char * t;
     for(i = 0; i < string_length; i++){
         // printf("%d %s %c\n", i, input_string, input_string[i]);
         if(input_string[i] == '('){
             Lexer_push(output_list, "(");
+            paren_count++;
         }
         else if (input_string[i] == ')'){
             Lexer_push(output_list, ")");
+            paren_count--;
         }
         else if (input_string[i] == ' ' || input_string[i] == '\n' || input_string[i] == '\t' || input_string[i] == ','){
             continue;
         }
         else if (input_string[i] == '#' && (input_string[i + 1] == '[' || input_string[i + 1] == '(')){ // vector
             Lexer_push(output_list, "(");
+            paren_count++;
             if (input_string[i + 1] == '(') {
                 Lexer_push(output_list, "vector"); // 定长 vector, 长度不可变
             }
@@ -140,6 +146,7 @@ Lexer* lexer(char * input_string){
                    if(Lexer_get(output_list, output_list->array_length - 1)[0]!=')'){ // +[  => ( +
                        Lexer_push(output_list, Lexer_get(output_list, (Lexer_length(output_list) - 1)));
                        Lexer_set(output_list, Lexer_length(output_list)-2, "(");
+                       paren_count++;
                    }
                    else{ // ahead is )
                        count = 1;
@@ -170,10 +177,12 @@ Lexer* lexer(char * input_string){
                     Lexer_push(output_list, "(");
                     Lexer_push(output_list, "table");
                 }
+                paren_count++;
             }
         }
         else if (input_string[i] == ']' || input_string[i] == '}'){
             Lexer_push(output_list, ")");
+            paren_count--;
         }
         else if (input_string[i] == '~' && input_string[i + 1] == '@'){
             Lexer_push(output_list, "~@");
@@ -220,6 +229,11 @@ Lexer* lexer(char * input_string){
             i = end - 1;
             free(t);
         }
+    }
+    if (paren_count!=0) {
+        printf("ERROR: parentheses () num doesn't match");
+        Lexer_free(output_list);
+        return NULL;
     }
     return output_list;
 }
