@@ -1143,4 +1143,59 @@ Object * builtin_floor(Object ** params, int param_num, int start_index){
     }
 }
 
+// 61 string-find
+// (string-find "Hello" "H")
+// (string-find "Hello" "l" 3) return find index
+// if not found, return (), I prefer return -1..
+Object * builtin_string_find(Object ** params, int param_num, int start_index){
+    Object * s = params[start_index];
+    Object * find_s = params[start_index + 1];
+    char * p;
+    if (param_num == 2) {
+        p = strstr(s->data.String.v, find_s->data.String.v);
+    str_test:
+        if (p) {
+            return Object_initInteger(p - s->data.String.v);
+        }
+        else{
+            return GLOBAL_NULL;
+        }
+    }
+    else{
+        p = strstr(s->data.String.v + params[start_index + 2]->data.Integer.v,
+                   find_s->data.String.v);
+        goto str_test;
+    }
+}
+
+// 62 string-replace
+// (string-find "Hello" "H" "a")
+// (string-find "Hello" "l" "a" 3)
+Object * builtin_string_replace(Object ** params, int param_num, int start_index){
+    Object * s = params[start_index];
+    Object * find_s = params[start_index + 1];
+    Object * replace_s = params[start_index + 2];
+    char * p;
+    char buffer[4096];
+    if (param_num == 3) {
+        p = strstr(s->data.String.v, find_s->data.String.v);
+    str_test:
+        if (p) {
+            strncpy(buffer, s->data.String.v, p - s->data.String.v); // copy
+            strcat(buffer, replace_s->data.String.v);
+            strcat(buffer, p + find_s->data.String.length);
+            return Object_initString(buffer, strlen(buffer));
+        }
+        else{
+            return s; // didn't replace
+        }
+    }
+    else{
+        p = strstr(s->data.String.v + params[start_index + 3]->data.Integer.v,
+                   find_s->data.String.v);
+        goto str_test;
+    }
+}
+
+
 #endif

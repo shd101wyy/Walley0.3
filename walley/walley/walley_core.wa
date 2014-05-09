@@ -3,7 +3,7 @@
 ;; created by Yiyi Wang 
 ;; Copyright (c) Yiyi Wang. All rights reserved.
 (def walley-core-author 'Yiyi-Wang)
-(def walley-core-version "0.0012")
+(def walley-core-version "0.0016")
 (def walley-language-version "0.3.8458")
 
 
@@ -145,3 +145,74 @@
 
 ;; **
 (def ** math-pow)
+
+;; ########################### LIST ############################
+;; some functions for list
+
+(defn caar [x] (car (car x)))
+(defn cadr [x] (car (cdr x)))
+(defn cddr [x] (cdr (cdr x)))
+(defn caddr [x] (car (cdr (cdr x))))
+(defn cdddr [x] (cdr (cdr (cdr x))))
+(defn cadddr [x] (car (cdr (cdr (cdr x)))))
+
+(def list-reverse reverse)
+(defn list-ref [l i]
+  (if (= i 0)
+    (car l)
+    (list-ref (cdr l)
+              (- i 1))))
+
+;; list-append
+;; eg (list-append '(1 2) '(4 5)) => '(1 2 4 5)
+;; eg (list-append '(1 2) 4) => '(1 2 4)
+(defn list-append [l0 l1]
+  (defn list-append-iter0 [l0]
+    (if (null? l0)
+      l1
+      (cons (car l0) 
+            (list-append-iter0 (cdr l0)))))
+  (if (pair? l1)
+    (list-append-iter0 l0)
+    (begin (set! l1 (cons l1 '()))
+           (list-append-iter0 l0))))
+;; list->vector
+(defn list->vector [l]
+  (defn list->vector-iter [l output]
+    (if (null? l)
+      output
+      (list->vector-iter (cdr l) 
+                         (vector-push! output (car l)))))
+  (list->vector-iter l #[]))
+
+
+;; ############## VECTOR ########################
+;; vector->list
+(defn vector->list [v]
+  (def length (vector-length v))
+  (defn vector->list-iter [v i]
+    (if (= i length)
+      '()
+      (cons v[i]
+            (vector->list-iter v
+                               (+ i 1)))))
+  (vector->list-iter v 0))
+
+;; vector-find
+;; find element in vector and return its index
+(defn vector-find [v o start-index]
+  (set! start-index (or start-index 0))
+  (def length (vector-length v))
+  (defn vector-find-iter [i]
+    (if (= i length)
+      -1 ;; didn't find
+      (if (eq? v[i]
+               o)
+        i
+        (vector-find-iter (+ i 1))))) 
+  (vector-find-iter start-index))
+
+
+
+
+

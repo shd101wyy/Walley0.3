@@ -319,6 +319,8 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 58, &builtin_sqrt);
     EF_set_builtin_lambda(frame, 59, &builtin_ceil);
     EF_set_builtin_lambda(frame, 60, &builtin_floor);
+    EF_set_builtin_lambda(frame, 61, &builtin_string_find);
+    EF_set_builtin_lambda(frame, 62, &builtin_string_replace);
 
     frame->length = 45; // set length
     return frame;
