@@ -130,7 +130,7 @@ void Walley_Repl(){
     MacroTable * mt = GLOBAL_MACRO_TABLE;
     
     // run walley_core.wa
-    Walley_Run_File_for_VM("walley_core.wa",
+    Walley_Run_File_for_VM("/usr/local/bin/walley_core.wa", // assume is this folder
                            insts,
                            vt,
                            env,
@@ -231,7 +231,7 @@ void Walley_Run_File(char * file_name){
     MacroTable * mt = GLOBAL_MACRO_TABLE;
     
     // run walley_core.wa
-    Walley_Run_File_for_VM("walley_core.wa",
+    Walley_Run_File_for_VM("/usr/local/bin/walley_core.wa", // assume is this folder
                            insts,
                            vt,
                            env,

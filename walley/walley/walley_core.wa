@@ -3,9 +3,11 @@
 ;; created by Yiyi Wang 
 ;; Copyright (c) Yiyi Wang. All rights reserved.
 (def walley-core-author 'Yiyi-Wang)
-(def walley-core-version "0.0016")
+(def walley-core-version "0.00018")
 (def walley-language-version "0.3.8459")
 
+(def break 'break)          ;; for foreach function
+(def continue 'continue)
 
 ;; check data type
 (def int? (lambda [v] (eq? (typeof v) 'integer)))
@@ -185,6 +187,15 @@
                          (vector-push! output (car l)))))
   (list->vector-iter l #[]))
 
+;; (list-for-each '(1 2 3 4) (lambda [n] (display n)))
+(defn list-foreach [l fn]
+  (if (null? l)
+    ()
+    (if (eq? (fn (car l)) 'break)
+      ()
+      (list-foreach (cdr l)
+                     fn))
+    ))
 
 ;; ############## VECTOR ########################
 ;; vector->list
@@ -211,6 +222,82 @@
         i
         (vector-find-iter (+ i 1))))) 
   (vector-find-iter start-index))
+
+;; vector-foreach
+;; eg (vector-foreach #[1,2,3,4] (lambda [i] (if (= i 3) break (display i))))
+;; will print 1 2
+(defn vector-foreach [v fn]
+  (def v-length (vector-length v))
+  (defn vector-foreach-iter [count]
+    (if (= count v-length)
+      ()
+      (if (eq? (fn v[count]) 'break) ;; break
+        ()
+        (vector-foreach-iter (+ count 1)))))
+  (vector-foreach-iter 0))
+
+;; table-foreach
+(defn table-foreach [t fn]
+  (def keys (table-keys t))
+  (defn table-foreach-iter [keys]
+    (if (null? keys)
+      ()
+      (if (eq? (fn (car keys)
+                   t[(car keys)])
+               'break)
+        ()
+        (table-foreach-iter (cdr keys)))))
+  (table-foreach-iter keys))
+
+
+;; foreach together
+;; pair       => list-foreach
+;; vector     => vector-foreach
+;; dictionary => dictionary-foreach
+(defn foreach [value func]
+  (def t (typeof value))
+  (cond (eq? t 'pair)   (list-foreach value func)
+        (eq? t 'vector) (vector-foreach value func)
+        (eq? t 'table)  (table-foreach value func)
+        else (display "ERROR: Function foreach invalid param type")))
+
+;; times function
+;; eg 
+;; (times 5 (lambda [n] (display n))) => 0 1 2 3 4
+(defn times [n fn]
+  (defn times-iter [c]
+    (if (= c n)
+      ()
+      (begin (fn c)
+             (times-iter (+ c 1)))))
+  (times-iter 0)) 
+
+;; (for 0 5 1 (lambda [i] (display i))) => 0, 1, 2, 3, 4
+;; (for 0 4 (lambda [i] (display i)))   => 0 1 2 3
+;; (for 10 0 -1 (lambda [i] (display i))) => 10987654321
+;; (for 3 (lambda [i] (display i))) => 0 1 2
+;; only support integer param
+(defn for [start end step fn]
+  (def judge-sign (if (> step 0) >= <=))
+  (defn for-iter [i]
+    (if (judge-sign i end)
+      ()
+      (if (eq? (fn i) 'break)
+        ()
+        (for-iter (+ i step)))))
+  (for-iter start))
+;; macro for for function
+(defmacro for 
+  [(start end step fn) `(for ~start ~end ~step ~fn)]
+  [(start end fn) `(for ~start ~end 1 ~fn)]
+  [(end fn) `(for 0 ~end 1 ~fn)])
+
+
+
+
+
+
+
 
 
 
