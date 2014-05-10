@@ -40,8 +40,12 @@ int main(int argc, char *argv[]){
         Walley_Repl();
         return 0;
     }
-    else{ // run file
+    // run file
+    else if (argc == 2){
         Walley_Run_File(argv[1]);
+    }
+    else if (argc == 3 && str_eq(argv[1], "compile")){ // run file
+        Walley_Compile(argv[2]);
     }
     return 0;
 }

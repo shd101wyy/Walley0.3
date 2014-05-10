@@ -509,8 +509,8 @@ Object *VM(uint16_t * instructions,
                         current_frame_pointer = frames_list[frames_list_length - 1];
                         
                         // free lambda
-                        //if(accumulator != v) //这里是处理 ((lambda [] 'x))的 bug
-                        //    Object_free(v);
+                        //if(accumulator != v) //这里是处理 ((lambda [] 'x))的 free bug
+                        Object_free(v);
                         continue;
                         
                     case INTEGER:
@@ -585,6 +585,7 @@ Object *VM(uint16_t * instructions,
                                         goto eval_builtin_lambda;
                                         
                                     case USER_DEFINED_LAMBDA: // user defined lambda
+                                        accumulator = GLOBAL_NULL; // clear accumulator, otherwise it will cause error. because it might be freed more than one times
                                         temp_frame = EF_init_with_size(64); // create temp frame for user defined lambda
                                         
                                         while (temp != GLOBAL_NULL) {

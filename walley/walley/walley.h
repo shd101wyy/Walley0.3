@@ -314,6 +314,94 @@ Object * Walley_Run_File_for_VM(char * file_name,
     free(content);
     return return_value;
 }
+
+
+// compile to .wac file
+void Walley_Compile(char * file_name){
+    // read content from file
+    FILE* file = fopen(file_name,"r");
+    if(file == NULL)
+    {
+        printf("Failed to read file %s\n", file_name);
+        return; // fail to read
+    }
+    
+    fseek(file, 0, SEEK_END);
+    int64_t size = ftell(file);
+    rewind(file);
+    
+    char* content = calloc(size + 1, 1);
+    
+    fread(content,1,size,file);
+    
+    fclose(file); // 不知道要不要加上这个
+    
+    // init walley
+    Walley_init();
+    
+    Lexer * p;
+    Object * o;
+    
+    /*
+     Instructions * insts = Insts_init();
+     Variable_Table * vt = VT_init();
+     Environment * env = createEnvironment();
+     MacroTable * mt = MT_init();
+     */
+    
+    Instructions * insts = GLOBAL_INSTRUCTIONS;
+    Variable_Table * vt = GLOBAL_VARIABLE_TABLE;
+    Environment * env = GLOBAL_ENVIRONMENT;
+    MacroTable * mt = GLOBAL_MACRO_TABLE;
+    
+    // run walley_core.wa
+    Walley_Run_File_for_VM("/usr/local/bin/walley_core.wa", // assume is this folder
+                           insts,
+                           vt,
+                           env,
+                           mt);
+    
+    int32_t run_eval = true;
+    
+    //Environment * env = NULL;
+    //int run_eval = false;
+    
+    //Object * v;
+    
+    p = lexer(content);
+    o = parser(p);
+    
+    // compile
+    /*v = */compiler_begin(insts,
+                           o,
+                           vt,
+                           NULL,
+                           NULL,
+                           run_eval,
+                           env,
+                           mt);
+    
+    free(content);
+    
+    printf("INSTS LENGTH %llu\n", insts->length);
+    printf("CONSTANT TABLE LENGTH %llu\n", CONSTANT_TABLE_INSTRUCTIONS->length);
+    
+    char file_name_buffer[64];
+    char inst_buffer[64];
+    strcpy(file_name_buffer, file_name);
+    strcat(file_name_buffer, "c");
+    file = fopen(file_name_buffer, "w");
+    uint64_t i;
+    for (i = 0; i < CONSTANT_TABLE_INSTRUCTIONS->length; i++) {
+        sprintf(inst_buffer, "%04x ", CONSTANT_TABLE_INSTRUCTIONS->array[i]);
+        fputs(inst_buffer, file);
+    }
+    fclose(file);
+    
+    return;
+}
+
+
 #endif
 
 

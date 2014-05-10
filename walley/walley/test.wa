@@ -16,4 +16,4 @@
 ;(f 1000000)
 ;(display "Hello World")
 ;(def x 12)
-(times 1000000 (lambda [i] (display "Hi\n")))
+;(times 1000000 (lambda [i] (display "Hi\n"))) 
