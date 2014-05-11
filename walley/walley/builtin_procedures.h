@@ -776,6 +776,9 @@ Object * builtin_input(Object ** params, uint32_t param_num, uint32_t start_inde
 }
 // 35 display  原先是 display-string
 Object * builtin_display_string(Object ** params, uint32_t param_num, uint32_t start_index){
+    if (COMPILATION_MODE) { // under compilation mode, no print
+        return GLOBAL_NULL;
+    }
     char * s = to_string(params[start_index]);
     printf("%s", s);
     free(s);

@@ -15,66 +15,7 @@ Object * Walley_Run_File_for_VM(char * file_name,
                                 Variable_Table * vt,
                                 Environment * env,
                                 MacroTable * mt);
-// debug
-#if WALLEY_DEBUG
-void Walley_Debug(/*Lexer * l, // lexer
-                  Object * p, // parser
-                  Instructions * insts, // instructions*/
-Object * v // vm output
-                  ){
-                      /*
-      printf("\n\n@@@ LEXER @@@\n");
-      Lexer_Debug(l);
-      printf("\n@@@ PARSER @@@\n");
-      parser_debug(p);
-                      
-      printf("@@@@ CONSTANTS TABLE \n");
-      printInstructions(CONSTANT_TABLE_INSTRUCTIONS);
-      printf("\n@@@@ Proram \n");
-      printInstructions(insts);
-                      */
-      printf("\n@@@@ Finish Running VM \n");
-      if (v->type == USER_DEFINED_LAMBDA) {
-          printf("\nUser Defined Lambda\n");
-          printf("env length %d\n", v->data.User_Defined_Lambda.env->length);
-          printf("%d\n", v->data.User_Defined_Lambda.env->frames[0]->length);
-          if (v == v->data.User_Defined_Lambda.env->frames[0]->array[39]) {
-              printf("Equal %d\n", v->use_count);
-              printf("top frame length %d\n", v->data.User_Defined_Lambda.env->frames[1]->length);
-              printf("fuck %ld\n", v->data.User_Defined_Lambda.env->frames[1]->array[0]->data.Integer.v);
-          }
-      }
-      else if (v->type == INTEGER){
-          printf("\nInteger\n");
-          printf("use-count %d\n", v->use_count);
-          number_debug(v);
-      }
-      else if (v->type == DOUBLE){
-          printf("\nDouble\n");
-          printf("use-count %d\n", v->use_count);
-          number_debug(v);
-      }
-      else if (v->type == RATIO){
-          printf("\nRatio\n");
-          printf("use-count %d\n", v->use_count);
-          number_debug(v);
-      }
-      else if (v->type == STRING){
-          printf("\nString\n");
-          printf("use-count %d\n", v->use_count);
-          printf("%s\n", v->data.String.v);
-      }
-      else if (v == GLOBAL_NULL){
-          printf("\n()\n");
-      }
-      else if (v->type == PAIR){
-          printf("\nPair\n");
-          printf("Attention: only print integer double string pair\n");
-          parser_debug(v);
-      }
-}
-
-#endif
+void Walley_Run_Compiled_File(char * file_name);
 
 /*
  read ints and return instructions
@@ -191,9 +132,20 @@ void Walley_Repl(){
 }
 
 /*
-    suppose run .wa file
+    suppose run .wa / .wac file
  */
 void Walley_Run_File(char * file_name){
+    
+    // check .wac file
+    uint32_t file_name_length = (uint32_t)strlen(file_name);
+    if (file_name_length >= 5 &&
+        file_name[file_name_length - 1] == 'c' &&
+        file_name[file_name_length - 2] == 'a' &&
+        file_name[file_name_length - 3] == 'w' &&
+        file_name[file_name_length - 4] == '.') {
+        return Walley_Run_Compiled_File(file_name);
+    }
+    
     // read content from file
     FILE* file = fopen(file_name,"r");
     if(file == NULL)
@@ -260,7 +212,68 @@ void Walley_Run_File(char * file_name){
     free(content);
     return;
 }
-
+/*
+ *  run Compiled wac file
+ *  first 64 bytes, length of CONSTANT_TABLE_INSTRUCTIONS
+ *  second 64 bytes, length of insts
+ *  0000 0000 0000 0000 length of CONSTANT_TABLE_INSTRUCTIONS
+ *  0000 0000 0000 0000 length of insts
+ *  0000                reserved
+ */
+void Walley_Run_Compiled_File(char * file_name){
+    FILE* file = fopen (file_name, "r");
+    if(!file){
+        printf("Failed to read file\n");
+        return;
+    }
+    
+    // init walley
+    Walley_init();
+    
+    Instructions * insts = NULL; //  = GLOBAL_INSTRUCTIONS;
+    //Variable_Table * vt = GLOBAL_VARIABLE_TABLE;
+    Environment * env = GLOBAL_ENVIRONMENT;
+    //MacroTable * mt = GLOBAL_MACRO_TABLE;
+    
+    
+    uint16_t num = 0;
+    uint32_t i = 0;
+    uint64_t constant_table_insts_length = 0;
+    uint64_t insts_length = 0;
+    while (fscanf(file, "%hx ", &num) > 0)
+    {
+        // first 64 bytes CONSTANT_TABLE_INSTRUCTIONS length
+        if (i < 4) {
+            constant_table_insts_length |=   (uint64_t)(num << ((3 - i) * 16));
+        }
+        else if (i < 8){
+            insts_length |= (uint64_t)(num << ((3 - (i - 4)) * 16));
+        }
+        else if (i == 8){
+            // init insts
+            insts = (Instructions*)malloc(sizeof(Instructions));
+            insts->length = 0;
+            insts->size = insts_length + 1;
+            insts->array = (uint16_t *) malloc(sizeof(uint16_t) * (insts_length + 1));
+            insts->start_pc = 0;
+        }
+        else{
+            if (i < constant_table_insts_length) {
+                Insts_push(CONSTANT_TABLE_INSTRUCTIONS, num);
+            }
+            else{
+                Insts_push(insts, num);
+            }
+        }
+        i++;
+    }
+    fclose (file);
+    
+    //printf("%llu %llu\n", constant_table_insts_length, insts_length);
+    
+    VM(insts->array, 0, insts->length, env, NULL, NULL);
+    return;
+}
 
 /*
  suppose run .wa file
@@ -318,10 +331,12 @@ Object * Walley_Run_File_for_VM(char * file_name,
 
 // compile to .wac file
 void Walley_Compile(char * file_name){
+
+    COMPILATION_MODE = 1; // if under compilation mode, no print necessary
+
     // read content from file
     FILE* file = fopen(file_name,"r");
-    if(file == NULL)
-    {
+    if(file == NULL){
         printf("Failed to read file %s\n", file_name);
         return; // fail to read
     }
@@ -392,8 +407,41 @@ void Walley_Compile(char * file_name){
     strcat(file_name_buffer, "c");
     file = fopen(file_name_buffer, "w");
     uint64_t i;
+    
+    // first 64 bytes, length of CONSTANT_TABLE_INSTRUCTIONS
+    sprintf(inst_buffer, "%04x ", (uint16_t)((CONSTANT_TABLE_INSTRUCTIONS->length & 0xFFFF000000000000) >> 48));
+    fputs(inst_buffer, file);
+    sprintf(inst_buffer, "%04x ", (uint16_t)((CONSTANT_TABLE_INSTRUCTIONS->length & 0x0000FFFF00000000) >> 32));
+    fputs(inst_buffer, file);
+    sprintf(inst_buffer, "%04x ", (uint16_t)((CONSTANT_TABLE_INSTRUCTIONS->length & 0x00000000FFFF0000) >> 16));
+    fputs(inst_buffer, file);
+    sprintf(inst_buffer, "%04x ", (uint16_t)((CONSTANT_TABLE_INSTRUCTIONS->length & 0x000000000000FFFF) >> 0));
+    fputs(inst_buffer, file);
+
+    // seconds 64 bytes, length of INSTRUCTIONS
+    sprintf(inst_buffer, "%04x ", (uint16_t)((insts->length & 0xFFFF000000000000) >> 48));
+    fputs(inst_buffer, file);
+    sprintf(inst_buffer, "%04x ", (uint16_t)((insts->length & 0x0000FFFF00000000) >> 32));
+    fputs(inst_buffer, file);
+    sprintf(inst_buffer, "%04x ", (uint16_t)((insts->length & 0x00000000FFFF0000) >> 16));
+    fputs(inst_buffer, file);
+    sprintf(inst_buffer, "%04x ", (uint16_t)((insts->length & 0x000000000000FFFF) >> 0));
+    fputs(inst_buffer, file);
+    
+    // 0000 0000 0000 0000 length of CONSTANT_TABLE_INSTRUCTIONS
+    // 0000 0000 0000 0000 length of insts
+    // 0000                reserved
+    
+    fputs("0000 ", file);
+    
+    // save CONSTANT TABLE INSTRUCTIONS
     for (i = 0; i < CONSTANT_TABLE_INSTRUCTIONS->length; i++) {
         sprintf(inst_buffer, "%04x ", CONSTANT_TABLE_INSTRUCTIONS->array[i]);
+        fputs(inst_buffer, file);
+    }
+    // save INSTRUCTIONS
+    for (i = 0; i < insts->length; i++) {
+        sprintf(inst_buffer, "%04x ", insts->array[i]);
         fputs(inst_buffer, file);
     }
     fclose(file);

@@ -15,6 +15,7 @@
 #define DATA_TYPE_C
 #include "debug.h"
 
+uint8_t COMPILATION_MODE = 0; // if under compilation mode, no print necessary
 
 typedef struct Object Object;
 typedef struct Table_Pair Table_Pair;
