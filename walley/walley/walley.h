@@ -258,7 +258,7 @@ void Walley_Run_Compiled_File(char * file_name){
             insts->start_pc = 0;
         }
         else{
-            if (i < constant_table_insts_length) {
+            if (i - 9 < constant_table_insts_length) {
                 Insts_push(CONSTANT_TABLE_INSTRUCTIONS, num);
             }
             else{
