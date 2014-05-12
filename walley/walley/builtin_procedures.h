@@ -1200,6 +1200,33 @@ Object * builtin_string_replace(Object ** params, uint32_t param_num, uint32_t s
     }
 }
 // 63 apply
-
-
+// 64 vector-slice
+Object * builtin_vector_slice(Object ** params, uint32_t param_num, uint32_t start_index){
+    Object * p = params[start_index];
+    // only support integer param
+    uint64_t start = params[start_index + 1]->data.Integer.v;
+    uint64_t end;
+    switch (param_num) {
+        case 2:
+            end = p->data.Vector.length;
+            break;
+        case 3:
+            end = params[start_index + 2]->data.Integer.v;
+            break;
+        default:
+            printf("ERROR: Function vector-slice invalid param num\n");
+            return GLOBAL_NULL;
+            break;
+    }
+    Object * o = Object_initVector(1, p->data.Vector.size);
+    Object * t;
+    uint64_t i;
+    for (i = start; i < end; i++){
+        t = p->data.Vector.v[i];
+        t->use_count++;
+        o->data.Vector.v[i - start] = t;
+    }
+    o->data.Vector.length = end - start;
+    return o;
+}
 #endif

@@ -324,8 +324,9 @@ Environment_Frame *createFrame0(){
     EF_set_builtin_lambda(frame, 62, &builtin_string_replace);
     frame->array[63] = Object_initInteger(2); // apply
     frame->array[63]->use_count++;
+    EF_set_builtin_lambda(frame, 64, builtin_vector_slice);
     
-    frame->length = 64; // set length
+    frame->length = 65; // set length
     return frame;
 }
 /*

@@ -199,7 +199,7 @@ Object * Object_initString(char * v, uint64_t string_length){
  default size 32
  */
 
-Object * Object_initVector(char resizable, int size){
+Object * Object_initVector(char resizable, uint64_t size){
     Object * o = allocateObject();
     o->type = VECTOR;
     o->data.Vector.size = size;

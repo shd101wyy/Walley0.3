@@ -3,8 +3,8 @@
 ;; created by Yiyi Wang 
 ;; Copyright (c) Yiyi Wang. All rights reserved.
 (def walley-core-author 'Yiyi-Wang)
-(def walley-core-version "0.00020")
-(def walley-language-version "0.3.8460")
+(def walley-core-version "0.00021")
+(def walley-language-version "0.3.8461")
 
 (def break 'break)          ;; for foreach function
 (def continue 'continue)
@@ -52,6 +52,7 @@
                       (list-length-iter (cdr n)
                                         (+ r 1)))))
           (list-length-iter n 0)))
+
 
 (def error (lambda [s] (display "ERROR: ") (display s)))
 
@@ -107,6 +108,25 @@
 (defmacro defm 
 	  [(macro-name args pattern)
 	   `(defmacro ~macro-name (~args ~pattern))])
+
+
+;; list-slice-helper
+(defn list-slice-helper [l end]
+  (if (= end 0)
+    ()
+    (cons (car l)
+          (list-slice-helper (cdr l)
+                             (- end 1)))))
+(defn list-slice-remove-head [l start]
+  (if (= start 0)
+    l
+    (list-slice-remove-head (cdr l)
+                            (- start 1))))
+;; list-slice
+(defn list-slice  [l start end]
+          (set! end (or end (list-length l)))
+          (list-slice-helper (list-slice-remove-head l start)
+                             (- end start)))
 
 
 ;; str
@@ -260,6 +280,17 @@
         (eq? t 'vector) (vector-foreach value func)
         (eq? t 'table)  (table-foreach value func)
         else (display "ERROR: Function foreach invalid param type")))
+
+;; slice
+(defn slice [v start end]
+  (def t (typeof v))
+  (set! end (or end (cond (eq? t 'pair) (list-length v)
+                          (eq? t 'string) (string-length v)
+                          (eq? t 'vector) (vector-length v))))
+  (cond (eq? t 'pair) (list-slice v start end)
+        (eq? t 'string) (string-slice v start end)
+        (eq? t 'vector) (vector-slice v start end)
+        else ()))
 
 ;; times function
 ;; eg 
