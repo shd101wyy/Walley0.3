@@ -492,6 +492,7 @@ Object *VM(uint16_t * instructions,
                             for(i = param_num; i < required_param_num; i++){
                                 current_frame_pointer->array[i] = GLOBAL_NULL;
                                 GLOBAL_NULL->use_count++; // 用吗？
+                                current_frame_pointer->length++;
                             }
                         }
                         
