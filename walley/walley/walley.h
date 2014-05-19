@@ -71,7 +71,7 @@ void Walley_Repl(){
     MacroTable * mt = GLOBAL_MACRO_TABLE;
     
     // run walley_core.wa
-    Walley_Run_File_for_VM("/usr/local/bin/walley_core.wa", // assume is this folder
+    Walley_Run_File_for_VM("/usr/local/lib/walley/walley_core.wa", // assume is this folder
                            insts,
                            vt,
                            env,
@@ -183,7 +183,7 @@ void Walley_Run_File(char * file_name){
     MacroTable * mt = GLOBAL_MACRO_TABLE;
     
     // run walley_core.wa
-    Walley_Run_File_for_VM("/usr/local/bin/walley_core.wa", // assume is this folder
+    Walley_Run_File_for_VM("/usr/local/lib/walley/walley_core.wa", // assume is this folder
                            insts,
                            vt,
                            env,
@@ -327,7 +327,31 @@ Object * Walley_Run_File_for_VM(char * file_name,
     free(content);
     return return_value;
 }
+/*
+    run single string
+ */
+Object * Walley_RunString(char * input_string){
+    Lexer * p;
+    Object * o;
+    
+    int32_t run_eval = true;
+    
+    p = lexer(input_string);
+    o = parser(p);
+    
+    // compile
+    Object * return_value = compiler_begin(GLOBAL_INSTRUCTIONS,
+                                           o,
+                                           GLOBAL_VARIABLE_TABLE,
+                                           NULL,
+                                           NULL,
+                                           run_eval,
+                                           GLOBAL_ENVIRONMENT,
+                                           GLOBAL_MACRO_TABLE);
+    
+    return return_value;
 
+}
 
 // compile to .wac file
 void Walley_Compile(char * file_name){
@@ -370,7 +394,7 @@ void Walley_Compile(char * file_name){
     MacroTable * mt = GLOBAL_MACRO_TABLE;
     
     // run walley_core.wa
-    Walley_Run_File_for_VM("/usr/local/bin/walley_core.wa", // assume is this folder
+    Walley_Run_File_for_VM("/usr/local/lib/walley/walley_core.wa", // assume is this folder
                            insts,
                            vt,
                            env,
@@ -398,8 +422,8 @@ void Walley_Compile(char * file_name){
     
     free(content);
     
-    printf("INSTS LENGTH %llu\n", insts->length);
-    printf("CONSTANT TABLE LENGTH %llu\n", CONSTANT_TABLE_INSTRUCTIONS->length);
+    //printf("INSTS LENGTH %llu\n", insts->length);
+    //printf("CONSTANT TABLE LENGTH %llu\n", CONSTANT_TABLE_INSTRUCTIONS->length);
     
     char file_name_buffer[64];
     char inst_buffer[64];
