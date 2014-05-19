@@ -139,7 +139,7 @@ Object *VM(uint16_t * instructions,
     
     pc = start_pc;
     while(pc != end_pc){
-        // printf("%lu, %x \n", pc, instructions[pc]);
+        // printf("%llu, %x \n", pc, instructions[pc]);
         inst = instructions[pc];
         opcode = (inst & 0xF000) >> 12;
         //printf("%x\n", inst);
@@ -147,13 +147,16 @@ Object *VM(uint16_t * instructions,
             case SET:
                 frame_index = 0x0FFF & inst;
                 value_index = instructions[pc + 1];
-                if ( value_index >= env->frames[frame_index]->length) {
-                    // value doesn't exist so doesn't need to free
-                }
-                else{ // free the existed value
+                // printf("SET frame_index %d, value_index %d\n", frame_index, value_index);
+                if ( value_index < env->frames[frame_index]->length) {
+                    // free the existed value
                     v = env->frames[frame_index]->array[value_index];
                     v->use_count--; // decrement use_count
                     Object_free(v);
+                }
+                else{
+                    printf("VM ERROR: SET INDEX ERROR");
+                    exit(0);
                 }
                 env->frames[frame_index]->array[value_index] = accumulator; // set value
                 accumulator->use_count++;  // increase accumulator use_count
@@ -163,7 +166,7 @@ Object *VM(uint16_t * instructions,
                 frame_index = 0x0FFF & inst;
                 value_index = instructions[pc + 1];
                 
-                // printf("frame_index %d, value_index %d\n", frame_index, value_index);
+                // printf("GET frame_index %d, value_index %d\n", frame_index, value_index);
                 
                 Object_free(accumulator);
                 
@@ -254,18 +257,18 @@ Object *VM(uint16_t * instructions,
                     case USER_DEFINED_LAMBDA: // user defined function
                         // create new frame with length 64
                         current_frame_pointer = EF_init_with_size(accumulator->data.User_Defined_Lambda.frame_size);
-
+                        
                         // save to frames_list
                         frames_list[frames_list_length] = current_frame_pointer;
                         frames_list_length+=1;
-                        current_frame_pointer->use_count+=1; // current frame pointer is used
+                        current_frame_pointer->use_count++; // current frame pointer is used
 
                         // save to function list
                         functions_list[functions_list_length] = accumulator;
-                        functions_list_length+=1;
-                        accumulator->use_count+=1;
+                        functions_list_length++;
+                        accumulator->use_count++;
                         
-                        pc = pc + 1;
+                        pc++;
                         continue;
                     case BUILTIN_LAMBDA: case VECTOR: case TABLE: case  INTEGER:// builtin lambda or vector or table
                         current_frame_pointer = BUILTIN_PRIMITIVE_PROCEDURE_STACK; // get top frame
@@ -280,7 +283,7 @@ Object *VM(uint16_t * instructions,
                         functions_list_length++;
                         accumulator->use_count++;
                         
-                        pc = pc + 1;
+                        pc++;
                         continue;
                     default:
                         printf("ERROR: NEWFRAME error");
@@ -289,10 +292,10 @@ Object *VM(uint16_t * instructions,
                     goto VM_END;
                 }
             case PUSH_ARG: // push arguments
-                accumulator->use_count+=1; // increase use count
+                accumulator->use_count++; // increase use count
                 current_frame_pointer->array[current_frame_pointer->length] = accumulator; // push to env frame
-                current_frame_pointer->length+=1;
-                pc = pc + 1;
+                current_frame_pointer->length++;
+                pc++;
                 continue;
                 
             case CALL:
@@ -647,6 +650,14 @@ Object *VM(uint16_t * instructions,
 
                 accumulator->use_count++; // increase use_count
                 pc+=2;
+                continue;
+            // tail call push parameters
+            // opcode index
+            case TAIL_CALL_PUSH:
+                env->frames[env->length-1]->array[instructions[pc] & 0x0FFF] = accumulator;
+                // 不用增加use count因为最后会被free掉
+                pc++;
+                accumulator = GLOBAL_NULL; // 必须set为global null， 要不然会出错， 因为GET的时候会free掉accumulator, 而此时的accumulator的use count正好是0
                 continue;
             default:
                 printf("ERROR: Invalid opcode %d\n", opcode);

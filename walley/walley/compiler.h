@@ -1007,6 +1007,8 @@ void compiler(Instructions * insts,
                     
                     // only one parameters
                     // eg (def test (lambda [i] (if (= i 0) 0 (test (- i 1)))))
+                    // 但是没想到这样反而慢了。。。
+                    
                     if (param_num == 1) {
                         compiler(insts,
                                  params[0],
@@ -1045,8 +1047,11 @@ void compiler(Instructions * insts,
                             Object_free(p);
                             
                             // set tp current frame
-                            Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
-                            Insts_push(insts, 0x0000FFFF & track_index);
+                            //Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
+                            // 这里不能用 SET_OP, 因为stack的size会一直增长。。。
+                            // Insts_push(insts, (SET_TOP << 12)); // frame index
+                            // Insts_push(insts, 0x0000FFFF & track_index);
+                            Insts_push(insts, TAIL_CALL_PUSH << 12 | track_index);
                             // value index
                         }
                         else{
@@ -1060,8 +1065,12 @@ void compiler(Instructions * insts,
                                      env,
                                      mt); // this argument is not tail call
                             // set to current frame
-                            Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
-                            Insts_push(insts, 0x0000FFFF & track_index);
+                            //Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
+                            // 这里不能用 SET_OP, 因为stack的size会一直增长。。。
+                            // Insts_push(insts, (SET_TOP << 12)); // frame index
+                            // Insts_push(insts, 0x0000FFFF & track_index);
+                            
+                            Insts_push(insts, TAIL_CALL_PUSH << 12 | track_index);
                             // value index
                         }
                         track_index++;
@@ -1083,7 +1092,6 @@ void compiler(Instructions * insts,
                         }
                     }
                     
-                    
                     // move parameters
                     for (i = 0; i < count_params; i++) {
                         // get value
@@ -1101,7 +1109,7 @@ void compiler(Instructions * insts,
                             Insts_push(insts, i); // value index 不再加2是因为不再存env 和 pc
                         }
                     }
-                tail_call_function_compilation_jmp_back:
+        tail_call_function_compilation_jmp_back:
                     // jump back
                     start_pc = function_for_compilation->start_pc;
                     Insts_push(insts, JMP << 12);
