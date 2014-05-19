@@ -1229,4 +1229,24 @@ Object * builtin_vector_slice(Object ** params, uint32_t param_num, uint32_t sta
     o->data.Vector.length = end - start;
     return o;
 }
+// 65 set-car! (set-car! x 3)
+Object * builtin_set_car(Object ** params, uint32_t param_num, uint32_t start_index){
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    p1->data.Pair.car->use_count--;
+    Object_free(p1->data.Pair.car);
+    p1->data.Pair.car = p2;
+    p2->use_count++;
+    return p1;
+}
+// 66 set-cdr! (set-car! x 3)
+Object * builtin_set_cdr(Object ** params, uint32_t param_num, uint32_t start_index){
+    Object * p1 = params[start_index];
+    Object * p2 = params[start_index+1];
+    p1->data.Pair.car->use_count--;
+    Object_free(p1->data.Pair.car);
+    p1->data.Pair.car = p2;
+    p2->use_count++;
+    return p1;
+}
 #endif

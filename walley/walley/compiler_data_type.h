@@ -224,6 +224,8 @@ Variable_Table * VT_init(){
     VT_push(vt, 0, "string-replace");  // 62
     VT_push(vt, 0, "apply");   // 63
     VT_push(vt, 0, "vector-slice"); // 64
+    VT_push(vt, 0, "set-car!"); // 65
+    VT_push(vt, 0, "set-cdr!"); // 66
     return vt;
 }
 
