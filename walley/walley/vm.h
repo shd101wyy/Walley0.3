@@ -155,12 +155,13 @@ Object *VM(uint16_t * instructions,
                     Object_free(v);
                 }
                 else{
-                    printf("VM ERROR: SET INDEX ERROR");
+                    printf("VM ERROR: SET INDEX ERROR, plz report this error and send ur code to author through github...");
                     exit(0);
                 }
                 env->frames[frame_index]->array[value_index] = accumulator; // set value
                 accumulator->use_count++;  // increase accumulator use_count
                 pc = pc + 2;
+                accumulator = GLOBAL_NULL;
                 continue;
             case GET:
                 frame_index = 0x0FFF & inst;
@@ -171,6 +172,7 @@ Object *VM(uint16_t * instructions,
                 Object_free(accumulator);
                 
                 accumulator = env->frames[frame_index]->array[value_index];
+                // I think I need to change this later
                 if (!accumulator) {
                     accumulator = GLOBAL_NULL;
                 }
@@ -643,6 +645,7 @@ Object *VM(uint16_t * instructions,
                 pc = pc + 2;
                 continue;
             // 不知道到底用不用是有这个opcode
+            // def
             case SET_TOP: // set to top frame according to index
                 // set value and increase length
                 env->frames[env->length-1]->array[instructions[pc+1]] = accumulator;
@@ -650,6 +653,7 @@ Object *VM(uint16_t * instructions,
 
                 accumulator->use_count++; // increase use_count
                 pc+=2;
+                accumulator = GLOBAL_NULL;
                 continue;
             // tail call push parameters
             // opcode index
