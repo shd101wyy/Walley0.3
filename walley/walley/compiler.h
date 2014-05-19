@@ -1100,6 +1100,7 @@ void compiler(Instructions * insts,
                         // move to target index
                         Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                         Insts_push(insts, i); // value index 不再加2是因为不再存env 和 pc
+                        //Insts_push(insts, (TAIL_CALL_PUSH << 12) | i );
                     }
                     if (function_for_compilation->variadic_place == -1 && i < function_for_compilation->param_num) {
                         for (; i < function_for_compilation->param_num; i++) {
@@ -1107,6 +1108,7 @@ void compiler(Instructions * insts,
                             // move to target index
                             Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
                             Insts_push(insts, i); // value index 不再加2是因为不再存env 和 pc
+                            //Insts_push(insts, (TAIL_CALL_PUSH << 12) | i );
                         }
                     }
         tail_call_function_compilation_jmp_back:

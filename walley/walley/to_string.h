@@ -13,7 +13,11 @@
 #define TO_STRING_BUFFER_SIZE 4098
 /*
     Object to string
- */
+*/
+char * list_to_string(Object * l);
+char * vector_to_string(Object * l);
+char * table_to_string(Object * t);
+char * clean_string(Object * s);
 
 char * number_to_string(Object * x){
     char buffer[TO_STRING_BUFFER_SIZE];
@@ -36,12 +40,6 @@ char * number_to_string(Object * x){
     strcpy(output, buffer);
     return output;
 }
-
-char * list_to_string(Object * l);
-char * vector_to_string(Object * l);
-char * table_to_string(Object * t);
-char * clean_string(Object * s);
-
 char * clean_string(Object * s){
     char buffer[TO_STRING_BUFFER_SIZE];
     strcpy(buffer, "");

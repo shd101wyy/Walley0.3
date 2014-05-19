@@ -1,10 +1,13 @@
 all:
 	gcc main.c -o walley -lm
 install:
+	rm -rf /usr/local/bin/walley
+	rm -rf /usr/local/include/walley
+	rm -rf /usr/local/lib/walley
 	cp walley /usr/local/bin
 	mkdir /usr/local/include/walley
 	mkdir /usr/local/lib/walley
-	cp walley_core.wa /usr/local/lib/walley/
+	cp *.wa /usr/local/lib/walley/
 	cp *.h /usr/local/include/walley/
 	rm -rf *.o walley a.out
 uninstall:
