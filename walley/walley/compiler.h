@@ -989,8 +989,7 @@ void compiler(Instructions * insts,
                         return;
                     }
                 }
-                //printf("IT IS NOT MACRO");
-                // 咱不支持 macro
+                // tail call function
                 if(tail_call_flag){
                     // so no new frame
                     int32_t start_index = vt->frames[vt->length - 1]->length;
@@ -1004,6 +1003,24 @@ void compiler(Instructions * insts,
                         params[param_num] = car(p);
                         param_num++;
                         p = cdr(p);
+                    }
+                    
+                    // only one parameters
+                    // eg (def test (lambda [i] (if (= i 0) 0 (test (- i 1)))))
+                    if (param_num == 1) {
+                        compiler(insts,
+                                 params[0],
+                                 vt,
+                                 false,
+                                 parent_func_name,
+                                 function_for_compilation,
+                                 env,
+                                 mt); // compile that one parameter
+                        
+                        // set tp current frame
+                        Insts_push(insts, (SET << 12) | (vt->length - 1)); // frame index
+                        Insts_push(insts, 0x0000FFFF & 0x0000); // value index, which is 0
+                        goto tail_call_function_compilation_jmp_back;
                     }
                     /*compile parameters*/
                     for (i = 0; i < param_num; i++) {
@@ -1084,6 +1101,7 @@ void compiler(Instructions * insts,
                             Insts_push(insts, i); // value index 不再加2是因为不再存env 和 pc
                         }
                     }
+                tail_call_function_compilation_jmp_back:
                     // jump back
                     start_pc = function_for_compilation->start_pc;
                     Insts_push(insts, JMP << 12);
@@ -1157,7 +1175,7 @@ Object * compiler_begin(Instructions * insts,
             compiler(insts,
                      car(l),
                      vt,
-                     1,
+                     1, // tail call
                      NULL,
                      function_for_compilation,
                      env,
