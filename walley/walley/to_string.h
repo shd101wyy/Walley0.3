@@ -101,7 +101,13 @@ char * list_to_string(Object * l){
         这里可能得free .
      */
     while (p != GLOBAL_NULL) {
-        v = car(p);
+        if (p->type != PAIR) {
+            v = p;
+            strcat(buffer, ". ");
+            p = cons(p, GLOBAL_NULL);
+        }
+        else
+            v = car(p);
         switch (v->type) {
             case NULL_:
                 strcat(buffer, "()");
